@@ -1,0 +1,27 @@
+Third-party content in this repository
+======================================
+
+The MIT license in LICENSE covers the SOURCE CODE of this project. It does not
+cover the bundled art or the quoted scripture, which carry their own terms.
+
+Art — apps/web/public/assets/
+-----------------------------
+See apps/web/public/assets/LICENSES.md for the full per-file breakdown.
+
+  * Zelda-like tilesets and sprites by ArMM1998 — CC0 1.0 (public domain).
+  * Monster battler sprites by Charles Gabriel (Antifarea) — CC-BY 3.0.
+    ATTRIBUTION REQUIRED wherever these are redistributed or displayed:
+    "Monster battler sprites by Charles Gabriel (Antifarea), CC-BY 3.0,
+    https://opengameart.org/content/10-fantasy-rpg-enemies"
+  * Additional battler sprites by Stephen Challener (Redshrike) — see
+    LICENSES.md for the exact terms and required attribution.
+
+Scripture — games/trial-of-job/
+-------------------------------
+Quoted verbatim from the World English Bible (WEB), which is in the public
+domain. Every quotation is cited with chapter and verse.
+
+The `lang.simple.json` retelling is a PARAPHRASE, not a translation, and is
+deliberately never given a chapter-and-verse citation — its passages are
+attributed as "from the story of Job" so that wording written for this project
+is never presented as scripture.

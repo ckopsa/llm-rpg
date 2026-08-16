@@ -19,17 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This license covers the source code of this project.
-
-It does NOT cover the bundled art or the quoted scripture, which carry their
-own terms:
-
-  * Art under apps/web/public/assets/ — see apps/web/public/assets/LICENSES.md.
-    Some sheets are CC0; the battler sprites are CC-BY 3.0 and REQUIRE
-    attribution wherever they are redistributed or displayed.
-
-  * Scripture quoted in games/trial-of-job/ is the World English Bible, which
-    is in the public domain.

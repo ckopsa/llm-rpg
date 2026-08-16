@@ -38,7 +38,7 @@ flags, different words. `?lang=simple` on The Trial of Job is a retelling for a 
 
 ## License
 
-Source code is MIT (see [LICENSE](LICENSE)). The bundled art is **not** — some sheets are CC0 and the
+Source code is MIT (see [LICENSE](LICENSE); third-party terms in [NOTICE](NOTICE)). The bundled art is **not** — some sheets are CC0 and the
 battler sprites are CC-BY 3.0 and require attribution; see
 [apps/web/public/assets/LICENSES.md](apps/web/public/assets/LICENSES.md). Scripture quoted in
 `games/trial-of-job/` is the World English Bible, which is public domain.
