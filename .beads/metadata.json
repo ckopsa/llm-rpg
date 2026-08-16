@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "llm_rpg",
+  "project_id": "0aee6ae7-581b-4ea6-8417-630ee742b61c"
+}
