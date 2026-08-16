@@ -1,0 +1,3293 @@
+{
+  "meta": {
+    "id": "trial-of-job",
+    "title": "The Trial of Job",
+    "version": "0.1.0",
+    "goal": "Walk with Job from the land of Uz through calamity, the ash heap, and the whirlwind — and answer honestly."
+  },
+  "legend": {
+    ".": {
+      "name": "grass",
+      "glyph": "🟩",
+      "walkable": true,
+      "wild": false
+    },
+    "#": {
+      "name": "tree",
+      "glyph": "🌲",
+      "walkable": false,
+      "wild": false
+    },
+    ",": {
+      "name": "road",
+      "glyph": "🟨",
+      "walkable": true,
+      "wild": false
+    },
+    "~": {
+      "name": "water",
+      "glyph": "🟦",
+      "walkable": false,
+      "wild": false
+    },
+    "=": {
+      "name": "floor",
+      "glyph": "🟫",
+      "walkable": true,
+      "wild": false
+    },
+    "%": {
+      "name": "wall",
+      "glyph": "🧱",
+      "walkable": false,
+      "wild": false
+    },
+    "a": {
+      "name": "ashes",
+      "glyph": "⬜",
+      "walkable": true,
+      "wild": false
+    },
+    "^": {
+      "name": "rock",
+      "glyph": "⛰",
+      "walkable": false,
+      "wild": false
+    },
+    "s": {
+      "name": "sand",
+      "glyph": "🟨",
+      "walkable": true,
+      "wild": false
+    },
+    "i": {
+      "name": "ice",
+      "glyph": "🧊",
+      "walkable": true,
+      "wild": false
+    }
+  },
+  "maps": {
+    "uz-estate": {
+      "rows": [
+        "################",
+        "#........%%%%..#",
+        "#........%%%%#.#",
+        "#........%,%%..#",
+        "##........,....#",
+        "#.........,....#",
+        "#.#.......,....#",
+        "#.........,....#",
+        "#,,,,,,,,,,,,,,#",
+        "#..............#",
+        "#.....#........#",
+        "################"
+      ],
+      "entities": [
+        {
+          "id": "altar",
+          "name": "Job's Altar",
+          "glyph": "🔥",
+          "x": 4,
+          "y": 5,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "offering_1",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Job Did So Continually",
+                  "lines": [
+                    "His sons went and held a feast in the house of each one on his birthday; and they sent and called for their three sisters to eat and to drink with them.",
+                    "It was so, when the days of their feasting had run their course, that Job sent and sanctified them, and rose up early in the morning, and offered burnt offerings according to the number of them all.",
+                    "For Job said, “It may be that my sons have sinned, and renounced God in their hearts.” Job did so continually."
+                  ],
+                  "citation": "Job 1:4–5, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The first offering: for the seven sons.",
+                    "The smoke goes up straight in the windless morning."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "offering_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "offering_1",
+              "forbidsFlag": "offering_2",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The second offering: for the three daughters.",
+                    "It may be that they have sinned, you tell yourself, and renounced God in their hearts."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "offering_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "offering_2",
+              "forbidsFlag": "offering_3",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The third offering: for the days you cannot see, and the words you did not hear.",
+                    "The fire settles into itself. It is done, as it is done every morning.",
+                    "You have sanctified them all."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "offering_3"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The ashes of the morning are still warm.",
+                    "There is nothing left to offer today."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "courtyard-dust",
+          "name": "The Courtyard Dust",
+          "glyph": "🌫",
+          "x": 7,
+          "y": 9,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "calamity",
+              "forbidsFlag": "mourn_1",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You take hold of your robe with both hands and tear it from the neck down.",
+                    "The sound is very loud in the yard."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "mourn_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "mourn_1",
+              "forbidsFlag": "mourn_2",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You shave your head. The hair falls into the dust and stays there.",
+                    "Nobody in the yard says a word."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "mourn_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "mourn_2",
+              "forbidsFlag": "mourn_3",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Blessed Be Yahweh's Name",
+                  "lines": [
+                    "Then Job arose, and tore his robe, and shaved his head, and fell down on the ground, and worshiped.",
+                    "He said, “Naked I came out of my mother’s womb, and naked shall I return there.",
+                    "Yahweh gave, and Yahweh has taken away. Blessed be Yahweh’s name.”",
+                    "In all this, Job did not sin, nor charge God with wrongdoing."
+                  ],
+                  "citation": "Job 1:20–22, WEB"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "mourn_3"
+                },
+                {
+                  "type": "wait",
+                  "beats": 2
+                },
+                {
+                  "type": "show_title",
+                  "text": "Meanwhile",
+                  "subtitle": "Again, on the day when the sons of God came"
+                },
+                {
+                  "type": "camera_focus",
+                  "entityId": "the-accuser"
+                },
+                {
+                  "type": "passage",
+                  "title": "Skin For Skin",
+                  "lines": [
+                    "Yahweh said to Satan, “Have you considered my servant Job? For there is no one like him in the earth, a blameless and an upright man, one who fears God, and turns away from evil.",
+                    "He still maintains his integrity, although you incited me against him, to ruin him without cause.”",
+                    "Satan answered Yahweh, and said, “Skin for skin. Yes, all that a man has he will give for his life.",
+                    "But stretch out your hand now, and touch his bone and his flesh, and he will renounce you to your face.”",
+                    "Yahweh said to Satan, “Behold, he is in your hand. Only spare his life.”"
+                  ],
+                  "citation": "Job 2:3–6, WEB"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "boils"
+                },
+                {
+                  "type": "set_variant",
+                  "entityId": "job-seen",
+                  "variantId": "afflicted"
+                },
+                {
+                  "type": "wait",
+                  "beats": 2
+                },
+                {
+                  "type": "camera_focus",
+                  "release": true
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "teleport_player",
+                  "mapId": "ash-heap",
+                  "x": 2,
+                  "y": 7
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Swept dust, warm from the sun.",
+                    "Nothing has happened here."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wife",
+          "name": "Job's Wife",
+          "glyph": "👩",
+          "x": 12,
+          "y": 6,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "offering_3",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Up before the birds again. Was the smoke straight?"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "calamity",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Don't say anything to me. Not yet."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Come and eat. They will send for us again at midday, and the day after it is the next one's house."
+                }
+              ]
+            }
+          ],
+          "sprite": "npc1"
+        },
+        {
+          "id": "shepherd-boy",
+          "name": "Shepherd Boy",
+          "glyph": "🧒",
+          "x": 2,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "calamity",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The hill is quiet, master. I keep listening for them."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Seven thousand, and I know the lame one by her walk."
+                }
+              ]
+            }
+          ],
+          "sprite": "npc1"
+        },
+        {
+          "id": "flock-sheep",
+          "name": "The Sheep",
+          "glyph": "🐑",
+          "x": 4,
+          "y": 2,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The sheep move over the hill like slow weather."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "camel-string",
+          "name": "The Camels",
+          "glyph": "🐫",
+          "x": 7,
+          "y": 2,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Three thousand camels, kneeling in the shade, chewing."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "plowman",
+          "name": "Zabad the Plowman",
+          "glyph": "👨‍🌾",
+          "x": 13,
+          "y": 5,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "calamity",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "I was in the west field. That is the only reason I am standing here."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Five hundred yoke turning the east field, and the donkeys feeding beside them."
+                }
+              ]
+            }
+          ],
+          "sprite": "guard"
+        },
+        {
+          "id": "yoke-of-oxen",
+          "name": "The Oxen",
+          "glyph": "🐂",
+          "x": 14,
+          "y": 7,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The oxen lean into the yoke. The east field is nearly turned."
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 10,
+          "y": 3,
+          "toMap": "feast-house",
+          "toX": 4,
+          "toY": 5
+        }
+      ],
+      "triggers": [
+        {
+          "id": "act-one-open",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The Trial of Job",
+              "subtitle": "Act I — The Land of Uz"
+            },
+            {
+              "type": "play_music",
+              "track": "uz-pastoral"
+            },
+            {
+              "type": "passage",
+              "title": "There Was a Man in the Land of Uz",
+              "lines": [
+                "There was a man in the land of Uz, whose name was Job. That man was blameless and upright, and one who feared God, and turned away from evil.",
+                "There were born to him seven sons and three daughters.",
+                "His possessions also were seven thousand sheep, three thousand camels, five hundred yoke of oxen, five hundred female donkeys, and a very great household; so that this man was the greatest of all the children of the east."
+              ],
+              "citation": "Job 1:1–3, WEB"
+            },
+            {
+              "type": "say",
+              "text": "Morning over Uz. The feast in your eldest son's house ran all night; the lamps are only now going out."
+            },
+            {
+              "type": "say",
+              "text": "Ten children, and the old fear that they may have sinned. The altar is west of the road. Go up, and offer."
+            }
+          ]
+        },
+        {
+          "id": "court-of-heaven",
+          "on": "step",
+          "tiles": [
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 3,
+              "y": 6
+            },
+            {
+              "x": 5,
+              "y": 6
+            },
+            {
+              "x": 4,
+              "y": 4
+            }
+          ],
+          "once": true,
+          "when": {
+            "flag": "offering_3"
+          },
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "Meanwhile",
+              "subtitle": "On a day when the sons of God came"
+            },
+            {
+              "type": "play_music",
+              "track": "court-above"
+            },
+            {
+              "type": "camera_focus",
+              "mapId": "heaven-court",
+              "x": 4,
+              "y": 3
+            },
+            {
+              "type": "passage",
+              "title": "The Sons of God",
+              "lines": [
+                "Now on the day when God’s sons came to present themselves before Yahweh, Satan also came among them.",
+                "Yahweh said to Satan, “Where have you come from?”",
+                "Then Satan answered Yahweh, and said, “From going back and forth in the earth, and from walking up and down in it.”",
+                "Yahweh said to Satan, “Have you considered my servant, Job? For there is no one like him in the earth, a blameless and an upright man, one who fears God, and turns away from evil.”"
+              ],
+              "citation": "Job 1:6–8, WEB"
+            },
+            {
+              "type": "wait",
+              "beats": 2
+            },
+            {
+              "type": "camera_focus",
+              "entityId": "the-accuser"
+            },
+            {
+              "type": "passage",
+              "title": "Does Job Fear God for Nothing?",
+              "lines": [
+                "Then Satan answered Yahweh, and said, “Does Job fear God for nothing?",
+                "Haven’t you made a hedge around him, and around his house, and around all that he has, on every side? You have blessed the work of his hands, and his substance is increased in the land.",
+                "But stretch out your hand now, and touch all that he has, and he will renounce you to your face.”",
+                "Yahweh said to Satan, “Behold, all that he has is in your power. Only on himself don’t stretch out your hand.” So Satan went out from the presence of Yahweh."
+              ],
+              "citation": "Job 1:9–12, WEB"
+            },
+            {
+              "type": "move_entity",
+              "entityId": "the-accuser",
+              "path": [
+                "south",
+                "south",
+                "east"
+              ]
+            },
+            {
+              "type": "set_flag",
+              "flag": "wager_struck"
+            },
+            {
+              "type": "wait",
+              "beats": 2
+            },
+            {
+              "type": "camera_focus",
+              "release": true
+            },
+            {
+              "type": "play_music",
+              "track": "uz-pastoral"
+            },
+            {
+              "type": "passage",
+              "lines": [
+                "Job hears none of this.",
+                "The morning in Uz is bright and ordinary, and the road east is dusty."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "day-of-calamity",
+          "on": "step",
+          "tiles": [
+            {
+              "x": 7,
+              "y": 8
+            },
+            {
+              "x": 8,
+              "y": 8
+            },
+            {
+              "x": 9,
+              "y": 8
+            },
+            {
+              "x": 10,
+              "y": 8
+            },
+            {
+              "x": 11,
+              "y": 8
+            }
+          ],
+          "once": true,
+          "when": {
+            "flag": "wager_struck"
+          },
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "Act II",
+              "subtitle": "The Day of Calamity"
+            },
+            {
+              "type": "play_music",
+              "track": "calamity"
+            },
+            {
+              "type": "passage",
+              "lines": [
+                "It fell on a day when his sons and his daughters were eating and drinking wine in their oldest brother’s house,"
+              ],
+              "citation": "Job 1:13, WEB"
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-estate",
+              "entity": {
+                "id": "messenger-1",
+                "name": "A Man From the Plowing",
+                "glyph": "🏃",
+                "x": 14,
+                "y": 8,
+                "blocking": false,
+                "interactions": [],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "move_entity",
+              "entityId": "messenger-1",
+              "path": [
+                "west",
+                "west",
+                "west",
+                "west",
+                "west",
+                "west"
+              ]
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-estate",
+              "entity": {
+                "id": "messenger-2",
+                "name": "A Man From the Pasture",
+                "glyph": "🏃",
+                "x": 14,
+                "y": 8,
+                "blocking": false,
+                "interactions": [],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "passage",
+              "title": "The First",
+              "lines": [
+                "that there came a messenger to Job, and said, “The oxen were plowing, and the donkeys feeding beside them,",
+                "and the Sabeans attacked, and took them away. Yes, they have killed the servants with the edge of the sword, and I alone have escaped to tell you.”"
+              ],
+              "citation": "Job 1:14–15, WEB"
+            },
+            {
+              "type": "move_entity",
+              "entityId": "messenger-2",
+              "path": [
+                "west",
+                "west",
+                "west",
+                "west",
+                "west"
+              ]
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-estate",
+              "entity": {
+                "id": "messenger-3",
+                "name": "A Man From the Camels",
+                "glyph": "🏃",
+                "x": 14,
+                "y": 8,
+                "blocking": false,
+                "interactions": [],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "screen_effect",
+              "effect": "flash"
+            },
+            {
+              "type": "passage",
+              "title": "While He Was Still Speaking",
+              "lines": [
+                "While he was still speaking, there also came another, and said, “The fire of God has fallen from the sky, and has burned up the sheep and the servants, and consumed them, and I alone have escaped to tell you.”"
+              ],
+              "citation": "Job 1:16, WEB"
+            },
+            {
+              "type": "move_entity",
+              "entityId": "messenger-3",
+              "path": [
+                "west",
+                "west",
+                "west",
+                "west"
+              ]
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-estate",
+              "entity": {
+                "id": "messenger-4",
+                "name": "A Man From the Feast House",
+                "glyph": "🏃",
+                "x": 14,
+                "y": 8,
+                "blocking": false,
+                "interactions": [],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "passage",
+              "title": "And Another",
+              "lines": [
+                "While he was still speaking, there came also another, and said, “The Chaldeans made three bands, and swept down on the camels, and have taken them away, yes, and killed the servants with the edge of the sword; and I alone have escaped to tell you.”"
+              ],
+              "citation": "Job 1:17, WEB"
+            },
+            {
+              "type": "move_entity",
+              "entityId": "messenger-4",
+              "path": [
+                "west",
+                "west",
+                "west"
+              ]
+            },
+            {
+              "type": "screen_effect",
+              "effect": "shake"
+            },
+            {
+              "type": "passage",
+              "title": "And Another",
+              "lines": [
+                "While he was still speaking, there came also another, and said, “Your sons and your daughters were eating and drinking wine in their oldest brother’s house,",
+                "and behold, there came a great wind from the wilderness, and struck the four corners of the house, and it fell on the young men, and they are dead. I alone have escaped to tell you.”"
+              ],
+              "citation": "Job 1:18–19, WEB"
+            },
+            {
+              "type": "wait",
+              "beats": 3
+            },
+            {
+              "type": "set_flag",
+              "flag": "calamity"
+            },
+            {
+              "type": "say",
+              "text": "The four of them stand where they stopped, out of breath, saying nothing more."
+            },
+            {
+              "type": "say",
+              "text": "There is dust on everything. The courtyard is at your feet."
+            }
+          ]
+        }
+      ]
+    },
+    "feast-house": {
+      "rows": [
+        "%%%%%%%%%",
+        "%=======%",
+        "%=======%",
+        "%=======%",
+        "%=======%",
+        "%=======%",
+        "%%%%=%%%%"
+      ],
+      "entities": [
+        {
+          "id": "eldest-son",
+          "name": "Job's Eldest Son",
+          "glyph": "🧑",
+          "x": 2,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Father, sit. The lamps are still lit and there is wine left."
+                }
+              ]
+            }
+          ],
+          "sprite": "npc1"
+        },
+        {
+          "id": "sister-at-feast",
+          "name": "Job's Daughter",
+          "glyph": "👧",
+          "x": 6,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "He sent for us at dawn, the way he always does. Tomorrow it is my second brother's house."
+                }
+              ]
+            }
+          ],
+          "sprite": "npc1"
+        },
+        {
+          "id": "feast-table",
+          "name": "The Feast Table",
+          "glyph": "🍇",
+          "x": 4,
+          "y": 1,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Bread, and wine, and the noise of ten grown children.",
+                    "Whatever else this year holds, this room is full."
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 4,
+          "y": 6,
+          "toMap": "uz-estate",
+          "toX": 10,
+          "toY": 4
+        }
+      ]
+    },
+    "heaven-court": {
+      "rows": [
+        "^^^^^^^^^",
+        "^=======^",
+        "^=======^",
+        "^=======^",
+        "^=======^",
+        "^=======^",
+        "^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "the-accuser",
+          "name": "The Accuser",
+          "glyph": "🌑",
+          "x": 2,
+          "y": 2,
+          "blocking": true,
+          "interactions": []
+        },
+        {
+          "id": "sons-of-god",
+          "name": "The Sons of God",
+          "glyph": "✨",
+          "x": 6,
+          "y": 2,
+          "blocking": false,
+          "interactions": []
+        },
+        {
+          "id": "job-seen",
+          "name": "Job, Seen From Above",
+          "glyph": "🧔",
+          "x": 4,
+          "y": 4,
+          "blocking": true,
+          "interactions": [],
+          "sprite": "npc1",
+          "variants": [
+            {
+              "id": "restored",
+              "when": {
+                "flag": "daughters_named"
+              },
+              "glyph": "🧔",
+              "sprite": "elder",
+              "name": "Job, in His Latter Days"
+            },
+            {
+              "id": "afflicted",
+              "when": {
+                "flag": "boils"
+              },
+              "glyph": "🩹",
+              "sprite": "elder",
+              "name": "Job the Afflicted"
+            }
+          ]
+        }
+      ],
+      "portals": []
+    },
+    "ash-heap": {
+      "rows": [
+        "^^^^^^^^^^^^^^",
+        "^%%%aa^aaaa^a^",
+        "^aaaaaaaaaaaa^",
+        "^aaaaaaaaaaaa^",
+        "^aaaaaaaaaaaa^",
+        "^aaaaaaaaaaaa^",
+        "^aaaaaaaaaaaa^",
+        "^aaaaaaaaaaaa^",
+        "^aaa^aaaaa^aa^",
+        "^^^^^^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "ash-wife",
+          "name": "Job's Wife",
+          "glyph": "👩",
+          "x": 2,
+          "y": 4,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "held_integrity",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Do You Still Maintain Your Integrity?",
+                  "lines": [
+                    "Then his wife said to him, “Do you still maintain your integrity? Renounce God, and die.”"
+                  ],
+                  "citation": "Job 2:9, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "She is not cruel. She has buried the same ten children, and she is offering you the only mercy she can think of."
+                  ]
+                },
+                {
+                  "type": "choice",
+                  "prompt": "What do you say to your wife?",
+                  "options": [
+                    {
+                      "label": "“Shall we receive good at the hand of God, and shall we not receive evil?”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "Job Didn't Sin With His Lips",
+                          "lines": [
+                            "But he said to her, “You speak as one of the foolish women would speak. What? Shall we receive good at the hand of God, and shall we not receive evil?” In all this Job didn’t sin with his lips."
+                          ],
+                          "citation": "Job 2:10, WEB"
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "held_integrity"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "She sits down in the ash beside you for a while, and then she goes back inside the ruin.",
+                            "The road east of the heap is empty. It will not stay empty."
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Take her counsel: renounce God, and die.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You put down the potsherd.",
+                            "It would be so easy. It would even be reasonable.",
+                            "You open your mouth and let the word out, and something in you closes like a door."
+                          ]
+                        },
+                        {
+                          "type": "screen_effect",
+                          "effect": "fade"
+                        },
+                        {
+                          "type": "end",
+                          "id": "the-story-untold",
+                          "text": "The scroll goes on without this page. Job's wife helps him inside, and no one in Uz ever hears of the ash heap again, and the three friends turn back at the border of the land. It is a quiet ending, and a real one. Nothing here is punished — the book simply closes early."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "I will be in the doorway of the house. Call me if it gets worse."
+                }
+              ]
+            }
+          ],
+          "sprite": "npc1"
+        },
+        {
+          "id": "ash-seat",
+          "name": "The Ash Heap",
+          "glyph": "🪨",
+          "x": 6,
+          "y": 4,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "friends_came",
+              "forbidsFlag": "silence_1",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You lower yourself into the ashes. Eliphaz sits, then Bildad, then Zophar — none of them closer than a few feet.",
+                    "The first day goes out like a lamp, and no one has said anything."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "silence_1",
+              "forbidsFlag": "silence_2",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The second day. The wind comes up after noon and puts grit into everything that is open.",
+                    "Zophar's lips move once, and stop."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "silence_2",
+              "forbidsFlag": "silence_3",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The third day. You work the potsherd along your arm, slowly, the way you would card wool.",
+                    "Below the ridge a dog barks, and then does not bark again."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_3"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "silence_3",
+              "forbidsFlag": "silence_4",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The fourth day. Bildad tears his robe a second time, though there is not much left of it to tear.",
+                    "The sores have begun to crack when you move, so you have stopped moving."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_4"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "silence_4",
+              "forbidsFlag": "silence_5",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The fifth day. Someone sets water down at arm's length and walks away without looking.",
+                    "The light goes long and orange, and then it goes."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_5"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "silence_5",
+              "forbidsFlag": "silence_6",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The sixth day. Eliphaz has been forming a sentence since morning. He does not say it.",
+                    "The stars come out over Uz in their thousands, and nobody counts them."
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_6"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "silence_6",
+              "forbidsFlag": "silence_7",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The seventh day. Your mouth opens before you have decided to open it."
+                  ]
+                },
+                {
+                  "type": "passage",
+                  "title": "Let the Day Perish",
+                  "lines": [
+                    "“Let the day perish in which I was born, the night which said, ‘There is a boy conceived.’",
+                    "Let that day be darkness. Don’t let God from above seek for it, neither let the light shine on it.",
+                    "Let darkness and the shadow of death claim it for their own. Let a cloud dwell on it. Let all that makes black the day terrify it."
+                  ],
+                  "citation": "Job 3:3–5, WEB"
+                },
+                {
+                  "type": "passage",
+                  "title": "Why Is Light Given",
+                  "lines": [
+                    "Why is light given to a man whose way is hidden, whom God has hedged in?",
+                    "For my sighing comes before I eat. My groanings are poured out like water.",
+                    "For the thing which I fear comes on me, That which I am afraid of comes to me.",
+                    "I am not at ease, neither am I quiet, neither have I rest; but trouble comes.”"
+                  ],
+                  "citation": "Job 3:23–26, WEB"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "silence_7"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "job_spoke"
+                },
+                {
+                  "type": "wait",
+                  "beats": 2
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The three of them lift their heads.",
+                    "Seven days they kept still for you. Now it has begun."
+                  ]
+                }
+              ]
+            },
+            {
+              "requiresFlag": "job_spoke",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Ash, and a potsherd, and the shape your body has worn into the heap."
+                  ]
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Ash to sit in, and a potsherd to scrape with. There is no one here yet to sit with you."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "eliphaz",
+          "name": "A Traveler on the Road",
+          "glyph": "🚶",
+          "x": 9,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "round_one",
+              "forbidsFlag": "eliphaz_2",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You have sat there like a stone since we came. That is not innocence.",
+                  "when": {
+                    "flag": "pressed_harder"
+                  }
+                },
+                {
+                  "type": "passage",
+                  "title": "Eliphaz Answers a Second Time",
+                  "lines": [
+                    "Yes, you do away with fear, and hinder devotion before God.",
+                    "For your iniquity teaches your mouth, and you choose the language of the crafty.",
+                    "Your own mouth condemns you, and not I. Yes, your own lips testify against you."
+                  ],
+                  "citation": "Job 15:4–6, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "the wicked man writhes in pain all his days, even the number of years that are laid up for the oppressor.",
+                    "A sound of terrors is in his ears. In prosperity the destroyer shall come on him.",
+                    "He doesn’t believe that he shall return out of darkness. He is waited for by the sword."
+                  ],
+                  "citation": "Job 15:20–22, WEB"
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Eliphaz has called you a crafty man. What do you answer?",
+                  "options": [
+                    {
+                      "label": "“You are all miserable comforters.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "Miserable Comforters",
+                          "lines": [
+                            "“I have heard many such things. You are all miserable comforters!",
+                            "Shall vain words have an end? Or what provokes you that you answer?",
+                            "I also could speak as you do. If your soul were in my soul’s place, I could join words together against you, and shake my head at you,",
+                            "but I would strengthen you with my mouth. The solace of my lips would relieve you."
+                          ],
+                          "citation": "Job 16:2–5, WEB"
+                        },
+                        {
+                          "type": "add_var",
+                          "var": "candor",
+                          "amount": 1
+                        }
+                      ]
+                    },
+                    {
+                      "label": "“My own mouth condemns me. I take back what I said.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You take it back — the anguish, the balances, all of it.",
+                            "Retracting it does not make it any lighter to carry."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Now you begin to fear God rightly."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Say nothing.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You have nothing left to say to him, and you do not spend what you have."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Your silence teaches your mouth, Job."
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "pressed_harder"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "eliphaz_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "job_spoke",
+              "forbidsFlag": "eliphaz_1",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Eliphaz the Temanite Answers",
+                  "lines": [
+                    "“Remember, now, whoever perished, being innocent? Or where were the upright cut off?",
+                    "According to what I have seen, those who plow iniquity, and sow trouble, reap the same.",
+                    "By the breath of God they perish. By the blast of his anger are they consumed."
+                  ],
+                  "citation": "Job 4:7–9, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "“Behold, happy is the man whom God corrects. Therefore do not despise the chastening of the Almighty.",
+                    "For he wounds, and binds up. He injures, and his hands make whole.",
+                    "He will deliver you in six troubles; yes, in seven no evil shall touch you."
+                  ],
+                  "citation": "Job 5:17–19, WEB"
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Eliphaz waits, kindly, for you to agree with him.",
+                  "options": [
+                    {
+                      "label": "“The arrows of the Almighty are within me.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "Oh That My Anguish Were Weighed",
+                          "lines": [
+                            "“Oh that my anguish were weighed, and all my calamity laid in the balances!",
+                            "For now it would be heavier than the sand of the seas, therefore have my words been rash.",
+                            "For the arrows of the Almighty are within me. My spirit drinks up their poison. The terrors of God set themselves in array against me."
+                          ],
+                          "citation": "Job 6:2–4, WEB"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "“Therefore I will not keep silent. I will speak in the anguish of my spirit. I will complain in the bitterness of my soul."
+                          ],
+                          "citation": "Job 7:11, WEB"
+                        },
+                        {
+                          "type": "add_var",
+                          "var": "candor",
+                          "amount": 1
+                        }
+                      ]
+                    },
+                    {
+                      "label": "“Whoever perished, being innocent? I will not despise the chastening.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You give him back his own sentence, in his own cadence.",
+                            "It costs you nothing, and it is not true."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "There. That is the beginning of wisdom, Job."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Say nothing.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You look at the ash between your feet until he stops waiting."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Silence is an answer too. We will come back to it."
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "pressed_harder"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "eliphaz_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "round_two",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "There is nothing more I know how to say to you."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "eliphaz_1",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "I have said what I know. Bildad will say the rest of it."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "We heard, and we came. We will not speak first."
+                }
+              ]
+            }
+          ],
+          "sprite": "elder",
+          "variants": [
+            {
+              "id": "named",
+              "when": {
+                "flag": "friends_came"
+              },
+              "glyph": "👴",
+              "name": "Eliphaz the Temanite"
+            }
+          ]
+        },
+        {
+          "id": "bildad",
+          "name": "A Traveler on the Road",
+          "glyph": "🚶",
+          "x": 11,
+          "y": 5,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "eliphaz_2",
+              "forbidsFlag": "bildad_2",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "A man who will not answer his friends will not answer God either.",
+                  "when": {
+                    "flag": "pressed_harder"
+                  }
+                },
+                {
+                  "type": "passage",
+                  "title": "Bildad Answers a Second Time",
+                  "lines": [
+                    "“Yes, the light of the wicked shall be put out, The spark of his fire shall not shine.",
+                    "The light shall be dark in his tent. His lamp above him shall be put out.",
+                    "The steps of his strength shall be shortened. His own counsel shall cast him down.",
+                    "For he is cast into a net by his own feet, and he wanders into its mesh."
+                  ],
+                  "citation": "Job 18:5–8, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "He shall be rooted out of the security of his tent. He shall be brought to the king of terrors."
+                  ],
+                  "citation": "Job 18:14, WEB"
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Bildad has described your house, and called it the tent of the wicked.",
+                  "options": [
+                    {
+                      "label": "“I know that my Redeemer lives.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "I Know That My Redeemer Lives",
+                          "lines": [
+                            "“Oh that my words were now written! Oh that they were inscribed in a book!",
+                            "That with an iron pen and lead they were engraved in the rock forever!",
+                            "But as for me, I know that my Redeemer lives. In the end, he will stand upon the earth.",
+                            "After my skin is destroyed, then in my flesh shall I see God,",
+                            "Whom I, even I, shall see on my side. My eyes shall see, and not as a stranger. “My heart is consumed within me."
+                          ],
+                          "citation": "Job 19:23–27, WEB"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "Nobody answers that.",
+                            "Even the wind over the heap seems to wait a moment before it goes on."
+                          ]
+                        },
+                        {
+                          "type": "add_var",
+                          "var": "candor",
+                          "amount": 1
+                        }
+                      ]
+                    },
+                    {
+                      "label": "“The lamp of the wicked is put out. So be it.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You agree that the lamp of the wicked goes out, and you let him decide whose lamp that is.",
+                            "It is the safest thing you have said in weeks."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Then you have understood me at last."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Say nothing.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "Bildad's proverb lies in the ash where he dropped it. You do not pick it up."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Say something, man. Even a plea would be something."
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "pressed_harder"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "bildad_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "eliphaz_1",
+              "forbidsFlag": "bildad_1",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Bildad the Shuhite Answers",
+                  "lines": [
+                    "Does God pervert justice? Or does the Almighty pervert righteousness?",
+                    "If your children have sinned against him, He has delivered them into the hand of their disobedience.",
+                    "If you want to seek God diligently, make your supplication to the Almighty.",
+                    "If you were pure and upright, surely now he would awaken for you, and make the habitation of your righteousness prosperous.",
+                    "Though your beginning was small, yet your latter end would greatly increase."
+                  ],
+                  "citation": "Job 8:3–7, WEB"
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Bildad has just explained your children's deaths to you.",
+                  "options": [
+                    {
+                      "label": "“He destroys the blameless and the wicked.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "It Is All the Same",
+                          "lines": [
+                            "Though I am righteous, my own mouth shall condemn me. Though I am blameless, it shall prove me perverse.",
+                            "I am blameless. I don’t respect myself. I despise my life.",
+                            "“It is all the same. Therefore I say he destroys the blameless and the wicked.",
+                            "If the scourge kills suddenly, he will mock at the trial of the innocent.",
+                            "The earth is given into the hand of the wicked. He covers the faces of its judges. If not he, then who is it?"
+                          ],
+                          "citation": "Job 9:20–24, WEB"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "For he is not a man, as I am, that I should answer him, that we should come together in judgment.",
+                            "There is no umpire between us, that might lay his hand on us both."
+                          ],
+                          "citation": "Job 9:32–33, WEB"
+                        },
+                        {
+                          "type": "add_var",
+                          "var": "candor",
+                          "amount": 1
+                        }
+                      ]
+                    },
+                    {
+                      "label": "“If my children sinned, he delivered them to their sin.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You say it about your own dead, in the voice you would use for someone else's.",
+                            "Bildad is satisfied. You are not."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Good. Seek God diligently, and your latter end will greatly increase."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Say nothing.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You scrape at your arm and let the question stand there, unanswered, between you."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "A man with nothing to hide would speak."
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "pressed_harder"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "bildad_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "round_two",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "We have said everything twice. It has not helped."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "bildad_1",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Zophar has been waiting his turn. Let him have it."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "We did not know you when we came over the ridge. That is the truth of it."
+                }
+              ]
+            }
+          ],
+          "sprite": "elder",
+          "variants": [
+            {
+              "id": "named",
+              "when": {
+                "flag": "friends_came"
+              },
+              "glyph": "👴",
+              "name": "Bildad the Shuhite"
+            }
+          ]
+        },
+        {
+          "id": "zophar",
+          "name": "A Traveler on the Road",
+          "glyph": "🚶",
+          "x": 9,
+          "y": 6,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "bildad_2",
+              "forbidsFlag": "zophar_2",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Speak, Job. We cannot absolve a silence.",
+                  "when": {
+                    "flag": "pressed_harder"
+                  }
+                },
+                {
+                  "type": "passage",
+                  "title": "Zophar Answers a Second Time",
+                  "lines": [
+                    "Don’t you know this from old time, since man was placed on earth,",
+                    "that the triumphing of the wicked is short, the joy of the godless but for a moment?",
+                    "Though his height mount up to the heavens, and his head reach to the clouds,",
+                    "yet he shall perish forever like his own dung. Those who have seen him shall say, ‘Where is he?’",
+                    "He shall fly away as a dream, and shall not be found. Yes, he shall be chased away like a vision of the night."
+                  ],
+                  "citation": "Job 20:4–8, WEB"
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Zophar is certain the wicked do not prosper. You have watched them ride away on your camels.",
+                  "options": [
+                    {
+                      "label": "“Why do the wicked live, become old, yes, and grow mighty in power?”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "Why Do the Wicked Live",
+                          "lines": [
+                            "“Why do the wicked live, become old, yes, and grow mighty in power?",
+                            "Their child is established with them in their sight, their offspring before their eyes.",
+                            "Their houses are safe from fear, neither is the rod of God upon them.",
+                            "Their bulls breed without fail. Their cows calve, and don’t miscarry.",
+                            "They send out their little ones like a flock. Their children dance.",
+                            "They sing to the tambourine and harp, and rejoice at the sound of the pipe.",
+                            "They spend their days in prosperity. In an instant they go down to Sheol."
+                          ],
+                          "citation": "Job 21:7–13, WEB"
+                        },
+                        {
+                          "type": "add_var",
+                          "var": "candor",
+                          "amount": 1
+                        }
+                      ]
+                    },
+                    {
+                      "label": "“The triumphing of the wicked is short. I do not doubt it.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You say it, and think of the Sabeans riding home with your oxen, and growing old in their beds.",
+                            "You say it anyway."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "That is the portion of a wicked man from God. Nothing here is out of order."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Say nothing.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "Zophar waits a long time. The sun goes over the ridge."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Then we have come three hundred miles to look at a man."
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "pressed_harder"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "zophar_2"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "round_two"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The three of them stop answering. They have run out of ways to say the same thing.",
+                    "Behind them, a young man who has been quiet for two rounds gets to his feet."
+                  ]
+                }
+              ]
+            },
+            {
+              "requiresFlag": "bildad_1",
+              "forbidsFlag": "zophar_1",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Zophar the Naamathite Answers",
+                  "lines": [
+                    "But oh that God would speak, and open his lips against you,",
+                    "that he would show you the secrets of wisdom! For true wisdom has two sides. Know therefore that God exacts of you less than your iniquity deserves."
+                  ],
+                  "citation": "Job 11:5–6, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "“If you set your heart aright, stretch out your hands toward him.",
+                    "If iniquity is in your hand, put it far away. Don’t let unrighteousness dwell in your tents.",
+                    "Surely then you shall lift up your face without spot; Yes, you shall be steadfast, and shall not fear:",
+                    "for you shall forget your misery. You shall remember it like waters that have passed away."
+                  ],
+                  "citation": "Job 11:13–16, WEB"
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Zophar has told you that God is letting you off lightly.",
+                  "options": [
+                    {
+                      "label": "“I desire to reason with God. You are physicians of no value.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "I Desire to Reason With God",
+                          "lines": [
+                            "“Surely I would speak to the Almighty. I desire to reason with God.",
+                            "But you are forgers of lies. You are all physicians of no value.",
+                            "Oh that you would be completely silent! Then you would be wise."
+                          ],
+                          "citation": "Job 13:3–5, WEB"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "Behold, he will kill me. I have no hope. Nevertheless, I will maintain my ways before him."
+                          ],
+                          "citation": "Job 13:15, WEB"
+                        },
+                        {
+                          "type": "add_var",
+                          "var": "candor",
+                          "amount": 1
+                        }
+                      ]
+                    },
+                    {
+                      "label": "“If iniquity is in my hand, I will put it far away.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You promise to put away an iniquity you cannot name.",
+                            "Zophar takes the promise like a debt settled."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Then you shall lift up your face without spot, and forget your misery."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Say nothing.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "The wind takes ash off the top of the heap and puts it down somewhere else."
+                          ]
+                        },
+                        {
+                          "type": "say",
+                          "text": "Even a fool answers when he is asked twice."
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "pressed_harder"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "zophar_1"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "round_one"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "round_two",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Let the young man talk, then. We are finished."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "zophar_1",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Eliphaz will begin again. He always begins again."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "I came the furthest of the three. I have had a long time to think about what to say."
+                }
+              ]
+            }
+          ],
+          "sprite": "elder",
+          "variants": [
+            {
+              "id": "named",
+              "when": {
+                "flag": "friends_came"
+              },
+              "glyph": "👴",
+              "name": "Zophar the Naamathite"
+            }
+          ]
+        },
+        {
+          "id": "elihu",
+          "name": "A Young Man, Waiting",
+          "glyph": "🧍",
+          "x": 12,
+          "y": 8,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "round_two",
+              "forbidsFlag": "elihu_spoke",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Elihu the Buzite",
+                  "lines": [
+                    "Elihu the son of Barachel the Buzite answered, “I am young, and you are very old; Therefore I held back, and didn’t dare show you my opinion.",
+                    "I said, ‘Days should speak, and multitude of years should teach wisdom.’",
+                    "But there is a spirit in man, and the breath of the Almighty gives them understanding.",
+                    "It is not the great who are wise, nor the aged who understand justice.",
+                    "Therefore I said, ‘Listen to me; I also will show my opinion.’"
+                  ],
+                  "citation": "Job 32:6–10, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "“Behold, I will answer you. In this you are not just, for God is greater than man.",
+                    "Why do you strive against him, because he doesn’t give account of any of his matters?",
+                    "For God speaks once, yes twice, though man pays no attention."
+                  ],
+                  "citation": "Job 33:12–14, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Job does not answer him.",
+                    "There is nothing in it that has not been said twice already, and none of it is about you."
+                  ]
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "flash"
+                },
+                {
+                  "type": "passage",
+                  "title": "While He Is Still Speaking",
+                  "lines": [
+                    "“Yes, at this my heart trembles, and is moved out of its place.",
+                    "Hear, oh, hear the noise of his voice, the sound that goes out of his mouth.",
+                    "He sends it out under the whole sky, and his lightning to the ends of the earth.",
+                    "After it a voice roars. He thunders with the voice of his majesty. He doesn’t hold back anything when his voice is heard.",
+                    "God thunders marvelously with his voice. He does great things, which we can’t comprehend."
+                  ],
+                  "citation": "Job 37:1–5, WEB"
+                },
+                {
+                  "type": "play_music",
+                  "track": "whirlwind"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Now men don’t see the light which is bright in the skies, but the wind passes, and clears them.",
+                    "Out of the north comes golden splendor. With God is awesome majesty."
+                  ],
+                  "citation": "Job 37:21–22, WEB"
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "shake"
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "elihu_spoke"
+                },
+                {
+                  "type": "wait",
+                  "beats": 2
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "teleport_player",
+                  "mapId": "whirlwind-foundations",
+                  "x": 4,
+                  "y": 5
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "I am young and you are all old men, so I have held my peace. I will not hold it much longer."
+                }
+              ]
+            }
+          ],
+          "sprite": "npc1",
+          "variants": [
+            {
+              "id": "named",
+              "when": {
+                "flag": "round_two"
+              },
+              "glyph": "🧑",
+              "name": "Elihu the Buzite"
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "act-three-open",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "Act III",
+              "subtitle": "The Ash Heap"
+            },
+            {
+              "type": "play_music",
+              "track": "ash-heap"
+            },
+            {
+              "type": "passage",
+              "title": "He Sat Among the Ashes",
+              "lines": [
+                "So Satan went out from the presence of Yahweh, and struck Job with painful sores from the sole of his foot to his head.",
+                "He took for himself a potsherd to scrape himself with, and he sat among the ashes."
+              ],
+              "citation": "Job 2:7–8, WEB"
+            },
+            {
+              "type": "say",
+              "text": "The town's ash heap, outside the wall. Everything that is burned in Uz ends up here, and now so do you."
+            },
+            {
+              "type": "say",
+              "text": "Your wife has come out to find you."
+            }
+          ]
+        },
+        {
+          "id": "friends-arrive",
+          "on": "step",
+          "tiles": [
+            {
+              "x": 7,
+              "y": 4
+            },
+            {
+              "x": 7,
+              "y": 3
+            },
+            {
+              "x": 7,
+              "y": 5
+            },
+            {
+              "x": 8,
+              "y": 4
+            }
+          ],
+          "once": true,
+          "when": {
+            "flag": "held_integrity"
+          },
+          "commands": [
+            {
+              "type": "passage",
+              "title": "They Sat Down With Him",
+              "lines": [
+                "Now when Job’s three friends heard of all this evil that had come on him, they each came from his own place: Eliphaz the Temanite, Bildad the Shuhite, and Zophar the Naamathite; and they made an appointment together to come to sympathize with him and to comfort him.",
+                "When they lifted up their eyes from a distance, and didn’t recognize him, they raised their voices, and wept; and they each tore his robe, and sprinkled dust on their heads toward the sky.",
+                "So they sat down with him on the ground seven days and seven nights, and no one spoke a word to him, for they saw that his grief was very great."
+              ],
+              "citation": "Job 2:11–13, WEB"
+            },
+            {
+              "type": "set_flag",
+              "flag": "friends_came"
+            },
+            {
+              "type": "wait",
+              "beats": 2
+            },
+            {
+              "type": "say",
+              "text": "Three old men, sitting down in the ash at a little distance. Nobody says anything."
+            },
+            {
+              "type": "say",
+              "text": "There is a place in the ashes beside them. Sit — as many days as it takes."
+            }
+          ]
+        }
+      ]
+    },
+    "whirlwind-foundations": {
+      "rows": [
+        "^^^^^^^^^",
+        "^^sssss^^",
+        "^sssssss^",
+        "^sssssss^",
+        "^sssssss^",
+        "^sssssss^",
+        "^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "waystone-foundations",
+          "name": "A Waystone in the Storm",
+          "glyph": "🌪",
+          "x": 4,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "The Foundations",
+                  "lines": [
+                    "“Where were you when I laid the foundations of the earth? Declare, if you have understanding.",
+                    "Who determined its measures, if you know? Or who stretched the line on it?",
+                    "Whereupon were its foundations fastened? Or who laid its cornerstone,",
+                    "when the morning stars sang together, and all the sons of God shouted for joy?"
+                  ],
+                  "citation": "Job 38:4–7, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You were not there. You had never once thought about it.",
+                    "The wind moves you on."
+                  ]
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "teleport_player",
+                  "mapId": "whirlwind-sea",
+                  "x": 4,
+                  "y": 5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "act-five-open",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "Act V",
+              "subtitle": "The Whirlwind"
+            },
+            {
+              "type": "play_music",
+              "track": "whirlwind"
+            },
+            {
+              "type": "screen_effect",
+              "effect": "shake"
+            },
+            {
+              "type": "passage",
+              "title": "Then Yahweh Answered Job",
+              "lines": [
+                "Then Yahweh answered Job out of the whirlwind,",
+                "“Who is this who darkens counsel by words without knowledge?",
+                "Brace yourself like a man, for I will question you, then you answer me!"
+              ],
+              "citation": "Job 38:1–3, WEB"
+            },
+            {
+              "type": "say",
+              "text": "The ash heap is gone. There is wind, and a country no one has ever been able to walk to."
+            },
+            {
+              "type": "say",
+              "text": "A waystone stands in the storm ahead. There is nothing to fight here — only things to be shown."
+            }
+          ]
+        }
+      ]
+    },
+    "whirlwind-sea": {
+      "rows": [
+        "^^^^^^^^^",
+        "^~~~~~~~^",
+        "^sssssss^",
+        "^sssssss^",
+        "^sssssss^",
+        "^sssssss^",
+        "^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "waystone-sea",
+          "name": "A Waystone in the Storm",
+          "glyph": "🌪",
+          "x": 4,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "The Sea's Doors",
+                  "lines": [
+                    "“Or who shut up the sea with doors, when it broke out of the womb,",
+                    "when I made clouds its garment, and wrapped it in thick darkness,",
+                    "marked out for it my bound, set bars and doors,",
+                    "and said, ‘Here you may come, but no further. Here your proud waves shall be stayed?’"
+                  ],
+                  "citation": "Job 38:8–11, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Nothing is asked about your children. Nothing is asked about your sores."
+                  ]
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "teleport_player",
+                  "mapId": "whirlwind-storehouses",
+                  "x": 4,
+                  "y": 5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "vista-sea",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The Sea's Doors"
+            },
+            {
+              "type": "screen_effect",
+              "effect": "flash"
+            },
+            {
+              "type": "say",
+              "text": "Water to the north as far as the storm allows you to see, and it stops at a line you cannot find."
+            }
+          ]
+        }
+      ]
+    },
+    "whirlwind-storehouses": {
+      "rows": [
+        "^^^^^^^^^",
+        "^i^iii^i^",
+        "^iiiiiii^",
+        "^iiiiiii^",
+        "^iiiiiii^",
+        "^iiiiiii^",
+        "^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "waystone-storehouses",
+          "name": "A Waystone in the Storm",
+          "glyph": "🌪",
+          "x": 4,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "The Treasuries of the Snow",
+                  "lines": [
+                    "Have you entered the treasuries of the snow, or have you seen the treasures of the hail,",
+                    "which I have reserved against the time of trouble, against the day of battle and war?",
+                    "By what way is the lightning distributed, or the east wind scattered on the earth?"
+                  ],
+                  "citation": "Job 38:22–24, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Does the rain have a father? Or who fathers the drops of dew?",
+                    "Out of whose womb came the ice? The gray frost of the sky, who has given birth to it?",
+                    "The waters become hard like stone, when the surface of the deep is frozen."
+                  ],
+                  "citation": "Job 38:28–30, WEB"
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "teleport_player",
+                  "mapId": "whirlwind-wild",
+                  "x": 4,
+                  "y": 5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "vista-storehouses",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The Storehouses"
+            },
+            {
+              "type": "say",
+              "text": "Cold. The ground under your feet is white and it creaks, and the air smells like iron."
+            }
+          ]
+        }
+      ]
+    },
+    "whirlwind-wild": {
+      "rows": [
+        "^^^^^^^^^",
+        "^.......^",
+        "^.......^",
+        "^.......^",
+        "^.......^",
+        "^.......^",
+        "^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "waystone-wild",
+          "name": "A Waystone in the Storm",
+          "glyph": "🌪",
+          "x": 4,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "The Creatures That Owe You Nothing",
+                  "lines": [
+                    "“Who has set the wild donkey free? Or who has loosened the bonds of the swift donkey,",
+                    "Whose home I have made the wilderness, and the salt land his dwelling place?",
+                    "He scorns the tumult of the city, neither does he hear the shouting of the driver.",
+                    "The range of the mountains is his pasture, He searches after every green thing."
+                  ],
+                  "citation": "Job 39:5–8, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Every one of them was made, and fed, and let go, in a country where you have never been consulted.",
+                    "It is not an insult. It is a good deal larger than an insult."
+                  ]
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "teleport_player",
+                  "mapId": "whirlwind-leviathan",
+                  "x": 4,
+                  "y": 5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "the-ostrich",
+          "name": "The Ostrich",
+          "glyph": "🪶",
+          "x": 1,
+          "y": 4,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "“The wings of the ostrich wave proudly; but are they the feathers and plumage of love?",
+                    "For she leaves her eggs on the earth, warms them in the dust,",
+                    "and forgets that the foot may crush them, or that the wild animal may trample them.",
+                    "She deals harshly with her young ones, as if they were not hers. Though her labor is in vain, she is without fear,",
+                    "because God has deprived her of wisdom, neither has he imparted to her understanding."
+                  ],
+                  "citation": "Job 39:13–17, WEB"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "the-warhorse",
+          "name": "The Horse",
+          "glyph": "🐎",
+          "x": 7,
+          "y": 4,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "“Have you given the horse might? Have you clothed his neck with a quivering mane?",
+                    "Have you made him to leap as a locust? The glory of his snorting is awesome.",
+                    "He paws in the valley, and rejoices in his strength. He goes out to meet the armed men.",
+                    "He mocks at fear, and is not dismayed, neither does he turn back from the sword."
+                  ],
+                  "citation": "Job 39:19–22, WEB"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "the-hawk",
+          "name": "The Hawk",
+          "glyph": "🦅",
+          "x": 7,
+          "y": 1,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "“Is it by your wisdom that the hawk soars, and stretches her wings toward the south?",
+                    "Is it at your command that the eagle mounts up, and makes his nest on high?"
+                  ],
+                  "citation": "Job 39:26–27, WEB"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "vista-wild",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The Wild Places"
+            },
+            {
+              "type": "say",
+              "text": "Open country, and animals in it that have never once needed you."
+            }
+          ]
+        }
+      ]
+    },
+    "whirlwind-leviathan": {
+      "rows": [
+        "^^^^^^^^^",
+        "^~~~~~~~^",
+        "^sssssss^",
+        "^sssssss^",
+        "^sssssss^",
+        "^sssssss^",
+        "^^^^^^^^^"
+      ],
+      "entities": [
+        {
+          "id": "behemoth",
+          "name": "Behemoth, at the Edge of Sight",
+          "glyph": "🦛",
+          "x": 1,
+          "y": 2,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Behemoth",
+                  "lines": [
+                    "“See now, behemoth, which I made as well as you. He eats grass as an ox.",
+                    "Look now, his strength is in his thighs. His force is in the muscles of his belly.",
+                    "He moves his tail like a cedar. The sinews of his thighs are knit together.",
+                    "His bones are like tubes of brass. His limbs are like bars of iron.",
+                    "He is the chief of the ways of God. He who made him gives him his sword."
+                  ],
+                  "citation": "Job 40:15–19, WEB"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "leviathan",
+          "name": "Leviathan, Mostly Out of Frame",
+          "glyph": "🐊",
+          "x": 7,
+          "y": 2,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Leviathan",
+                  "lines": [
+                    "“Can you draw out Leviathan with a fish hook, or press down his tongue with a cord?",
+                    "Can you put a rope into his nose, or pierce his jaw through with a hook?",
+                    "Will he make many petitions to you, or will he speak soft words to you?",
+                    "Will he make a covenant with you, that you should take him for a servant forever?"
+                  ],
+                  "citation": "Job 41:1–4, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "On earth there is not his equal, that is made without fear.",
+                    "He sees everything that is high. He is king over all the sons of pride."
+                  ],
+                  "citation": "Job 41:33–34, WEB"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "waystone-last",
+          "name": "The Last Waystone",
+          "glyph": "🌪",
+          "x": 4,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "when": {
+                "var": "candor",
+                "op": "gte",
+                "value": 4
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Let Him Answer It",
+                  "lines": [
+                    "Moreover Yahweh answered Job,",
+                    "“Shall he who argues contend with the Almighty? He who argues with God, let him answer it.”"
+                  ],
+                  "citation": "Job 40:1–2, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "It is addressed to you. Every word of it has been addressed to you, and none of it is an accusation.",
+                    "You have been arguing with God for six chapters, and God has come out to argue back, in person, in weather."
+                  ]
+                },
+                {
+                  "type": "choice",
+                  "prompt": "The storm waits for you.",
+                  "options": [
+                    {
+                      "label": "“I lay my hand on my mouth.”",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "I Lay My Hand on My Mouth",
+                          "lines": [
+                            "Then Job answered Yahweh,",
+                            "“Behold, I am of small account. What shall I answer you? I lay my hand on my mouth.",
+                            "I have spoken once, and I will not answer; Yes, twice, but I will proceed no further.”"
+                          ],
+                          "citation": "Job 40:3–5, WEB"
+                        },
+                        {
+                          "type": "wait",
+                          "beats": 2
+                        },
+                        {
+                          "type": "passage",
+                          "title": "Now My Eye Sees You",
+                          "lines": [
+                            "Then Job answered Yahweh,",
+                            "“I know that you can do all things, and that no purpose of yours can be restrained.",
+                            "You asked, ‘Who is this who hides counsel without knowledge?’ therefore I have uttered that which I did not understand, things too wonderful for me, which I didn’t know.",
+                            "You said, ‘Listen, now, and I will speak; I will question you, and you will answer me.’",
+                            "I had heard of you by the hearing of the ear, but now my eye sees you.",
+                            "Therefore I abhor myself, and repent in dust and ashes.”"
+                          ],
+                          "citation": "Job 42:1–6, WEB"
+                        },
+                        {
+                          "type": "set_flag",
+                          "flag": "hand_on_mouth"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "Nothing has been explained. You have not withdrawn one word of the protest, and no one has asked you to.",
+                            "The wind drops. You can hear a dog barking somewhere a long way off, in a country with roads in it."
+                          ]
+                        },
+                        {
+                          "type": "screen_effect",
+                          "effect": "fade"
+                        },
+                        {
+                          "type": "teleport_player",
+                          "mapId": "uz-restored",
+                          "x": 2,
+                          "y": 8
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Answer him. Say all of it again, from the beginning.",
+                      "commands": [
+                        {
+                          "type": "passage",
+                          "title": "Brace Yourself Like a Man",
+                          "lines": [
+                            "Then Yahweh answered Job out of the whirlwind,",
+                            "“Now brace yourself like a man. I will question you, and you will answer me.",
+                            "Will you even annul my judgment? Will you condemn me, that you may be justified?",
+                            "Or do you have an arm like God? Can you thunder with a voice like him?",
+                            "“Now deck yourself with excellency and dignity. Array yourself with honor and majesty.",
+                            "Pour out the fury of your anger. Look at everyone who is proud, and bring him low.",
+                            "Then I will also admit to you that your own right hand can save you."
+                          ],
+                          "citation": "Job 40:6–11, 14, WEB"
+                        },
+                        {
+                          "type": "passage",
+                          "lines": [
+                            "You say it all again, and every word of it is still true, and it is still not an answer.",
+                            "The storm is not angry with you. It simply asks again, and it can go on asking for as long as you like."
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Let Him Answer It",
+                  "lines": [
+                    "Moreover Yahweh answered Job,",
+                    "“Shall he who argues contend with the Almighty? He who argues with God, let him answer it.”"
+                  ],
+                  "citation": "Job 40:1–2, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You reach for something to say and find the visitors' sentences where yours should have been.",
+                    "God corrects the wicked. The upright are not cut off. Whoever perished, being innocent?",
+                    "They were good enough to say to Eliphaz. They are no use at all out here."
+                  ]
+                },
+                {
+                  "type": "wait",
+                  "beats": 2
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "It was so, that after Yahweh had spoken these words to Job, Yahweh said to Eliphaz the Temanite, “My wrath is kindled against you, and against your two friends; for you have not spoken of me the thing that is right, as my servant Job has."
+                  ],
+                  "citation": "Job 42:7, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "In this telling, that sentence is not said about you."
+                  ]
+                },
+                {
+                  "type": "screen_effect",
+                  "effect": "fade"
+                },
+                {
+                  "type": "end",
+                  "id": "not-spoken-rightly",
+                  "text": "The whirlwind does not explain itself, and it does not ask you anything more. You go home. The roof is mended in time and the flocks are replaced in time, and nobody in Uz says the words 'ash heap' in front of you again. It is not a punishment — nothing is taken from you that was not already taken. It is only that the answer out of the storm was addressed to a man who said the true thing, and for six long arguments you said the safe one."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "vista-leviathan",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "Behemoth and Leviathan"
+            },
+            {
+              "type": "screen_effect",
+              "effect": "shake"
+            },
+            {
+              "type": "say",
+              "text": "Two shapes at the edge of the storm, too large to look at all at once. Neither of them turns around."
+            }
+          ]
+        }
+      ]
+    },
+    "uz-restored": {
+      "rows": [
+        "##############",
+        "#........%%%.#",
+        "#........%%%.#",
+        "#............#",
+        "#............#",
+        "#............#",
+        "#..a.a.a.a.a.#",
+        "#............#",
+        "#,,,,,,,,,,,,#",
+        "##############"
+      ],
+      "entities": [
+        {
+          "id": "eliphaz-restored",
+          "name": "Eliphaz the Temanite",
+          "glyph": "👴",
+          "x": 3,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "prayed_eliphaz",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You put your hand on the old man's head and pray for him.",
+                    "He has been dreading this for three days. It takes less than a minute."
+                  ]
+                },
+                {
+                  "type": "say",
+                  "text": "I said what everybody says. I am sorry it was you I said it to."
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "prayed_eliphaz"
+                },
+                {
+                  "type": "add_var",
+                  "var": "prayers",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "friends_pardoned",
+                  "when": {
+                    "var": "prayers",
+                    "op": "gte",
+                    "value": 3
+                  }
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You prayed for me before I had finished apologizing. That is the part I cannot get over."
+                }
+              ]
+            }
+          ],
+          "sprite": "elder"
+        },
+        {
+          "id": "bildad-restored",
+          "name": "Bildad the Shuhite",
+          "glyph": "👴",
+          "x": 6,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "prayed_bildad",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Bildad kneels in the yard where he sat in the ash, and you pray for him by name."
+                  ]
+                },
+                {
+                  "type": "say",
+                  "text": "I told you your children got what they had earned. I would like that sentence back."
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "prayed_bildad"
+                },
+                {
+                  "type": "add_var",
+                  "var": "prayers",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "friends_pardoned",
+                  "when": {
+                    "var": "prayers",
+                    "op": "gte",
+                    "value": 3
+                  }
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The bulls are seven and the rams are seven. It is a heavy price for being sure of myself."
+                }
+              ]
+            }
+          ],
+          "sprite": "elder"
+        },
+        {
+          "id": "zophar-restored",
+          "name": "Zophar the Naamathite",
+          "glyph": "👴",
+          "x": 9,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "prayed_zophar",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Zophar, who came the furthest and said the least kindly thing, waits until last.",
+                    "You pray for him too."
+                  ]
+                },
+                {
+                  "type": "say",
+                  "text": "I said God was letting you off lightly. I have thought about that every day since."
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "prayed_zophar"
+                },
+                {
+                  "type": "add_var",
+                  "var": "prayers",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "friends_pardoned",
+                  "when": {
+                    "var": "prayers",
+                    "op": "gte",
+                    "value": 3
+                  }
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Three hundred miles home, and the whole way I will be practising how to say less."
+                }
+              ]
+            }
+          ],
+          "sprite": "elder"
+        },
+        {
+          "id": "household-gate",
+          "name": "The Gate of the Yard",
+          "glyph": "🚪",
+          "x": 12,
+          "y": 6,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "daughters_named",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "Old, and Full of Days",
+                  "lines": [
+                    "After this Job lived one hundred forty years, and saw his sons, and his sons’ sons, to four generations.",
+                    "So Job died, being old and full of days."
+                  ],
+                  "citation": "Job 42:16–17, WEB"
+                },
+                {
+                  "type": "win",
+                  "text": "You never learn about the wager. Nobody in the book ever tells Job why, and nobody ever tells you either — you only get the whirlwind, and the storehouses of the snow, and the wild donkey who has never heard of you, and it turns out that this is enough to go on living with. Yahweh said it to Eliphaz and not to you: you have spoken of me the thing that is right. It was the protest that was right. The yard is loud. Go in and eat something."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The gate of the yard stands open on the east road.",
+                    "Nothing has come up it yet."
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [],
+      "triggers": [
+        {
+          "id": "act-six-open",
+          "on": "enter",
+          "once": true,
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "Act VI",
+              "subtitle": "The Latter Days"
+            },
+            {
+              "type": "play_music",
+              "track": "uz-restored"
+            },
+            {
+              "type": "passage",
+              "title": "You Have Not Spoken of Me the Thing That Is Right",
+              "lines": [
+                "It was so, that after Yahweh had spoken these words to Job, Yahweh said to Eliphaz the Temanite, “My wrath is kindled against you, and against your two friends; for you have not spoken of me the thing that is right, as my servant Job has.",
+                "Now therefore, take to yourselves seven bulls and seven rams, and go to my servant Job, and offer up for yourselves a burnt offering; and my servant Job shall pray for you, for I will accept him, that I not deal with you according to your folly. For you have not spoken of me the thing that is right, as my servant Job has.”"
+              ],
+              "citation": "Job 42:7–8, WEB"
+            },
+            {
+              "type": "say",
+              "text": "The three of them are standing in your yard with seven bulls and seven rams, and none of them has anything clever to say."
+            },
+            {
+              "type": "say",
+              "text": "The pardon is not yours to withhold, and it is not automatic either. Go to each of them and pray."
+            }
+          ]
+        },
+        {
+          "id": "restoration",
+          "on": "step",
+          "tiles": [
+            {
+              "x": 5,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 8,
+              "y": 7
+            }
+          ],
+          "once": true,
+          "when": {
+            "flag": "friends_pardoned"
+          },
+          "commands": [
+            {
+              "type": "passage",
+              "title": "Yahweh Turned the Captivity of Job",
+              "lines": [
+                "So Eliphaz the Temanite and Bildad the Shuhite and Zophar the Naamathite went, and did what Yahweh commanded them, and Yahweh accepted Job.",
+                "Yahweh turned the captivity of Job, when he prayed for his friends. Yahweh gave Job twice as much as he had before."
+              ],
+              "citation": "Job 42:9–10, WEB"
+            },
+            {
+              "type": "wait",
+              "beats": 2
+            },
+            {
+              "type": "set_tile",
+              "mapId": "uz-restored",
+              "x": 3,
+              "y": 6,
+              "char": "."
+            },
+            {
+              "type": "set_tile",
+              "mapId": "uz-restored",
+              "x": 5,
+              "y": 6,
+              "char": "."
+            },
+            {
+              "type": "set_tile",
+              "mapId": "uz-restored",
+              "x": 7,
+              "y": 6,
+              "char": "."
+            },
+            {
+              "type": "set_tile",
+              "mapId": "uz-restored",
+              "x": 9,
+              "y": 6,
+              "char": "."
+            },
+            {
+              "type": "set_tile",
+              "mapId": "uz-restored",
+              "x": 11,
+              "y": 6,
+              "char": "."
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-restored",
+              "entity": {
+                "id": "flock-restored",
+                "name": "Fourteen Thousand Sheep",
+                "glyph": "🐑",
+                "x": 2,
+                "y": 2,
+                "blocking": false,
+                "interactions": []
+              }
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-restored",
+              "entity": {
+                "id": "camels-restored",
+                "name": "Six Thousand Camels",
+                "glyph": "🐫",
+                "x": 12,
+                "y": 2,
+                "blocking": false,
+                "interactions": []
+              }
+            },
+            {
+              "type": "passage",
+              "lines": [
+                "So Yahweh blessed the latter end of Job more than his beginning. He had fourteen thousand sheep, six thousand camels, one thousand yoke of oxen, and a thousand female donkeys.",
+                "He had also seven sons and three daughters.",
+                "He called the name of the first, Jemimah; and the name of the second, Keziah; and the name of the third, Keren Happuch."
+              ],
+              "citation": "Job 42:12–14, WEB"
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-restored",
+              "entity": {
+                "id": "jemimah",
+                "name": "Jemimah",
+                "glyph": "👧",
+                "x": 4,
+                "y": 5,
+                "blocking": false,
+                "interactions": [
+                  {
+                    "commands": [
+                      {
+                        "type": "say",
+                        "text": "Father, the scribe says a daughter cannot hold land. You told him to write it down anyway."
+                      }
+                    ]
+                  }
+                ],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-restored",
+              "entity": {
+                "id": "keziah",
+                "name": "Keziah",
+                "glyph": "👧",
+                "x": 6,
+                "y": 5,
+                "blocking": false,
+                "interactions": [
+                  {
+                    "commands": [
+                      {
+                        "type": "say",
+                        "text": "You never talk about the first ten. That's all right. I know their names too."
+                      }
+                    ]
+                  }
+                ],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "spawn_entity",
+              "mapId": "uz-restored",
+              "entity": {
+                "id": "keren-happuch",
+                "name": "Keren Happuch",
+                "glyph": "👧",
+                "x": 8,
+                "y": 5,
+                "blocking": false,
+                "interactions": [
+                  {
+                    "commands": [
+                      {
+                        "type": "say",
+                        "text": "My name means a horn of eye paint. Mother chose it. She said we had had enough of ashes."
+                      }
+                    ]
+                  }
+                ],
+                "sprite": "npc1"
+              }
+            },
+            {
+              "type": "passage",
+              "lines": [
+                "In all the land were no women found so beautiful as the daughters of Job. Their father gave them an inheritance among their brothers."
+              ],
+              "citation": "Job 42:15, WEB"
+            },
+            {
+              "type": "set_flag",
+              "flag": "daughters_named"
+            },
+            {
+              "type": "set_variant",
+              "entityId": "job-seen",
+              "clear": true
+            },
+            {
+              "type": "say",
+              "text": "The gate of the yard stands open at the east. Go and stand in it when you are ready."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "player": {
+    "glyph": "🧔",
+    "map": "uz-estate",
+    "x": 2,
+    "y": 8,
+    "party": [],
+    "money": 0,
+    "inventory": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "_comment": "Hand-written (the Forge has no sprites tool yet — llm-rpg-85g.9). Maps tile NAMES from the game legend to sprite ids in apps/web/public/assets/manifest.json. Characters carry their sprite inline on the entity (entity.sprite wins over this file), so only the player and a couple of unmapped extras live here. Everything unmapped falls back to the game's emoji glyph — deliberate for the altar, the ash heap, the courtyard dust, the whirlwind waystones (🌪) and the animals: the CC0 tileset has no art for them and an honest emoji beats a wrong sprite.",
+  "tiles": {
+    "grass": "grass",
+    "road": "path",
+    "tree": { "base": "grass", "overlay": "bush" },
+    "water": "water",
+    "floor": "path",
+    "wall": "rock",
+    "ashes": "path",
+    "rock": "rock",
+    "sand": "sand",
+    "ice": "water"
+  },
+  "species": {},
+  "entities": {},
+  "player": "player"
+}
