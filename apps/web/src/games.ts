@@ -17,6 +17,12 @@ const spriteFiles = import.meta.glob("../../../games/*/sprites.json", {
   import: "default",
 }) as Record<string, () => Promise<string>>;
 
+/** Language overlays: games/<id>/lang.<code>.json — same game, other words. */
+const langFiles = import.meta.glob("../../../games/*/lang.*.json", {
+  query: "?raw",
+  import: "default",
+}) as Record<string, () => Promise<string>>;
+
 function dirOf(path: string): string | null {
   const m = /games\/([^/]+)\//.exec(path);
   return m ? m[1] : null;
@@ -33,6 +39,33 @@ function byDir(files: Record<string, () => Promise<string>>): Map<string, () => 
 
 const games = byDir(gameFiles);
 const sprites = byDir(spriteFiles);
+
+/** gameId -> (langCode -> raw loader). */
+const langs = new Map<string, Map<string, () => Promise<string>>>();
+for (const [path, loader] of Object.entries(langFiles)) {
+  const m = /games\/([^/]+)\/lang\.([^/]+)\.json$/.exec(path);
+  if (!m) continue;
+  const forGame = langs.get(m[1]) ?? new Map();
+  forGame.set(m[2], loader);
+  langs.set(m[1], forGame);
+}
+
+/** Language codes available for a game ("simple", ...), sorted. */
+export function listLanguages(gameId: string): string[] {
+  return [...(langs.get(gameId)?.keys() ?? [])].sort();
+}
+
+/** Raw overlay JSON text, or null when that game has no such language. */
+export function loadLanguageText(gameId: string, code: string): Promise<string> | null {
+  const loader = langs.get(gameId)?.get(code);
+  return loader ? loader() : null;
+}
+
+/** Language selected by ?lang=<code>, or null for the game's own words. */
+export function selectedLanguage(): string | null {
+  const param = new URLSearchParams(window.location.search).get("lang");
+  return param && param.trim() !== "" ? param.trim() : null;
+}
 
 /** Directory names of every discovered game, sorted. */
 export function listGameIds(): string[] {

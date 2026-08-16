@@ -533,50 +533,60 @@ export class Sim {
       return events;
     }
     this.state.turn += 1;
+    // Whether this action actually advanced the world — a rejected move or an
+    // interact with nothing to talk to does not tick `turn` triggers.
+    let advanced = false;
     switch (action.type) {
       case "move":
-        this.doMove(action.dir, events);
+        advanced = this.doMove(action.dir, events);
         break;
       case "interact":
-        this.doInteract(events);
+        advanced = this.doInteract(events);
         break;
       case "choose":
-        this.doChoose(action.index, events);
+        advanced = this.doChoose(action.index, events);
         break;
       default:
         this.doBattleAction(action, events);
         break;
     }
+    // `turn` triggers fire last, once per world action, and only with the
+    // world in a settled state: no battle running, no choice still open (the
+    // beat that opened it ticks when the player answers).
+    if (advanced && !this.state.battle && !this.state.pendingChoice) {
+      this.fireTriggers("turn", this.state.map, events);
+    }
     this.state.lastEvents = events;
     return events;
   }
 
-  private doMove(dir: Direction, events: string[]): void {
+  /** Returns whether the player actually moved (a blocked move does not tick). */
+  private doMove(dir: Direction, events: string[]): boolean {
     const [dx, dy] = DELTAS[dir];
     const nx = this.state.playerX + dx;
     const ny = this.state.playerY + dy;
     if (!this.inBounds(nx, ny)) {
       events.push(`You can't go ${dir} — the edge of the world.`);
-      return;
+      return false;
     }
     const tile = this.tileAt(nx, ny);
     if (!tile.walkable) {
       events.push(`You can't go ${dir} — ${tile.name} blocks the way.`);
-      return;
+      return false;
     }
     const entity = this.entityAt(nx, ny);
     if (entity && this.blocks(entity)) {
       events.push(`${entity.name} is standing there. Try "interact".`);
-      return;
+      return false;
     }
     if (tile.wild && this.game.catalog) {
       if (this.state.party.length === 0) {
         events.push("You shouldn't step into the tall grass without a kindred.");
-        return;
+        return false;
       }
       if (this.state.party.every((c) => c.hp <= 0)) {
         events.push("Your kindred are too weary for the tall grass — rest them first.");
-        return;
+        return false;
       }
     }
     this.state.playerX = nx;
@@ -628,6 +638,7 @@ export class Sim {
         this.fireTriggers("step", landedMap, events, { x: landedX, y: landedY });
       }
     }
+    return true;
   }
 
   /**
@@ -639,7 +650,7 @@ export class Sim {
    * or mid-choice — queues its commands after ALL currently pending work.
    */
   private fireTriggers(
-    on: "enter" | "step",
+    on: "enter" | "step" | "turn",
     mapId: string,
     events: string[],
     tile?: { x: number; y: number },
@@ -914,14 +925,16 @@ export class Sim {
     }
   }
 
-  private doInteract(events: string[]): void {
+  /** Returns whether an interaction actually ran (nothing to talk to, or an
+   *  entity with nothing to say, does not tick `turn` triggers). */
+  private doInteract(events: string[]): boolean {
     const { playerX: px, playerY: py } = this.state;
     const adjacent = this.entitiesOn(this.state.map).find(
       (e) => Math.abs(e.x - px) + Math.abs(e.y - py) === 1,
     );
     if (!adjacent) {
       events.push("There is nothing next to you to interact with.");
-      return;
+      return false;
     }
     // An undefeated trainer battles instead of chatting (catalog games only).
     if (
@@ -930,31 +943,34 @@ export class Sim {
       !this.state.flags.includes(adjacent.trainer.defeatFlag)
     ) {
       this.startTrainerBattle(adjacent, events);
-      return;
+      return true;
     }
     const interaction = adjacent.interactions.find((i) => this.interactionOpen(i));
     if (!interaction) {
       // Defeated trainers fall back to their outro line.
       if (adjacent.trainer?.outro) {
         events.push(`${adjacent.name}: "${adjacent.trainer.outro}"`);
-        return;
+        return true;
       }
       events.push(`${adjacent.name} has nothing to say.`);
-      return;
+      return false;
     }
     this.execFrames([{ sourceId: adjacent.id, commands: [...interaction.commands] }], events);
+    return true;
   }
 
   /** Resolve a pending choice: clear it, run the chosen option's commands,
-   *  then resume the suspended continuations (innermost first). */
-  private doChoose(index: number, events: string[]): void {
+   *  then resume the suspended continuations (innermost first). Returns
+   *  whether a choice was actually resolved (an out-of-range index is a
+   *  rejected action and does not tick `turn` triggers). */
+  private doChoose(index: number, events: string[]): boolean {
     const pending = this.state.pendingChoice!;
     const n = pending.options.length;
     if (index < 0 || index >= n) {
       events.push(
         `There is no option ${index + 1} — valid: choose1..choose${n}.`,
       );
-      return;
+      return false;
     }
     const option = pending.options[index];
     this.state.pendingChoice = null;
@@ -968,6 +984,7 @@ export class Sim {
       { sourceId: pending.sourceId, commands: [...option.commands] },
     ];
     this.execFrames(frames, events);
+    return true;
   }
 
   /**
@@ -1208,9 +1225,11 @@ export class Sim {
           steps,
           ...(blocked !== undefined ? { blocked } : {}),
         });
-        if (steps.length > 0) events.push(`${name} moves ${steps.join(", ")}.`);
-        if (blocked !== undefined) {
-          events.push(`${name} stops — the way ${blocked} is blocked.`);
+        if (cmd.quiet !== true) {
+          if (steps.length > 0) events.push(`${name} moves ${steps.join(", ")}.`);
+          if (blocked !== undefined) {
+            events.push(`${name} stops — the way ${blocked} is blocked.`);
+          }
         }
         break;
       }

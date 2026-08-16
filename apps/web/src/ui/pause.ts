@@ -17,6 +17,18 @@ interface PauseItem {
 
 export interface PauseHooks {
   gameId(): string;
+  /** Read-aloud settings, when the browser can speak. Absent = no rows. */
+  narration?: {
+    enabled(): boolean;
+    rateName(): string;
+    toggle(): void;
+    cycleRate(): void;
+    /** Why nothing will be heard, or null when speech should work. */
+    hint(): string | null;
+    /** Local voice name and how many there are to choose between. */
+    voice(): { name: string; count: number } | null;
+    cycleVoice(): void;
+  };
   /** Save the live sim to a slot; returns a short human message. */
   onSave(slot: SlotId): string;
   /** Load a slot into the live game; returns null on success, else an error. */
@@ -156,6 +168,48 @@ export class PausePanel {
           } else {
             this.hide();
           }
+        },
+      });
+    }
+    const narration = this.hooks.narration;
+    if (narration) {
+      const hint = narration.hint();
+      items.push({
+        label: "Read aloud",
+        detail: !narration.enabled() ? "off" : hint ? "on — but silent" : "on",
+        enabled: true,
+        action: () => {
+          narration.toggle();
+          this.note = !narration.enabled()
+            ? "Reading aloud off."
+            : (narration.hint() ??
+               "Reading aloud. Dialogue, passages and choices are spoken.");
+          this.render();
+        },
+      });
+      const voice = narration.voice();
+      if (voice && voice.count > 1) {
+        items.push({
+          label: "Voice",
+          detail: voice.name,
+          enabled: narration.enabled(),
+          reason: "Turn reading aloud on first.",
+          action: () => {
+            narration.cycleVoice();
+            this.note = `Voice: ${narration.voice()?.name ?? ""}`;
+            this.render();
+          },
+        });
+      }
+      items.push({
+        label: "Reading speed",
+        detail: narration.rateName(),
+        enabled: narration.enabled(),
+        reason: "Turn reading aloud on first.",
+        action: () => {
+          narration.cycleRate();
+          this.note = `Reading speed: ${narration.rateName()}`;
+          this.render();
         },
       });
     }

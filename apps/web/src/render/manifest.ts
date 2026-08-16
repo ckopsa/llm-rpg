@@ -123,6 +123,21 @@ export function validateFrameBounds(
   }
 }
 
+/**
+ * Resolve a manifest `src` against the app's deploy base.
+ *
+ * Sheet paths are written root-absolute ("/assets/..."), which is correct when
+ * the app is served from "/" and wrong the moment it is not — on GitHub Pages
+ * the app lives under "/llm-rpg/", every sheet 404s, and the renderer silently
+ * falls back to emoji glyphs. Resolving against BASE_URL makes the same
+ * manifest work at any mount point.
+ */
+function resolveAsset(src: string): string {
+  if (/^(?:[a-z]+:)?\/\//i.test(src) || src.startsWith("data:")) return src;
+  const base = new URL(import.meta.env.BASE_URL ?? "/", window.location.href);
+  return new URL(src.replace(/^\//, ""), base).href;
+}
+
 /** Fetch manifest JSON, validate it, load all sheet images, check bounds. */
 export async function loadManifest(url: string): Promise<LoadedManifest> {
   const res = await fetch(url);
@@ -140,7 +155,7 @@ export async function loadManifest(url: string): Promise<LoadedManifest> {
   const sheets = new Map<string, LoadedSheet>();
   await Promise.all(
     Object.entries(manifest.sheets).map(async ([id, def]) => {
-      const image = await loadImage(def.src);
+      const image = await loadImage(resolveAsset(def.src));
       if (image.naturalWidth % def.tileW !== 0 || image.naturalHeight % def.tileH !== 0) {
         console.warn(
           `Sheet "${id}" (${image.naturalWidth}x${image.naturalHeight}) is not an exact ` +

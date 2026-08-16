@@ -94,62 +94,129 @@
           "interactions": [
             {
               "forbidsFlag": "offering_1",
+              "when": {
+                "var": "spent",
+                "op": "gte",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "passage",
-                  "title": "Job Did So Continually",
                   "lines": [
-                    "His sons went and held a feast in the house of each one on his birthday; and they sent and called for their three sisters to eat and to drink with them.",
-                    "It was so, when the days of their feasting had run their course, that Job sent and sanctified them, and rose up early in the morning, and offered burnt offerings according to the number of them all.",
+                    "It came to pass, when the days of their feasting had run their course, that Job sent and sanctified them,",
+                    "and rose up early in the morning, and offered burnt offerings according to the number of them all.",
                     "For Job said, “It may be that my sons have sinned, and renounced God in their hearts.” Job did so continually."
                   ],
-                  "citation": "Job 1:4–5, WEB"
+                  "citation": "Job 1:5, WEB"
                 },
                 {
                   "type": "passage",
                   "lines": [
-                    "The first offering: for the seven sons.",
-                    "The smoke goes up straight in the windless morning."
+                    "Dawn. You go up before anyone is awake and offer for the seven sons.",
+                    "The smoke stands straight up, which means nothing, and you watch it anyway until it does not."
+                  ]
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The second day. The feast has moved to your second son's house — you can see the smoke of their cooking from the altar stone."
                   ]
                 },
                 {
                   "type": "set_flag",
                   "flag": "offering_1"
+                },
+                {
+                  "type": "set_var",
+                  "var": "spent",
+                  "value": 0
+                },
+                {
+                  "type": "add_var",
+                  "var": "day",
+                  "amount": 1
                 }
               ]
             },
             {
               "requiresFlag": "offering_1",
               "forbidsFlag": "offering_2",
+              "when": {
+                "var": "spent",
+                "op": "gte",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "passage",
                   "lines": [
-                    "The second offering: for the three daughters.",
-                    "It may be that they have sinned, you tell yourself, and renounced God in their hearts."
+                    "Dawn again, and the three daughters.",
+                    "You say their names out loud in order, the way you have every time, in case the saying is the part that counts."
+                  ]
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The third day. Nothing is wrong. That is the whole of the news."
                   ]
                 },
                 {
                   "type": "set_flag",
                   "flag": "offering_2"
+                },
+                {
+                  "type": "set_var",
+                  "var": "spent",
+                  "value": 0
+                },
+                {
+                  "type": "add_var",
+                  "var": "day",
+                  "amount": 1
                 }
               ]
             },
             {
               "requiresFlag": "offering_2",
               "forbidsFlag": "offering_3",
+              "when": {
+                "var": "spent",
+                "op": "gte",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "passage",
                   "lines": [
-                    "The third offering: for the days you cannot see, and the words you did not hear.",
-                    "The fire settles into itself. It is done, as it is done every morning.",
-                    "You have sanctified them all."
+                    "Dawn, and the offering for the days you cannot see — the sins you have not been told about and never will be.",
+                    "It may be that they have sinned. It may be. You have done this so long that the doubt is part of the ritual and not an interruption of it."
                   ]
                 },
                 {
                   "type": "set_flag",
                   "flag": "offering_3"
+                },
+                {
+                  "type": "set_var",
+                  "var": "spent",
+                  "value": 0
+                },
+                {
+                  "type": "add_var",
+                  "var": "day",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "forbidsFlag": "offering_3",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Not yet. Job offered when the days of their feasting had run their course — and this day has not run.",
+                    "There is still a day to spend. Go and put your hands on it."
+                  ]
                 }
               ]
             },
@@ -158,8 +225,7 @@
                 {
                   "type": "passage",
                   "lines": [
-                    "The ashes of the morning are still warm.",
-                    "There is nothing left to offer today."
+                    "The stone is cold and there is nothing left on it to burn."
                   ]
                 }
               ]
@@ -303,20 +369,73 @@
           "blocking": true,
           "interactions": [
             {
-              "forbidsFlag": "offering_3",
+              "forbidsFlag": "tended_wife_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "say",
                   "text": "Up before the birds again. Was the smoke straight?"
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_wife_1"
                 }
               ]
             },
             {
-              "requiresFlag": "calamity",
+              "requiresFlag": "tended_wife_1",
+              "forbidsFlag": "tended_wife_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "say",
-                  "text": "Don't say anything to me. Not yet."
+                  "text": "Ten of them, and every one in a different house on a different day. I have stopped trying to keep the days."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_wife_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_wife_2",
+              "forbidsFlag": "tended_wife_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You go up every morning for them. Do you ever go up for yourself?"
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_wife_3"
                 }
               ]
             },
@@ -324,7 +443,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Come and eat. They will send for us again at midday, and the day after it is the next one's house."
+                  "text": "Go on, then. The morning is going."
                 }
               ]
             }
@@ -340,11 +459,73 @@
           "blocking": true,
           "interactions": [
             {
-              "requiresFlag": "calamity",
+              "forbidsFlag": "tended_shepherd_boy_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "say",
-                  "text": "The hill is quiet, master. I keep listening for them."
+                  "text": "Seven thousand, and I know the lame one by her walk."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_shepherd_boy_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_shepherd_boy_1",
+              "forbidsFlag": "tended_shepherd_boy_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "My father kept them before me. He said you paid him in the bad year anyway, when nobody was paying anybody."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_shepherd_boy_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_shepherd_boy_2",
+              "forbidsFlag": "tended_shepherd_boy_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Master — if I am ever the one who has to come and tell you something, will you let me finish?"
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_shepherd_boy_3"
                 }
               ]
             },
@@ -352,12 +533,21 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Seven thousand, and I know the lame one by her walk."
+                  "text": "The hill is quiet, master. Nothing wants anything."
                 }
               ]
             }
           ],
-          "sprite": "npc1"
+          "sprite": "npc1",
+          "variants": [
+            {
+              "id": "known",
+              "when": {
+                "flag": "tended_shepherd_boy_3"
+              },
+              "name": "The Boy Who Knows the Lame One"
+            }
+          ]
         },
         {
           "id": "flock-sheep",
@@ -367,6 +557,86 @@
           "y": 2,
           "blocking": false,
           "interactions": [
+            {
+              "forbidsFlag": "tended_flock_sheep_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The sheep move over the hill like slow weather.",
+                    "You walk the edge of them, counting, the way you have since you were younger than the boy who keeps them."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_flock_sheep_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_flock_sheep_1",
+              "forbidsFlag": "tended_flock_sheep_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The lame ewe is at the back of them again.",
+                    "You carry her the last of the way and set her down in the grass, and she does not thank you."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_flock_sheep_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_flock_sheep_2",
+              "forbidsFlag": "tended_flock_sheep_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Seven thousand.",
+                    "You have never once counted them all. You count them anyway, every time, and stop somewhere in the third thousand."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_flock_sheep_3"
+                }
+              ]
+            },
             {
               "commands": [
                 {
@@ -388,6 +658,86 @@
           "blocking": false,
           "interactions": [
             {
+              "forbidsFlag": "tended_camel_string_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Three thousand camels, kneeling in the shade, chewing.",
+                    "The drivers raise a hand to you and go back to the ropes."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_camel_string_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_camel_string_1",
+              "forbidsFlag": "tended_camel_string_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You check the pads of the lead camel's feet, one and then the other.",
+                    "Two more seasons in her. Maybe three."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_camel_string_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_camel_string_2",
+              "forbidsFlag": "tended_camel_string_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "They are worth more than the house and everyone in it.",
+                    "You have never thought that before, and having thought it, you go back to the ropes."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_camel_string_3"
+                }
+              ]
+            },
+            {
               "commands": [
                 {
                   "type": "passage",
@@ -408,11 +758,73 @@
           "blocking": true,
           "interactions": [
             {
-              "requiresFlag": "calamity",
+              "forbidsFlag": "tended_plowman_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "say",
-                  "text": "I was in the west field. That is the only reason I am standing here."
+                  "text": "Five hundred yoke turning the east field, and the donkeys feeding beside them."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_plowman_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_plowman_1",
+              "forbidsFlag": "tended_plowman_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You asked my name the first year I came. Nobody asks the second time."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_plowman_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_plowman_2",
+              "forbidsFlag": "tended_plowman_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The west field wants a week yet. I will be out there Thursday. Alone, if you want me."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_plowman_3"
                 }
               ]
             },
@@ -420,7 +832,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Five hundred yoke turning the east field, and the donkeys feeding beside them."
+                  "text": "The field is where I left it, master."
                 }
               ]
             }
@@ -436,11 +848,142 @@
           "blocking": false,
           "interactions": [
             {
+              "forbidsFlag": "tended_yoke_of_oxen_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The oxen lean into the yoke. The east field is nearly turned.",
+                    "You put your hand flat on the near one's shoulder and feel the whole animal working."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_yoke_of_oxen_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_yoke_of_oxen_1",
+              "forbidsFlag": "tended_yoke_of_oxen_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Five hundred yoke.",
+                    "The furrows come out of the field straight, and you have never in your life been able to do that yourself."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_yoke_of_oxen_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_yoke_of_oxen_2",
+              "forbidsFlag": "tended_yoke_of_oxen_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The east field is turned.",
+                    "Tomorrow the donkeys go out to feed beside them, the way they always do."
+                  ]
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_yoke_of_oxen_3"
+                }
+              ]
+            },
+            {
               "commands": [
                 {
                   "type": "passage",
                   "lines": [
                     "The oxen lean into the yoke. The east field is nearly turned."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "herd-dog",
+          "name": "The Herd Dog",
+          "glyph": "🐕",
+          "x": 2,
+          "y": 9,
+          "blocking": false,
+          "interactions": [
+            {
+              "forbidsFlag": "calamity",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "She works the flocks all morning and spends the afternoon walking the same square of grass, checking it."
+                  ]
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "She has not settled since the messengers came. She walks the square of grass and checks it and walks it again."
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "donkey-string",
+          "name": "The Donkeys",
+          "glyph": "🫏",
+          "x": 12,
+          "y": 9,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Five hundred she-donkeys, feeding beside the oxen, indifferent to all of it."
                   ]
                 }
               ]
@@ -487,8 +1030,17 @@
               "text": "Morning over Uz. The feast in your eldest son's house ran all night; the lamps are only now going out."
             },
             {
+              "type": "set_var",
+              "var": "day",
+              "value": 1
+            },
+            {
               "type": "say",
-              "text": "Ten children, and the old fear that they may have sinned. The altar is west of the road. Go up, and offer."
+              "text": "Two things will get your hands today, and then the light will go. The rest keep until tomorrow — there is always a tomorrow, and there have been ten thousand of them."
+            },
+            {
+              "type": "say",
+              "text": "When the day has run you will find yourself at the altar in the morning, the way you always do. Offer for the children there."
             }
           ]
         },
@@ -654,7 +1206,16 @@
                 "y": 8,
                 "blocking": false,
                 "interactions": [],
-                "sprite": "npc1"
+                "sprite": "npc1",
+                "variants": [
+                  {
+                    "id": "known",
+                    "when": {
+                      "flag": "tended_plowman_2"
+                    },
+                    "name": "Zabad, From the Plowing"
+                  }
+                ]
               }
             },
             {
@@ -680,7 +1241,16 @@
                 "y": 8,
                 "blocking": false,
                 "interactions": [],
-                "sprite": "npc1"
+                "sprite": "npc1",
+                "variants": [
+                  {
+                    "id": "known",
+                    "when": {
+                      "flag": "tended_shepherd_boy_1"
+                    },
+                    "name": "The Boy From the Pasture"
+                  }
+                ]
               }
             },
             {
@@ -691,6 +1261,34 @@
                 "and the Sabeans attacked, and took them away. Yes, they have killed the servants with the edge of the sword, and I alone have escaped to tell you.”"
               ],
               "citation": "Job 1:14–15, WEB"
+            },
+            {
+              "type": "say",
+              "text": "It is Zabad. He was in the west field on Thursday, alone, because he told you he would be.",
+              "when": {
+                "flag": "tended_plowman_3"
+              }
+            },
+            {
+              "type": "say",
+              "text": "You asked this man his name once, years ago, and he has not forgotten that you did.",
+              "when": {
+                "all": [
+                  {
+                    "flag": "tended_plowman_2"
+                  },
+                  {
+                    "notFlag": "tended_plowman_3"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "say",
+              "text": "A plowman. You never asked him anything, and now he is the only one left to ask.",
+              "when": {
+                "notFlag": "tended_plowman_2"
+              }
             },
             {
               "type": "move_entity",
@@ -714,7 +1312,16 @@
                 "y": 8,
                 "blocking": false,
                 "interactions": [],
-                "sprite": "npc1"
+                "sprite": "npc1",
+                "variants": [
+                  {
+                    "id": "known",
+                    "when": {
+                      "flag": "tended_camel_string_1"
+                    },
+                    "name": "A Driver You Have Seen at the Ropes"
+                  }
+                ]
               }
             },
             {
@@ -728,6 +1335,34 @@
                 "While he was still speaking, there also came another, and said, “The fire of God has fallen from the sky, and has burned up the sheep and the servants, and consumed them, and I alone have escaped to tell you.”"
               ],
               "citation": "Job 1:16, WEB"
+            },
+            {
+              "type": "say",
+              "text": "The boy asked you once to let him finish. You let him finish.",
+              "when": {
+                "flag": "tended_shepherd_boy_3"
+              }
+            },
+            {
+              "type": "say",
+              "text": "He knew the lame one by her walk. He does not say anything about her.",
+              "when": {
+                "all": [
+                  {
+                    "flag": "tended_shepherd_boy_1"
+                  },
+                  {
+                    "notFlag": "tended_shepherd_boy_3"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "say",
+              "text": "A boy from the hill. You could not have said, this morning, that you had a boy on the hill.",
+              "when": {
+                "notFlag": "tended_shepherd_boy_1"
+              }
             },
             {
               "type": "move_entity",
@@ -750,7 +1385,16 @@
                 "y": 8,
                 "blocking": false,
                 "interactions": [],
-                "sprite": "npc1"
+                "sprite": "npc1",
+                "variants": [
+                  {
+                    "id": "known",
+                    "when": {
+                      "flag": "tended_eldest_son_1"
+                    },
+                    "name": "A Man From Your Son's House"
+                  }
+                ]
               }
             },
             {
@@ -760,6 +1404,27 @@
                 "While he was still speaking, there came also another, and said, “The Chaldeans made three bands, and swept down on the camels, and have taken them away, yes, and killed the servants with the edge of the sword; and I alone have escaped to tell you.”"
               ],
               "citation": "Job 1:17, WEB"
+            },
+            {
+              "type": "say",
+              "text": "Two more seasons in her, you had thought. Maybe three.",
+              "when": {
+                "flag": "tended_camel_string_2"
+              }
+            },
+            {
+              "type": "say",
+              "text": "The ropes are still coiled where the drivers left them.",
+              "when": {
+                "all": [
+                  {
+                    "flag": "tended_camel_string_1"
+                  },
+                  {
+                    "notFlag": "tended_camel_string_2"
+                  }
+                ]
+              }
             },
             {
               "type": "move_entity",
@@ -784,6 +1449,27 @@
               "citation": "Job 1:18–19, WEB"
             },
             {
+              "type": "say",
+              "text": "He was standing in the doorway of that room three days ago and would not sit down.",
+              "when": {
+                "flag": "tended_eldest_son_1"
+              }
+            },
+            {
+              "type": "say",
+              "text": "She asked you to ask her what she had done. You offered for it instead.",
+              "when": {
+                "flag": "tended_sister_at_feast_2"
+              }
+            },
+            {
+              "type": "say",
+              "text": "You sanctified them every morning of their lives. It is the one thing you are certain you did.",
+              "when": {
+                "notFlag": "tended_eldest_son_1"
+              }
+            },
+            {
               "type": "wait",
               "beats": 3
             },
@@ -798,6 +1484,131 @@
             {
               "type": "say",
               "text": "There is dust on everything. The courtyard is at your feet."
+            }
+          ]
+        },
+        {
+          "id": "the-day-turns",
+          "on": "turn",
+          "once": false,
+          "when": {
+            "notFlag": "wager_struck"
+          },
+          "commands": [
+            {
+              "type": "say",
+              "text": "The light goes out of the yard. Whatever you did not get to today is still there tomorrow, which is the mercy of ordinary days.",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "screen_effect",
+              "effect": "fade",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "teleport_player",
+              "mapId": "uz-estate",
+              "x": 4,
+              "y": 6,
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "say",
+              "text": "Dawn. You are up before the household, at the stone, the way you always are.",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "add_var",
+              "var": "spent",
+              "amount": 1,
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "add_var",
+              "var": "pulse",
+              "amount": 1
+            },
+            {
+              "type": "move_entity",
+              "entityId": "herd-dog",
+              "path": [
+                "east"
+              ],
+              "quiet": true,
+              "when": {
+                "var": "pulse",
+                "op": "eq",
+                "value": 1
+              }
+            },
+            {
+              "type": "move_entity",
+              "entityId": "herd-dog",
+              "path": [
+                "south"
+              ],
+              "quiet": true,
+              "when": {
+                "var": "pulse",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "move_entity",
+              "entityId": "herd-dog",
+              "path": [
+                "west"
+              ],
+              "quiet": true,
+              "when": {
+                "var": "pulse",
+                "op": "eq",
+                "value": 3
+              }
+            },
+            {
+              "type": "move_entity",
+              "entityId": "herd-dog",
+              "path": [
+                "north"
+              ],
+              "quiet": true,
+              "when": {
+                "var": "pulse",
+                "op": "eq",
+                "value": 4
+              }
+            },
+            {
+              "type": "set_var",
+              "var": "pulse",
+              "value": 0,
+              "when": {
+                "var": "pulse",
+                "op": "gte",
+                "value": 4
+              }
             }
           ]
         }
@@ -823,10 +1634,81 @@
           "blocking": true,
           "interactions": [
             {
+              "forbidsFlag": "tended_eldest_son_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "say",
                   "text": "Father, sit. The lamps are still lit and there is wine left."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_eldest_son_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_eldest_son_1",
+              "forbidsFlag": "tended_eldest_son_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "It is my day. Tomorrow it is Elior's, and then hers, and by the time it comes round again it will be the rains."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_eldest_son_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_eldest_son_2",
+              "forbidsFlag": "tended_eldest_son_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You send for us and sanctify us every time. We know. We let you, because it is what you have instead of saying it."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_eldest_son_3"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Sit, father. Or don't — but the wine is here either way."
                 }
               ]
             }
@@ -842,10 +1724,81 @@
           "blocking": true,
           "interactions": [
             {
+              "forbidsFlag": "tended_sister_at_feast_1",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
               "commands": [
                 {
                   "type": "say",
                   "text": "He sent for us at dawn, the way he always does. Tomorrow it is my second brother's house."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_sister_at_feast_1"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_sister_at_feast_1",
+              "forbidsFlag": "tended_sister_at_feast_2",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You never ask us what we did. You only offer for it. I would rather you asked."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_sister_at_feast_2"
+                }
+              ]
+            },
+            {
+              "requiresFlag": "tended_sister_at_feast_2",
+              "forbidsFlag": "tended_sister_at_feast_3",
+              "when": {
+                "var": "spent",
+                "op": "lt",
+                "value": 2
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Sit down. You are always standing in the doorway of this room."
+                },
+                {
+                  "type": "add_var",
+                  "var": "spent",
+                  "amount": 1
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "tended_sister_at_feast_3"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Tomorrow it is my second brother's house."
                 }
               ]
             }
@@ -881,6 +1834,66 @@
           "toMap": "uz-estate",
           "toX": 10,
           "toY": 4
+        }
+      ],
+      "triggers": [
+        {
+          "id": "the-day-turns-indoors",
+          "on": "turn",
+          "once": false,
+          "when": {
+            "notFlag": "wager_struck"
+          },
+          "commands": [
+            {
+              "type": "say",
+              "text": "Outside the shutters the light goes out of the yard. In here the lamps carry on as if nothing has happened. You walk home in the dark.",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "screen_effect",
+              "effect": "fade",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "teleport_player",
+              "mapId": "uz-estate",
+              "x": 4,
+              "y": 6,
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "say",
+              "text": "Dawn. You are up before the household, at the stone, the way you always are.",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            },
+            {
+              "type": "add_var",
+              "var": "spent",
+              "amount": 1,
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
+            }
+          ]
         }
       ]
     },

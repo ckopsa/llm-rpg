@@ -20,12 +20,16 @@
  *   ui/ending.ts         ending screens over sim.state.ending
  *   ui/hud.ts            map/money chips + party strip
  */
-import { parseAction, Sim, validateGame } from "@llm-rpg/engine";
+import { applyLanguage, parseAction, Sim, validateGame } from "@llm-rpg/engine";
 import { AudioEngine } from "./audio/audio";
+import { Narrator, shouldSpeak } from "./audio/speech";
 import tracksData from "./audio/tracks.json";
 import {
   fallbackGameId,
   listGames,
+  listLanguages,
+  loadLanguageText,
+  selectedLanguage,
   loadGameRaw,
   loadSpritesRaw,
   selectedGameId,
@@ -43,10 +47,11 @@ import { MessageBox } from "./ui/messages";
 import { OverworldView, presentableEvents, type WorldHolder } from "./ui/overworld";
 import { PassagePane, type Passage } from "./ui/passage";
 import { PausePanel } from "./ui/pause";
+import { Controls } from "./ui/controls";
 import { TitleScreen } from "./ui/title";
 
 const OVERWORLD_HELP =
-  "Move: Arrows / WASD · Interact: E / Space / Enter · Pause & save: P · Mute: M · Title: R";
+  "Move: Arrows / WASD / d-pad · Interact: E / Space / Enter / A · Pause & save: P · Mute: M · Read aloud: V · Title: R";
 const BATTLE_HELP =
   "Battle: Arrows + Enter · Esc back · direct keys 1-4 moves, 5-9 items, Shift+1-6 switch, C catch, X run";
 
@@ -92,13 +97,57 @@ async function main(): Promise<void> {
   }
   let game = result.game!; // `let`: the dev-only forge hot-swaps it in place
 
+  // Language overlay: same game, other words (games/<id>/lang.<code>.json).
+  // A bad or missing overlay is never fatal — the game's own words stand.
+  const languages = listLanguages(gameId);
+  const languageNames = new Map<string, string>();
+  await Promise.all(
+    languages.map(async (code) => {
+      try {
+        const text = await loadLanguageText(gameId, code);
+        const parsed = JSON.parse(text!) as { name?: string };
+        if (parsed.name) languageNames.set(code, parsed.name);
+      } catch {
+        /* an unreadable overlay simply keeps its code as its label */
+      }
+    }),
+  );
+  let language = selectedLanguage();
+  let languageVoice: string | undefined;
+  if (language && languages.includes(language)) {
+    try {
+      const text = await loadLanguageText(gameId, language);
+      const overlay = JSON.parse(text!);
+      const applied = applyLanguage(game, overlay);
+      const revalidated = validateGame(JSON.parse(JSON.stringify(applied.game)));
+      if (revalidated.ok) {
+        game = revalidated.game!;
+        languageVoice = overlay.voice;
+        if (applied.missing.length > 0) {
+          console.info(
+            `language "${language}": ${applied.missing.length} string(s) left in the original words`,
+          );
+        }
+      } else {
+        console.warn(`language "${language}" produced an invalid game — using the original words`, revalidated.errors);
+        language = null;
+      }
+    } catch (err) {
+      console.warn(`language "${language}" could not be loaded — using the original words:`, err);
+      language = null;
+    }
+  } else if (language) {
+    console.warn(`no language "${language}" for ${gameId} — using the original words`);
+    language = null;
+  }
+
   document.title = game.meta.title;
   $("title").textContent = game.meta.title;
   $("goal").textContent = game.meta.goal;
 
   let loaded;
   try {
-    loaded = await loadManifest("/assets/manifest.json");
+    loaded = await loadManifest(`${import.meta.env.BASE_URL}assets/manifest.json`);
   } catch (err) {
     fail(String(err));
   }
@@ -123,6 +172,7 @@ async function main(): Promise<void> {
   const hudMapEl = $("hud-map");
   const hudMoneyEl = $("hud-money");
   const muteEl = $("mute");
+  const narrateEl = $("narrate");
 
   // ---- audio ------------------------------------------------------------
   const audio = new AudioEngine(tracksData);
@@ -139,6 +189,87 @@ async function main(): Promise<void> {
   // Autoplay policy: the context only exists after a real user gesture.
   window.addEventListener("pointerdown", () => audio.unlock());
 
+  // ---- read-aloud -------------------------------------------------------
+  // Narration exists so a player who can't read yet can play: the message
+  // box, passage pane, choice menu and ending screen all hand their text
+  // here, and their pacing follows the voice instead of a timer.
+  const narrator = new Narrator();
+  const renderNarrate = () => {
+    const hint = narrator.voiceHint();
+    const mute = narrator.enabled && hint !== null; // on, but nothing audible
+    narrateEl.textContent = mute ? "\u{26A0} V" : narrator.enabled ? "\u{1F5E3} V" : "\u{1F4AC} V";
+    const voice = narrator.localVoice ? ` · ${narrator.localVoice}` : "";
+    narrateEl.title = mute
+      ? hint!
+      : narrator.enabled
+        ? `Reading aloud (${narrator.rateName}${voice}) — V to stop, Shift+V for speed`
+        : "Read aloud (V)";
+    narrateEl.classList.toggle("on", narrator.enabled && !mute);
+    narrateEl.classList.toggle("warn", mute);
+  };
+  narrator.onChange = renderNarrate;
+  if (narrator.available) {
+    narrateEl.classList.remove("hidden");
+    renderNarrate();
+    narrateEl.addEventListener("click", () => {
+      const on = narrator.toggle();
+      narrator.unlock();
+      const hint = narrator.voiceHint();
+      if (on && hint) msg.push([hint]);
+      renderNarrate();
+    });
+  }
+  window.addEventListener("pointerdown", () => narrator.unlock(), { once: true });
+  // Prefer the dev server's local Piper voice when it is there — it works in
+  // browsers whose own speech is broken (Brave on Linux), and never leaves
+  // the machine. Falls back to Web Speech silently.
+  void narrator.connectLocal(`${import.meta.env.BASE_URL}__tts`).then((ok) => {
+    if (ok) {
+      narrateEl.classList.remove("hidden");
+      // A script may name the voice it was written to be read in.
+      if (languageVoice) narrator.useLocalVoice(languageVoice);
+    }
+    renderNarrate();
+  });
+
+  /** Pacing hook shared by the message box and the passage pane. Returns
+   *  null for stage directions and when narration is off, which leaves the
+   *  caller on its own timing. */
+  const narrate = (text: string, done: () => void): (() => void) | null => {
+    if (!narrator.enabled || !shouldSpeak(text)) return null;
+    return narrator.speak(text, done);
+  };
+
+  // ---- fitting the stage to the screen ----------------------------------
+  // The stage is a fixed 768x576 design surface; scale the whole thing rather
+  // than making a dozen overlays responsive. Leaves room for the header, help
+  // line and (on touch devices) the on-screen controls.
+  const app = $("app");
+  const controlsEl = $("touch-controls");
+  const fitStage = (): void => {
+    const chromeH =
+      $("top").getBoundingClientRect().height +
+      $("help").getBoundingClientRect().height +
+      (controlsEl.classList.contains("shown") && !controlsEl.classList.contains("has-pad")
+        ? controlsEl.getBoundingClientRect().height + 16
+        : 0) +
+      56; // body padding + flex gaps
+    const availW = Math.max(240, document.documentElement.clientWidth - 32);
+    const availH = Math.max(200, window.innerHeight - chromeH);
+    const scale = Math.min(availW / 768, availH / 576);
+    // Never blow the art up past its design size; small screens scale down.
+    const clamped = Math.min(scale, 1);
+    app.style.setProperty("--stage-scale", String(clamped));
+    app.classList.toggle("stage-downscaled", clamped < 1);
+  };
+  const controls = new Controls(controlsEl);
+  fitStage();
+  window.addEventListener("resize", fitStage);
+  window.addEventListener("orientationchange", fitStage);
+  // A pad appearing hides the thumb d-pad, which gives the stage more room.
+  window.addEventListener("gamepadconnected", () => window.setTimeout(fitStage, 0));
+  window.addEventListener("gamepaddisconnected", () => window.setTimeout(fitStage, 0));
+
   const world: WorldHolder = { sim: new Sim(game) };
   const renderer = new Renderer(canvas, loaded, {
     viewportTilesX: 12,
@@ -148,11 +279,13 @@ async function main(): Promise<void> {
   });
   const msg = new MessageBox($("msgbox"));
   msg.onShow = (text) => audio.sfxForEvent(text);
+  msg.narrate = narrate;
 
   // Passage pane ("scripture mode"): long-form text reads here, not in the
   // chatter box. Ordinary messages hold until the reading closes — and until
   // any cutscene finishes, so cue-accompanying chatter shows AFTER playback.
   const passagePane = new PassagePane($("passage"));
+  passagePane.narrate = narrate;
   msg.gate = () => passagePane.open || cutscene.holding;
 
   /**
@@ -230,6 +363,8 @@ async function main(): Promise<void> {
   const endingScreen = new EndingScreen(endingEl, {
     onTitle: () => returnToTitle(),
     confirm: menuSfx.confirm,
+    speak: (text) => narrator.say(text),
+    hush: () => narrator.stop(),
   });
 
   // Choice menu: engine dialogue choices (sim.state.pendingChoice) as a
@@ -247,6 +382,7 @@ async function main(): Promise<void> {
       refreshHud();
     },
     ...menuSfx,
+    speak: (text) => narrator.say(text),
   });
 
   async function portalFade(): Promise<void> {
@@ -311,6 +447,24 @@ async function main(): Promise<void> {
     },
     listGames: () => gamesLister(),
     ...menuSfx,
+      speak: (text: string) => narrator.say(text),
+    ...(languages.length > 0
+      ? {
+          languages: {
+            options: () => [
+              { code: null, name: "Full" },
+              ...languages.map((code) => ({ code, name: languageNames.get(code) ?? code })),
+            ],
+            active: () => language,
+            choose: (code: string | null) => {
+              const url = new URL(window.location.href);
+              if (code) url.searchParams.set("lang", code);
+              else url.searchParams.delete("lang");
+              window.location.href = url.toString();
+            },
+          },
+        }
+      : {}),
   });
 
   const pause = new PausePanel(pauseEl, {
@@ -322,6 +476,34 @@ async function main(): Promise<void> {
     onLoad: (slot: SlotId) => loadIntoPlay(slot, false),
     onTitle: () => returnToTitle(),
     ...menuSfx,
+    ...(narrator.available
+      ? {
+          narration: {
+            enabled: () => narrator.enabled,
+            rateName: () => narrator.rateName,
+            toggle: () => {
+              narrator.toggle();
+              narrator.unlock();
+              renderNarrate();
+            },
+            hint: () => narrator.voiceHint(),
+            voice: () =>
+              narrator.localVoice
+                ? { name: narrator.localVoice, count: narrator.localVoices.length }
+                : null,
+            cycleVoice: () => {
+              const name = narrator.cycleLocalVoice();
+              if (name) narrator.say(`This is ${name.replace(/^[a-z]{2}_[A-Z]{2}-/, "").replace(/-/g, " ")}.`);
+              renderNarrate();
+            },
+            cycleRate: () => {
+              narrator.cycleRate();
+              narrator.say(`Reading speed: ${narrator.rateName}`);
+              renderNarrate();
+            },
+          },
+        }
+      : {}),
   });
 
   /**
@@ -383,6 +565,7 @@ async function main(): Promise<void> {
     const ending = world.sim.state.ending;
     if (mode !== "title" && !(ending && ending.id !== "victory")) autosave();
     mode = "title";
+    narrator.stop();
     pause.hide();
     msg.clear();
     passagePane.clear();
@@ -404,6 +587,20 @@ async function main(): Promise<void> {
     if (ev.key === "m" || ev.key === "M") {
       ev.preventDefault();
       audio.toggleMute();
+      return;
+    }
+    if (ev.key === "v" || ev.key === "V") {
+      ev.preventDefault();
+      if (!narrator.available) return;
+      if (ev.shiftKey) {
+        narrator.cycleRate();
+        narrator.say(`Reading speed: ${narrator.rateName}`);
+      } else if (narrator.toggle()) {
+        const hint = narrator.voiceHint();
+        if (hint) msg.push([hint]);
+        else narrator.say("Reading aloud.");
+      }
+      renderNarrate();
       return;
     }
     if (passagePane.open) {
@@ -507,6 +704,10 @@ async function main(): Promise<void> {
   }
 
   const loop = () => {
+    // Gamepads emit no events — poll once a frame. Presses become the same
+    // synthetic KeyboardEvents the on-screen buttons send, so every input
+    // device goes through one routing cascade.
+    controls.tick();
     // Cutscenes gate everything: passages, chatter, choices, movement, and
     // the ending screen all queue behind playback.
     if (mode !== "title" && !cutscene.holding) pumpPassages();

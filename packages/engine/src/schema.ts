@@ -230,10 +230,14 @@ export const CommandSchema = z.discriminatedUnion("type", [
   }),
   /** Cutscene: walk an entity tile-by-tile along `path` (world overlays track
    *  the new position). A blocked step (out of bounds, unwalkable, occupied by
-   *  an entity or the player) stops the remaining movement with an event. */
+   *  an entity or the player) stops the remaining movement with an event.
+   *  `quiet` (default false) suppresses the text events while still emitting
+   *  the renderer cue — for ambient motion on a `turn` trigger, which would
+   *  otherwise narrate every drifting sheep into the event log. */
   command("move_entity", {
     entityId: z.string().min(1),
     path: z.array(DirectionSchema).min(1, "path needs at least one step"),
+    quiet: z.boolean().optional(),
   }),
   /** Cutscene: add a full entity at runtime (default: the player's current
    *  map). A duplicate id is a validation error against placed entities and a
@@ -415,6 +419,15 @@ export type EncounterZone = z.infer<typeof EncounterZoneSchema>;
  *    party wipe does not count.
  *  - `on: "step"` fires when the player lands on one of `tiles` (required
  *    for step triggers) — by walking, or by portal arrival on that tile.
+ *  - `on: "turn"` fires because time passed, not because the player arrived
+ *    anywhere: once at the END of any action that actually advanced the world
+ *    (a move that moved, an interact that ran an interaction, a choose that
+ *    resolved one), for triggers on the map the player is standing on then.
+ *    It does NOT fire for rejected actions, battle actions, while a battle is
+ *    active, or while a choice is still pending — the beat that opens a choice
+ *    ticks when the choice resolves, so one dialogue beat is one turn. Pair
+ *    `once: false` with `add_var`/`set_var` and `when` for action economies
+ *    (a day with a budget), ambient motion, and timed pressure.
  * `once` (default true) fires at most once per game, tracked in
  * `state.firedTriggers` as "mapId:id"; a trigger whose `when` fails is
  * skipped WITHOUT being marked fired, so it can fire later. Trigger commands
@@ -423,8 +436,8 @@ export type EncounterZone = z.infer<typeof EncounterZoneSchema>;
  */
 export const TriggerSchema = z.object({
   id: z.string().min(1),
-  on: z.enum(["enter", "step"]),
-  /** Tiles that fire a "step" trigger (required for step, invalid for enter). */
+  on: z.enum(["enter", "step", "turn"]),
+  /** Tiles that fire a "step" trigger (required for step, invalid otherwise). */
   tiles: z
     .array(
       z.object({

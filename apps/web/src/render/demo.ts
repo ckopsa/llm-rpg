@@ -173,7 +173,7 @@ async function main(): Promise<void> {
   const status = document.getElementById("status")!;
   let loaded: LoadedManifest;
   try {
-    loaded = await loadManifest("/assets/manifest.json");
+    loaded = await loadManifest(`${import.meta.env.BASE_URL}assets/manifest.json`);
   } catch (err) {
     status.textContent = String(err);
     status.classList.add("error");

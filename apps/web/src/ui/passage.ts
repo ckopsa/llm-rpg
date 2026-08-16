@@ -17,6 +17,10 @@
  * The engine half (sim.state.lastPassages) may not exist yet — main.ts
  * feature-detects that; this class just renders whatever it is handed and
  * quietly drops anything that isn't passage-shaped.
+ *
+ * Read-aloud: with `narrate` set, each page is spoken and the pane turns its
+ * own pages when the voice reaches the end — a listener never has to know
+ * that a page break happened. Advance keys still work and cut the voice short.
  */
 
 export interface Passage {
@@ -59,6 +63,10 @@ export class PassagePane {
   private pages: HTMLElement[][] = [];
   private pageIndex = 0;
   private isOpen = false;
+  /** Optional read-aloud hook. Return a cancel function to have the pane
+   *  turn its pages on `done` instead of waiting for a keypress. */
+  narrate: ((text: string, done: () => void) => (() => void) | null) | null = null;
+  private speaking: (() => void) | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -117,13 +125,20 @@ export class PassagePane {
   }
 
   private close(): void {
+    this.stopSpeaking();
     this.isOpen = false;
     this.pages = [];
     this.root.classList.add("hidden");
   }
 
+  private stopSpeaking(): void {
+    this.speaking?.();
+    this.speaking = null;
+  }
+
   private advance(): void {
     if (!this.isOpen) return;
+    this.stopSpeaking();
     if (this.pageIndex < this.pages.length - 1) {
       this.pageIndex++;
       this.renderPage();
@@ -180,10 +195,24 @@ export class PassagePane {
   }
 
   private renderPage(): void {
-    this.bodyEl.replaceChildren(...this.pages[this.pageIndex]);
+    this.stopSpeaking();
+    const page = this.pages[this.pageIndex];
+    this.bodyEl.replaceChildren(...page);
     this.pageEl.textContent =
       this.pages.length > 1
         ? `${roman(this.pageIndex + 1)} / ${roman(this.pages.length)}`
         : "";
+
+    // Read the page, then turn it. The title only belongs to the first page.
+    const heading =
+      this.pageIndex === 0 && !this.titleEl.classList.contains("hidden")
+        ? `${this.titleEl.textContent}. `
+        : "";
+    const body = page.map((el) => el.textContent ?? "").join(" ");
+    this.speaking =
+      this.narrate?.(`${heading}${body}`, () => {
+        this.speaking = null;
+        this.advance();
+      }) ?? null;
   }
 }

@@ -488,3 +488,273 @@ describe("trigger snapshot safety", () => {
     expect(restored.state).toEqual(sim.state);
   });
 });
+
+/**
+ * llm-rpg-565.1 — `turn` triggers: the world acting because time passed, not
+ * because the player arrived somewhere. One tick per action that actually
+ * advanced the world, fired last, with the world settled.
+ */
+describe("turn triggers", () => {
+  const ticker = (extra: Record<string, unknown> = {}): unknown[] => [
+    {
+      id: "tick",
+      on: "turn",
+      once: false,
+      commands: [{ type: "add_var", var: "tick", amount: 1 }],
+      ...extra,
+    },
+  ];
+
+  it("fires once per move that actually moved", () => {
+    const sim = new Sim(load(fixture({ west: { triggers: ticker() } })));
+    expect(sim.state.vars.tick).toBeUndefined();
+    sim.act({ type: "move", dir: "east" });
+    expect(sim.state.vars.tick).toBe(1);
+    sim.act({ type: "move", dir: "west" });
+    expect(sim.state.vars.tick).toBe(2);
+  });
+
+  it("does not fire for a rejected move", () => {
+    const sim = new Sim(load(fixture({ west: { triggers: ticker() } })));
+    sim.act({ type: "move", dir: "north" }); // wall
+    expect(sim.state.lastEvents.join(" ")).toContain("blocks the way");
+    expect(sim.state.vars.tick).toBeUndefined();
+  });
+
+  it("does not fire for an interact with nothing to talk to", () => {
+    const sim = new Sim(load(fixture({ west: { triggers: ticker() } })));
+    sim.act({ type: "interact" });
+    expect(sim.state.vars.tick).toBeUndefined();
+  });
+
+  it("fires after an interaction runs, and after its commands", () => {
+    const sim = new Sim(
+      load(
+        fixture({
+          west: {
+            entities: [
+              {
+                id: "stone",
+                name: "Stone",
+                glyph: "o",
+                x: 2,
+                y: 1,
+                blocking: true,
+                interactions: [{ commands: [{ type: "set_var", var: "tick", value: 10 }] }],
+              },
+            ],
+            triggers: ticker(),
+          },
+        }),
+      ),
+    );
+    sim.act({ type: "interact" });
+    // The interaction set 10; the turn tick then added 1 — so it ran last.
+    expect(sim.state.vars.tick).toBe(11);
+  });
+
+  it("holds the tick while a choice is pending, then fires when it resolves", () => {
+    const sim = new Sim(
+      load(
+        fixture({
+          west: {
+            entities: [
+              {
+                id: "stone",
+                name: "Stone",
+                glyph: "o",
+                x: 2,
+                y: 1,
+                blocking: true,
+                interactions: [
+                  {
+                    commands: [
+                      {
+                        type: "choice",
+                        prompt: "Well?",
+                        options: [{ label: "Yes", commands: [say("Yes.")] }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            triggers: ticker(),
+          },
+        }),
+      ),
+    );
+    sim.act({ type: "interact" });
+    expect(sim.state.pendingChoice).not.toBeNull();
+    expect(sim.state.vars.tick).toBeUndefined(); // one beat, not two
+    sim.act({ type: "choose", index: 0 });
+    expect(sim.state.vars.tick).toBe(1);
+  });
+
+  it("does not fire for an out-of-range choose", () => {
+    const sim = new Sim(
+      load(
+        fixture({
+          west: {
+            entities: [
+              {
+                id: "stone",
+                name: "Stone",
+                glyph: "o",
+                x: 2,
+                y: 1,
+                blocking: true,
+                interactions: [
+                  {
+                    commands: [
+                      {
+                        type: "choice",
+                        prompt: "Well?",
+                        options: [{ label: "Yes", commands: [say("Yes.")] }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            triggers: ticker(),
+          },
+        }),
+      ),
+    );
+    sim.act({ type: "interact" });
+    sim.act({ type: "choose", index: 4 });
+    expect(sim.state.pendingChoice).not.toBeNull();
+    expect(sim.state.vars.tick).toBeUndefined();
+  });
+
+  it("only fires triggers on the map the player ends the action on", () => {
+    const sim = new Sim(
+      load(
+        fixture({
+          west: { triggers: ticker() },
+          east: {
+            triggers: [
+              {
+                id: "east-tick",
+                on: "turn",
+                once: false,
+                commands: [{ type: "add_var", var: "east", amount: 1 }],
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    sim.act({ type: "move", dir: "east" }); // west (1,1) -> (2,1)
+    expect(sim.state.vars.tick).toBe(1);
+    sim.act({ type: "move", dir: "east" }); // onto the portal -> east map
+    expect(sim.state.map).toBe("east");
+    expect(sim.state.vars.tick).toBe(1); // west's ticker did not fire
+    expect(sim.state.vars.east).toBe(1); // the arrival map's did
+  });
+
+  // The authoring pattern for an action economy: tick and react in ONE
+  // command list, because command-level `when` is evaluated as each command
+  // runs — so the reaction sees the value the same turn.
+  it("reacts to its own tick in the same command list", () => {
+    const sim = new Sim(
+      load(
+        fixture({
+          west: {
+            triggers: [
+              {
+                id: "day",
+                on: "turn",
+                once: false,
+                commands: [
+                  { type: "add_var", var: "spent", amount: 1 },
+                  {
+                    type: "say",
+                    text: "The light goes.",
+                    when: { var: "spent", op: "gte", value: 3 },
+                  },
+                  {
+                    type: "set_var",
+                    var: "spent",
+                    value: 0,
+                    when: { var: "spent", op: "gte", value: 3 },
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    sim.act({ type: "move", dir: "east" });
+    sim.act({ type: "move", dir: "west" });
+    expect(sim.state.lastEvents.join(" ")).not.toContain("The light goes.");
+    sim.act({ type: "move", dir: "east" }); // third action of the day
+    expect(sim.state.lastEvents.join(" ")).toContain("The light goes.");
+    expect(sim.state.vars.spent).toBe(0); // the day rolled over
+    sim.act({ type: "move", dir: "west" });
+    expect(sim.state.lastEvents.join(" ")).not.toContain("The light goes.");
+  });
+
+  // Trigger-level `when` is gated for ALL matching triggers before any of
+  // them runs (shared with enter/step), so a SEPARATE trigger reading a
+  // counter another bumps sees the pre-action value and lags one turn.
+  it("gates trigger-level `when` against the pre-run state, without marking a skipped once trigger fired", () => {
+    const sim = new Sim(
+      load(
+        fixture({
+          west: {
+            triggers: [
+              ...(ticker() as unknown[]),
+              {
+                id: "third-step",
+                on: "turn",
+                commands: [say("The day is going.")],
+                when: { var: "tick", op: "gte", value: 3 },
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    sim.act({ type: "move", dir: "east" });
+    sim.act({ type: "move", dir: "west" });
+    sim.act({ type: "move", dir: "east" }); // tick reaches 3 only after gating
+    expect(sim.state.lastEvents.join(" ")).not.toContain("The day is going.");
+    expect(sim.state.firedTriggers).not.toContain("west:third-step");
+    sim.act({ type: "move", dir: "west" }); // now gated with tick === 3
+    expect(sim.state.lastEvents.join(" ")).toContain("The day is going.");
+    expect(sim.state.firedTriggers).toContain("west:third-step");
+    sim.act({ type: "move", dir: "east" });
+    expect(sim.state.lastEvents.join(" ")).not.toContain("The day is going.");
+  });
+
+  it("speaks in the narrator's voice and survives a snapshot round-trip", () => {
+    const game = load(
+      load(
+        fixture({ west: { triggers: ticker({ commands: [say("The wind picks up.")] }) } }),
+      ) as unknown,
+    );
+    const sim = new Sim(game);
+    sim.act({ type: "move", dir: "east" });
+    expect(sim.state.lastEvents).toContain("The wind picks up.");
+    const restored = Sim.fromSnapshot(game, JSON.parse(JSON.stringify(sim.snapshot())));
+    restored.act({ type: "move", dir: "west" });
+    expect(restored.state.lastEvents).toContain("The wind picks up.");
+  });
+
+  it("rejects `tiles` on a turn trigger, naming the fix", () => {
+    const result = validateGame(
+      fixture({
+        west: {
+          triggers: [
+            { id: "bad", on: "turn", tiles: [{ x: 1, y: 1 }], commands: [say("hi")] },
+          ],
+        },
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.errors.join("\n")).toContain('"tiles" only applies to "step" triggers');
+  });
+});

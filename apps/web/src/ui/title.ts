@@ -24,6 +24,15 @@ export interface TitleHooks {
   /** Any interaction sound. */
   blip(): void;
   confirm(): void;
+  /** Optional read-aloud, so the first screen is navigable by ear too. */
+  speak?(text: string): void;
+  /** Scripts available for this game, and which is active (null = the game's
+   *  own words). Omitted when a game has only one script. */
+  languages?: {
+    options(): { code: string | null; name: string }[];
+    active(): string | null;
+    choose(code: string | null): void;
+  };
 }
 
 export class TitleScreen {
@@ -52,6 +61,11 @@ export class TitleScreen {
     this.index = 0;
     this.root.classList.remove("hidden");
     this.render();
+    this.hooks.speak?.(
+      [gameTitle, subtitle, ...this.items.map((i, n) => `${n + 1}. ${i.label}`)]
+        .filter(Boolean)
+        .join(". "),
+    );
   }
 
   hide(): void {
@@ -100,6 +114,7 @@ export class TitleScreen {
     this.index = (this.index + delta + this.items.length) % this.items.length;
     this.hooks.blip();
     this.render();
+    this.hooks.speak?.(this.items[this.index].label);
   }
 
   private select(): void {
@@ -114,6 +129,24 @@ export class TitleScreen {
     item.action();
   }
 
+  /** One row that cycles the reading script, when there is a choice to make. */
+  private languageItems(): TitleItem[] {
+    const langs = this.hooks.languages;
+    const options = langs?.options() ?? [];
+    if (!langs || options.length < 2) return [];
+    const active = langs.active();
+    const current = options.find((o) => o.code === active) ?? options[0];
+    const next = options[(options.indexOf(current) + 1) % options.length];
+    return [
+      {
+        label: `Words: ${current.name}`,
+        detail: `switch to ${next.name}`,
+        enabled: true,
+        action: () => langs.choose(next.code),
+      },
+    ];
+  }
+
   private mainItems(): TitleItem[] {
     return [
       { label: "New Game", enabled: true, action: () => this.hooks.onNewGame() },
@@ -123,6 +156,7 @@ export class TitleScreen {
         reason: "No saves yet — the road is still unwalked.",
         action: () => this.hooks.onContinue(),
       },
+      ...this.languageItems(),
       {
         label: "Choose Game",
         enabled: true,

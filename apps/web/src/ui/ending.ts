@@ -18,6 +18,10 @@ export interface Ending {
 export interface EndingHooks {
   onTitle(): void;
   confirm?(): void;
+  /** Optional read-aloud for the ending text. */
+  speak?(text: string): void;
+  /** Silence any in-flight narration (the screen is closing). */
+  hush?(): void;
 }
 
 const CLOSE_KEYS = new Set(["Enter", " ", "e", "E", "z", "Z", "r", "R"]);
@@ -52,6 +56,7 @@ export class EndingScreen {
       </div>`;
     this.root.querySelector(".ending-inner")!.addEventListener("click", () => this.close());
     this.root.classList.remove("hidden");
+    this.hooks.speak?.(`${kicker}. ${ending.text}`);
   }
 
   hide(): void {
@@ -70,6 +75,7 @@ export class EndingScreen {
   }
 
   private close(): void {
+    this.hooks.hush?.();
     this.hooks.confirm?.();
     this.hide();
     this.hooks.onTitle();

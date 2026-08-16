@@ -1,0 +1,1163 @@
+{
+  "name": "Simple words",
+  "description": "Job's story in short, plain sentences — for a young listener.",
+  "voice": "en_US-amy-medium",
+  "patches": [
+    {
+      "path": "maps.ash-heap.entities.2.interactions",
+      "value": [
+        {
+          "requiresFlag": "job_spoke",
+          "forbidsFlag": "eliphaz_1",
+          "commands": [
+            {
+              "type": "passage",
+              "title": "Eliphaz the Temanite Answers",
+              "lines": [
+                "“Remember, now, whoever perished, being innocent? Or where were the upright cut off?",
+                "According to what I have seen, those who plow iniquity, and sow trouble, reap the same.",
+                "By the breath of God they perish. By the blast of his anger are they consumed."
+              ],
+              "citation": "Job 4:7–9, WEB"
+            },
+            {
+              "type": "passage",
+              "lines": [
+                "“Behold, happy is the man whom God corrects. Therefore do not despise the chastening of the Almighty.",
+                "For he wounds, and binds up. He injures, and his hands make whole.",
+                "He will deliver you in six troubles; yes, in seven no evil shall touch you."
+              ],
+              "citation": "Job 5:17–19, WEB"
+            },
+            {
+              "type": "choice",
+              "prompt": "Eliphaz waits, kindly, for you to agree with him.",
+              "options": [
+                {
+                  "label": "“The arrows of the Almighty are within me.”",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "title": "Oh That My Anguish Were Weighed",
+                      "lines": [
+                        "“Oh that my anguish were weighed, and all my calamity laid in the balances!",
+                        "For now it would be heavier than the sand of the seas, therefore have my words been rash.",
+                        "For the arrows of the Almighty are within me. My spirit drinks up their poison. The terrors of God set themselves in array against me."
+                      ],
+                      "citation": "Job 6:2–4, WEB"
+                    },
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "“Therefore I will not keep silent. I will speak in the anguish of my spirit. I will complain in the bitterness of my soul."
+                      ],
+                      "citation": "Job 7:11, WEB"
+                    },
+                    {
+                      "type": "add_var",
+                      "var": "candor",
+                      "amount": 1
+                    }
+                  ]
+                },
+                {
+                  "label": "“Whoever perished, being innocent? I will not despise the chastening.”",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "You give him back his own sentence, in his own cadence.",
+                        "It costs you nothing, and it is not true."
+                      ]
+                    },
+                    {
+                      "type": "say",
+                      "text": "There. That is the beginning of wisdom, Job."
+                    }
+                  ]
+                },
+                {
+                  "label": "Say nothing.",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "You look at the ash between your feet until he stops waiting."
+                      ]
+                    },
+                    {
+                      "type": "say",
+                      "text": "Silence is an answer too. We will come back to it."
+                    },
+                    {
+                      "type": "set_flag",
+                      "flag": "pressed_harder"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "set_flag",
+              "flag": "eliphaz_1"
+            }
+          ]
+        },
+        {
+          "requiresFlag": "eliphaz_1",
+          "commands": [
+            {
+              "type": "say",
+              "text": "I have said what I know. Bildad will say the rest of it."
+            }
+          ]
+        },
+        {
+          "commands": [
+            {
+              "type": "say",
+              "text": "We heard, and we came. We will not speak first."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "maps.ash-heap.entities.3.interactions",
+      "value": [
+        {
+          "requiresFlag": "eliphaz_1",
+          "forbidsFlag": "bildad_1",
+          "commands": [
+            {
+              "type": "passage",
+              "title": "Bildad the Shuhite Answers",
+              "lines": [
+                "Does God pervert justice? Or does the Almighty pervert righteousness?",
+                "If your children have sinned against him, He has delivered them into the hand of their disobedience.",
+                "If you want to seek God diligently, make your supplication to the Almighty.",
+                "If you were pure and upright, surely now he would awaken for you, and make the habitation of your righteousness prosperous.",
+                "Though your beginning was small, yet your latter end would greatly increase."
+              ],
+              "citation": "Job 8:3–7, WEB"
+            },
+            {
+              "type": "choice",
+              "prompt": "Bildad has just explained your children's deaths to you.",
+              "options": [
+                {
+                  "label": "“He destroys the blameless and the wicked.”",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "title": "It Is All the Same",
+                      "lines": [
+                        "Though I am righteous, my own mouth shall condemn me. Though I am blameless, it shall prove me perverse.",
+                        "I am blameless. I don’t respect myself. I despise my life.",
+                        "“It is all the same. Therefore I say he destroys the blameless and the wicked.",
+                        "If the scourge kills suddenly, he will mock at the trial of the innocent.",
+                        "The earth is given into the hand of the wicked. He covers the faces of its judges. If not he, then who is it?"
+                      ],
+                      "citation": "Job 9:20–24, WEB"
+                    },
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "For he is not a man, as I am, that I should answer him, that we should come together in judgment.",
+                        "There is no umpire between us, that might lay his hand on us both."
+                      ],
+                      "citation": "Job 9:32–33, WEB"
+                    },
+                    {
+                      "type": "add_var",
+                      "var": "candor",
+                      "amount": 1
+                    }
+                  ]
+                },
+                {
+                  "label": "“If my children sinned, he delivered them to their sin.”",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "You say it about your own dead, in the voice you would use for someone else's.",
+                        "Bildad is satisfied. You are not."
+                      ]
+                    },
+                    {
+                      "type": "say",
+                      "text": "Good. Seek God diligently, and your latter end will greatly increase."
+                    }
+                  ]
+                },
+                {
+                  "label": "Say nothing.",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "You scrape at your arm and let the question stand there, unanswered, between you."
+                      ]
+                    },
+                    {
+                      "type": "say",
+                      "text": "A man with nothing to hide would speak."
+                    },
+                    {
+                      "type": "set_flag",
+                      "flag": "pressed_harder"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "set_flag",
+              "flag": "bildad_1"
+            }
+          ]
+        },
+        {
+          "requiresFlag": "bildad_1",
+          "commands": [
+            {
+              "type": "say",
+              "text": "Zophar has been waiting his turn. Let him have it."
+            }
+          ]
+        },
+        {
+          "commands": [
+            {
+              "type": "say",
+              "text": "We did not know you when we came over the ridge. That is the truth of it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "maps.ash-heap.entities.4.interactions",
+      "value": [
+        {
+          "requiresFlag": "bildad_1",
+          "forbidsFlag": "zophar_1",
+          "commands": [
+            {
+              "type": "passage",
+              "title": "Zophar the Naamathite Answers",
+              "lines": [
+                "But oh that God would speak, and open his lips against you,",
+                "that he would show you the secrets of wisdom! For true wisdom has two sides. Know therefore that God exacts of you less than your iniquity deserves."
+              ],
+              "citation": "Job 11:5–6, WEB"
+            },
+            {
+              "type": "passage",
+              "lines": [
+                "“If you set your heart aright, stretch out your hands toward him.",
+                "If iniquity is in your hand, put it far away. Don’t let unrighteousness dwell in your tents.",
+                "Surely then you shall lift up your face without spot; Yes, you shall be steadfast, and shall not fear:",
+                "for you shall forget your misery. You shall remember it like waters that have passed away."
+              ],
+              "citation": "Job 11:13–16, WEB"
+            },
+            {
+              "type": "choice",
+              "prompt": "Zophar has told you that God is letting you off lightly.",
+              "options": [
+                {
+                  "label": "“I desire to reason with God. You are physicians of no value.”",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "title": "I Desire to Reason With God",
+                      "lines": [
+                        "“Surely I would speak to the Almighty. I desire to reason with God.",
+                        "But you are forgers of lies. You are all physicians of no value.",
+                        "Oh that you would be completely silent! Then you would be wise."
+                      ],
+                      "citation": "Job 13:3–5, WEB"
+                    },
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "Behold, he will kill me. I have no hope. Nevertheless, I will maintain my ways before him."
+                      ],
+                      "citation": "Job 13:15, WEB"
+                    },
+                    {
+                      "type": "add_var",
+                      "var": "candor",
+                      "amount": 1
+                    }
+                  ]
+                },
+                {
+                  "label": "“If iniquity is in my hand, I will put it far away.”",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "You promise to put away an iniquity you cannot name.",
+                        "Zophar takes the promise like a debt settled."
+                      ]
+                    },
+                    {
+                      "type": "say",
+                      "text": "Then you shall lift up your face without spot, and forget your misery."
+                    }
+                  ]
+                },
+                {
+                  "label": "Say nothing.",
+                  "commands": [
+                    {
+                      "type": "passage",
+                      "lines": [
+                        "The wind takes ash off the top of the heap and puts it down somewhere else."
+                      ]
+                    },
+                    {
+                      "type": "say",
+                      "text": "Even a fool answers when he is asked twice."
+                    },
+                    {
+                      "type": "set_flag",
+                      "flag": "pressed_harder"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "set_flag",
+              "flag": "zophar_1"
+            },
+            {
+              "type": "set_flag",
+              "flag": "round_one"
+            }
+          ]
+        },
+        {
+          "requiresFlag": "zophar_1",
+          "commands": [
+            {
+              "type": "say",
+              "text": "Eliphaz will begin again. He always begins again."
+            }
+          ]
+        },
+        {
+          "commands": [
+            {
+              "type": "say",
+              "text": "I came the furthest of the three. I have had a long time to think about what to say."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "maps.ash-heap.entities.4.interactions.0.commands",
+      "value": [
+        {
+          "type": "passage",
+          "title": "Zophar the Naamathite Answers",
+          "lines": [
+            "But oh that God would speak, and open his lips against you,",
+            "that he would show you the secrets of wisdom! For true wisdom has two sides. Know therefore that God exacts of you less than your iniquity deserves."
+          ],
+          "citation": "Job 11:5–6, WEB"
+        },
+        {
+          "type": "passage",
+          "lines": [
+            "“If you set your heart aright, stretch out your hands toward him.",
+            "If iniquity is in your hand, put it far away. Don’t let unrighteousness dwell in your tents.",
+            "Surely then you shall lift up your face without spot; Yes, you shall be steadfast, and shall not fear:",
+            "for you shall forget your misery. You shall remember it like waters that have passed away."
+          ],
+          "citation": "Job 11:13–16, WEB"
+        },
+        {
+          "type": "choice",
+          "prompt": "Zophar has told you that God is letting you off lightly.",
+          "options": [
+            {
+              "label": "“I desire to reason with God. You are physicians of no value.”",
+              "commands": [
+                {
+                  "type": "passage",
+                  "title": "I Desire to Reason With God",
+                  "lines": [
+                    "“Surely I would speak to the Almighty. I desire to reason with God.",
+                    "But you are forgers of lies. You are all physicians of no value.",
+                    "Oh that you would be completely silent! Then you would be wise."
+                  ],
+                  "citation": "Job 13:3–5, WEB"
+                },
+                {
+                  "type": "passage",
+                  "lines": [
+                    "Behold, he will kill me. I have no hope. Nevertheless, I will maintain my ways before him."
+                  ],
+                  "citation": "Job 13:15, WEB"
+                },
+                {
+                  "type": "add_var",
+                  "var": "candor",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "label": "“If iniquity is in my hand, I will put it far away.”",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "You promise to put away an iniquity you cannot name.",
+                    "Zophar takes the promise like a debt settled."
+                  ]
+                },
+                {
+                  "type": "say",
+                  "text": "Then you shall lift up your face without spot, and forget your misery."
+                }
+              ]
+            },
+            {
+              "label": "Say nothing.",
+              "commands": [
+                {
+                  "type": "passage",
+                  "lines": [
+                    "The wind takes ash off the top of the heap and puts it down somewhere else."
+                  ]
+                },
+                {
+                  "type": "say",
+                  "text": "Even a fool answers when he is asked twice."
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "pressed_harder"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "set_flag",
+          "flag": "zophar_1"
+        },
+        {
+          "type": "set_flag",
+          "flag": "round_one"
+        },
+        {
+          "type": "set_flag",
+          "flag": "round_two"
+        }
+      ]
+    },
+    {
+      "path": "maps.whirlwind-leviathan.entities.2.interactions.0.when.value",
+      "value": 2
+    }
+  ],
+  "strings": {
+    "The Trial of Job": "Job's Story",
+    "Walk with Job from the land of Uz through calamity, the ash heap, and the whirlwind — and answer honestly.": "Job has a good life. Then he loses it. He asks God why.",
+    "grass": "grass",
+    "tree": "tree",
+    "road": "road",
+    "water": "water",
+    "floor": "floor",
+    "wall": "wall",
+    "ashes": "ashes",
+    "rock": "rock",
+    "sand": "sand",
+    "ice": "ice",
+    "Job's Altar": "The Stone Where Job Prays",
+    "It came to pass, when the days of their feasting had run their course, that Job sent and sanctified them,\nand rose up early in the morning, and offered burnt offerings according to the number of them all.\nFor Job said, “It may be that my sons have sinned, and renounced God in their hearts.” Job did so continually.": [
+      "Job had seven boys and three girls.",
+      "Every morning he got up early and prayed for them.",
+      "He did it every single day."
+    ],
+    "Job 1:5, WEB": "from the story of Job",
+    "Dawn. You go up before anyone is awake and offer for the seven sons.\nThe smoke stands straight up, which means nothing, and you watch it anyway until it does not.": [
+      "It is morning. Everyone else is asleep.",
+      "You pray for your seven boys."
+    ],
+    "The second day. The feast has moved to your second son's house — you can see the smoke of their cooking from the altar stone.": "It is day two. Your children are all together again today.",
+    "Dawn again, and the three daughters.\nYou say their names out loud in order, the way you have every time, in case the saying is the part that counts.": [
+      "Morning again. Today you pray for your three girls.",
+      "You say all their names out loud."
+    ],
+    "The third day. Nothing is wrong. That is the whole of the news.": "It is day three. Nothing bad has happened. That is the news.",
+    "Dawn, and the offering for the days you cannot see — the sins you have not been told about and never will be.\nIt may be that they have sinned. It may be. You have done this so long that the doubt is part of the ritual and not an interruption of it.": [
+      "Morning again. You pray one more time.",
+      "You pray for the days you cannot see."
+    ],
+    "Not yet. Job offered when the days of their feasting had run their course — and this day has not run.\nThere is still a day to spend. Go and put your hands on it.": [
+      "Not yet. The day is not finished.",
+      "Go and take care of two things first."
+    ],
+    "The stone is cold and there is nothing left on it to burn.": "The stone is cold now.",
+    "Job's Wife": "Job's Wife",
+    "Up before the birds again. Was the smoke straight?": "Up before the birds again! Did your praying go well?",
+    "Ten of them, and every one in a different house on a different day. I have stopped trying to keep the days.": "Ten children. Every day one of them has us over. I lose track of the days.",
+    "You go up every morning for them. Do you ever go up for yourself?": "You pray for them every morning. Do you ever pray for you?",
+    "Go on, then. The morning is going.": "Go on. The morning is going.",
+    "Shepherd Boy": "The Boy With the Sheep",
+    "The Boy Who Knows the Lame One": "The Boy Who Knows Every Sheep",
+    "Seven thousand, and I know the lame one by her walk.": "There are so many sheep! I know the sore-footed one by how she walks.",
+    "My father kept them before me. He said you paid him in the bad year anyway, when nobody was paying anybody.": "My dad watched the sheep before me. You were kind to him.",
+    "Master — if I am ever the one who has to come and tell you something, will you let me finish?": "Sir — if I ever have to tell you bad news, will you let me finish?",
+    "The hill is quiet, master. Nothing wants anything.": "The hill is quiet. Nobody needs anything.",
+    "The Sheep": "The Sheep",
+    "The sheep move over the hill like slow weather.\nYou walk the edge of them, counting, the way you have since you were younger than the boy who keeps them.": [
+      "The sheep move slowly over the hill.",
+      "You walk beside them and count."
+    ],
+    "The lame ewe is at the back of them again.\nYou carry her the last of the way and set her down in the grass, and she does not thank you.": [
+      "One sheep has a sore foot. She is at the back again.",
+      "You carry her the rest of the way."
+    ],
+    "Seven thousand.\nYou have never once counted them all. You count them anyway, every time, and stop somewhere in the third thousand.": [
+      "There are so many sheep.",
+      "You try to count them all. You always stop partway."
+    ],
+    "The sheep move over the hill like slow weather.": "The sheep move slowly over the hill.",
+    "The Camels": "The Camels",
+    "Three thousand camels, kneeling in the shade, chewing.\nThe drivers raise a hand to you and go back to the ropes.": [
+      "The camels sit in the shade and chew.",
+      "The men who look after them wave at you."
+    ],
+    "You check the pads of the lead camel's feet, one and then the other.\nTwo more seasons in her. Maybe three.": [
+      "You check the big camel's feet.",
+      "They are good feet. She can walk a long way yet."
+    ],
+    "They are worth more than the house and everyone in it.\nYou have never thought that before, and having thought it, you go back to the ropes.": [
+      "The camels are worth more than the house.",
+      "You never thought about that before."
+    ],
+    "Three thousand camels, kneeling in the shade, chewing.": "The camels sit in the shade and chew.",
+    "Zabad the Plowman": "Zabad, Who Digs the Field",
+    "Five hundred yoke turning the east field, and the donkeys feeding beside them.": "The big cows are digging up the east field. The donkeys eat beside them.",
+    "You asked my name the first year I came. Nobody asks the second time.": "You asked my name my very first year here. Nobody else ever did.",
+    "The west field wants a week yet. I will be out there Thursday. Alone, if you want me.": "The west field needs one more week. I will be out there Thursday. All by myself.",
+    "The field is where I left it, master.": "The field is right where I left it.",
+    "The Oxen": "The Big Cows",
+    "The oxen lean into the yoke. The east field is nearly turned.\nYou put your hand flat on the near one's shoulder and feel the whole animal working.": [
+      "The big cows pull hard. They are digging up the field.",
+      "You put your hand on one. You can feel her working."
+    ],
+    "Five hundred yoke.\nThe furrows come out of the field straight, and you have never in your life been able to do that yourself.": [
+      "So many big cows!",
+      "They make the lines in the field straight. You could never do that."
+    ],
+    "The east field is turned.\nTomorrow the donkeys go out to feed beside them, the way they always do.": [
+      "The east field is all dug up.",
+      "Tomorrow the donkeys will come and eat beside them."
+    ],
+    "The oxen lean into the yoke. The east field is nearly turned.": "The big cows pull hard at the field.",
+    "The Herd Dog": "The Sheep Dog",
+    "She works the flocks all morning and spends the afternoon walking the same square of grass, checking it.": "She helps with the sheep all morning. Then she walks her patch of grass and checks it.",
+    "She has not settled since the messengers came. She walks the square of grass and checks it and walks it again.": "She will not sit down. She walks and checks and walks again.",
+    "The Donkeys": "The Donkeys",
+    "Five hundred she-donkeys, feeding beside the oxen, indifferent to all of it.": "Lots of donkeys. They eat beside the big cows and do not care about anything.",
+    "Job's Eldest Son": "Job's Oldest Son",
+    "Father, sit. The lamps are still lit and there is wine left.": "Sit down, Dad! The lamps are still on.",
+    "It is my day. Tomorrow it is Elior's, and then hers, and by the time it comes round again it will be the rains.": "Today everyone comes to my house. Tomorrow it is my brother's turn.",
+    "You send for us and sanctify us every time. We know. We let you, because it is what you have instead of saying it.": "You pray for us every time. We know you do. That is how you say you love us.",
+    "Sit, father. Or don't — but the wine is here either way.": "Sit down, Dad. Or don't. There is food either way.",
+    "Job's Daughter": "Job's Daughter",
+    "He sent for us at dawn, the way he always does. Tomorrow it is my second brother's house.": "My brother asked us all over this morning. Tomorrow we go to the next one's house.",
+    "You never ask us what we did. You only offer for it. I would rather you asked.": "You never ask us what we did today. I wish you would ask.",
+    "Sit down. You are always standing in the doorway of this room.": "Sit down with us. You always stand in the doorway.",
+    "Tomorrow it is my second brother's house.": "Tomorrow we go to my brother's house.",
+    "The Feast Table": "The Big Table",
+    "Bread, and wine, and the noise of ten grown children.\nWhatever else this year holds, this room is full.": [
+      "Bread and drinks and ten noisy children.",
+      "This room is full and happy."
+    ],
+    "Act I — The Land of Uz": "Part 1 — Job's Farm",
+    "There was a man in the land of Uz, whose name was Job. That man was blameless and upright, and one who feared God, and turned away from evil.\nThere were born to him seven sons and three daughters.\nHis possessions also were seven thousand sheep, three thousand camels, five hundred yoke of oxen, five hundred female donkeys, and a very great household; so that this man was the greatest of all the children of the east.": [
+      "There was a man named Job.",
+      "He was good and kind, and he loved God.",
+      "He had seven boys and three girls.",
+      "He had more sheep and camels and cows than anyone."
+    ],
+    "There Was a Man in the Land of Uz": "A Man Named Job",
+    "Job 1:1–3, WEB": "from the story of Job",
+    "Morning over Uz. The feast in your eldest son's house ran all night; the lamps are only now going out.": "Morning. Your children were up late last night, all together.",
+    "Two things will get your hands today, and then the light will go. The rest keep until tomorrow — there is always a tomorrow, and there have been ten thousand of them.": "You can take care of two things today. Then it gets dark. The rest can wait.",
+    "When the day has run you will find yourself at the altar in the morning, the way you always do. Offer for the children there.": "When the day is done, go to the stone and pray for your children.",
+    "The light goes out of the yard. Whatever you did not get to today is still there tomorrow, which is the mercy of ordinary days.": "It is getting dark. What you did not do today, you can do tomorrow.",
+    "Dawn. You are up before the household, at the stone, the way you always are.": "Morning! You are up first, standing at the stone.",
+    "Outside the shutters the light goes out of the yard. In here the lamps carry on as if nothing has happened. You walk home in the dark.": "It is dark outside now. In here the lamps are still on. You walk home.",
+    "Meanwhile": "Meanwhile",
+    "On a day when the sons of God came": "Far away, where Job cannot see",
+    "Again, on the day when the sons of God came": "Far away again, where Job cannot see",
+    "Now on the day when God’s sons came to present themselves before Yahweh, Satan also came among them.\nYahweh said to Satan, “Where have you come from?”\nThen Satan answered Yahweh, and said, “From going back and forth in the earth, and from walking up and down in it.”\nYahweh said to Satan, “Have you considered my servant, Job? For there is no one like him in the earth, a blameless and an upright man, one who fears God, and turns away from evil.”": [
+      "Far away, God was talking with someone.",
+      "God said: have you seen my friend Job? Nobody is as good as he is."
+    ],
+    "The Sons of God": "Far Away",
+    "Job 1:6–8, WEB": "from the story of Job",
+    "Then Satan answered Yahweh, and said, “Does Job fear God for nothing?\nHaven’t you made a hedge around him, and around his house, and around all that he has, on every side? You have blessed the work of his hands, and his substance is increased in the land.\nBut stretch out your hand now, and touch all that he has, and he will renounce you to your face.”\nYahweh said to Satan, “Behold, all that he has is in your power. Only on himself don’t stretch out your hand.” So Satan went out from the presence of Yahweh.": [
+      "The other one said: of course Job loves you. You gave him everything!",
+      "Take it all away and see if he still does.",
+      "God said: all right. But do not hurt Job himself."
+    ],
+    "Does Job Fear God for Nothing?": "Does Job Really Love God?",
+    "Job 1:9–12, WEB": "from the story of Job",
+    "Yahweh said to Satan, “Have you considered my servant Job? For there is no one like him in the earth, a blameless and an upright man, one who fears God, and turns away from evil.\nHe still maintains his integrity, although you incited me against him, to ruin him without cause.”\nSatan answered Yahweh, and said, “Skin for skin. Yes, all that a man has he will give for his life.\nBut stretch out your hand now, and touch his bone and his flesh, and he will renounce you to your face.”\nYahweh said to Satan, “Behold, he is in your hand. Only spare his life.”": [
+      "God said: Job is still good. He did not stop loving me.",
+      "The other one said: let me make him sick. Then he will stop.",
+      "God said: all right. But do not take his life."
+    ],
+    "Skin For Skin": "One More Time",
+    "Job 2:3–6, WEB": "from the story of Job",
+    "The Accuser": "The One Who Says Bad Things",
+    "Job hears none of this.\nThe morning in Uz is bright and ordinary, and the road east is dusty.": [
+      "Job does not hear any of this.",
+      "It is just a normal sunny morning on his farm."
+    ],
+    "Act II": "Part 2",
+    "The Day of Calamity": "The Bad Day",
+    "It fell on a day when his sons and his daughters were eating and drinking wine in their oldest brother’s house,": "One day all of Job's children were eating together at his oldest son's house.",
+    "Job 1:13, WEB": "from the story of Job",
+    "A Man From the Plowing": "A Man Running",
+    "Zabad, From the Plowing": "Zabad, Running",
+    "that there came a messenger to Job, and said, “The oxen were plowing, and the donkeys feeding beside them,\nand the Sabeans attacked, and took them away. Yes, they have killed the servants with the edge of the sword, and I alone have escaped to tell you.”": [
+      "A man came running.",
+      "He said: robbers came and took all the big cows and donkeys.",
+      "I am the only one who got away."
+    ],
+    "The First": "The First Man",
+    "Job 1:14–15, WEB": "from the story of Job",
+    "It is Zabad. He was in the west field on Thursday, alone, because he told you he would be.": "It is Zabad. He was digging the west field by himself. That is why he is safe.",
+    "You asked this man his name once, years ago, and he has not forgotten that you did.": "You asked this man his name once. He never forgot.",
+    "A plowman. You never asked him anything, and now he is the only one left to ask.": "A man who digs your fields. You never asked his name.",
+    "A Man From the Pasture": "Another Man Running",
+    "The Boy From the Pasture": "The Boy From the Hill",
+    "While he was still speaking, there also came another, and said, “The fire of God has fallen from the sky, and has burned up the sheep and the servants, and consumed them, and I alone have escaped to tell you.”": [
+      "He was still talking when another one came running.",
+      "He said: fire fell out of the sky. The sheep are gone.",
+      "I am the only one who got away."
+    ],
+    "While He Was Still Speaking": "Still Talking",
+    "Job 1:16, WEB": "from the story of Job",
+    "The boy asked you once to let him finish. You let him finish.": "The boy once asked you to let him finish. You let him finish.",
+    "He knew the lame one by her walk. He does not say anything about her.": "He knew the sore-footed sheep by her walk. He does not say anything about her.",
+    "A boy from the hill. You could not have said, this morning, that you had a boy on the hill.": "A boy from the hill. You did not even know you had a boy on the hill.",
+    "A Man From the Camels": "A Third Man Running",
+    "A Driver You Have Seen at the Ropes": "A Man You Have Seen With the Camels",
+    "While he was still speaking, there came also another, and said, “The Chaldeans made three bands, and swept down on the camels, and have taken them away, yes, and killed the servants with the edge of the sword; and I alone have escaped to tell you.”": [
+      "He was still talking when a third one came running.",
+      "He said: robbers came and took all the camels.",
+      "I am the only one who got away."
+    ],
+    "And Another": "And Another",
+    "Job 1:17, WEB": "from the story of Job",
+    "Two more seasons in her, you had thought. Maybe three.": "You thought that camel had years and years left.",
+    "The ropes are still coiled where the drivers left them.": "The ropes are still lying where the men left them.",
+    "A Man From the Feast House": "A Fourth Man Running",
+    "A Man From Your Son's House": "A Man From Your Son's House",
+    "While he was still speaking, there came also another, and said, “Your sons and your daughters were eating and drinking wine in their oldest brother’s house,\nand behold, there came a great wind from the wilderness, and struck the four corners of the house, and it fell on the young men, and they are dead. I alone have escaped to tell you.”": [
+      "He was still talking when a fourth man came running.",
+      "He said: your children were all eating together.",
+      "A big wind knocked the house down. They are all gone."
+    ],
+    "Job 1:18–19, WEB": "from the story of Job",
+    "He was standing in the doorway of that room three days ago and would not sit down.": "Three days ago he stood in that doorway and would not sit down.",
+    "She asked you to ask her what she had done. You offered for it instead.": "She wanted you to ask about her day. You prayed for her instead.",
+    "You sanctified them every morning of their lives. It is the one thing you are certain you did.": "You prayed for them every single morning. You know you did that.",
+    "The four of them stand where they stopped, out of breath, saying nothing more.": "The four men stand there. Nobody says anything else.",
+    "There is dust on everything. The courtyard is at your feet.": "There is dust on everything. You are standing in your yard.",
+    "The Courtyard Dust": "The Dust in the Yard",
+    "You take hold of your robe with both hands and tear it from the neck down.\nThe sound is very loud in the yard.": [
+      "You grab your coat with both hands and rip it.",
+      "It is very loud in the quiet yard."
+    ],
+    "You shave your head. The hair falls into the dust and stays there.\nNobody in the yard says a word.": [
+      "You cut off all your hair. It falls in the dust.",
+      "Nobody says a word."
+    ],
+    "Then Job arose, and tore his robe, and shaved his head, and fell down on the ground, and worshiped.\nHe said, “Naked I came out of my mother’s womb, and naked shall I return there.\nYahweh gave, and Yahweh has taken away. Blessed be Yahweh’s name.”\nIn all this, Job did not sin, nor charge God with wrongdoing.": [
+      "Job lay down on the ground.",
+      "He said: I had nothing when I was born.",
+      "I will have nothing when I die.",
+      "God gave it. God took it. I still love God."
+    ],
+    "Blessed Be Yahweh's Name": "Job Lies Down",
+    "Job 1:20–22, WEB": "from the story of Job",
+    "Swept dust, warm from the sun.\nNothing has happened here.": [
+      "Clean dust, warm from the sun.",
+      "Nothing has happened here."
+    ],
+    "Act III": "Part 3",
+    "So Satan went out from the presence of Yahweh, and struck Job with painful sores from the sole of his foot to his head.\nHe took for himself a potsherd to scrape himself with, and he sat among the ashes.": [
+      "Now Job got sore places all over him.",
+      "They hurt everywhere, from his head to his feet.",
+      "He went and sat in the ashes outside the town."
+    ],
+    "He Sat Among the Ashes": "Job Sits in the Ashes",
+    "Job 2:7–8, WEB": "from the story of Job",
+    "The town's ash heap, outside the wall. Everything that is burned in Uz ends up here, and now so do you.": "The ash pile outside town. Everything burnt ends up here. Now you are here too.",
+    "The Ash Heap": "The Ash Pile",
+    "Ash, and a potsherd, and the shape your body has worn into the heap.": "Ashes, and a piece of broken pot, and the dent where you have been sitting.",
+    "Ash to sit in, and a potsherd to scrape with. There is no one here yet to sit with you.": "Ashes to sit in. Nobody is here with you yet.",
+    "Your wife has come out to find you.": "Your wife has come to find you.",
+    "Then his wife said to him, “Do you still maintain your integrity? Renounce God, and die.”": [
+      "His wife said: are you still being good?",
+      "Say a bad thing about God and be done with it."
+    ],
+    "Do You Still Maintain Your Integrity?": "His Wife Comes",
+    "Job 2:9, WEB": "from the story of Job",
+    "She is not cruel. She has buried the same ten children, and she is offering you the only mercy she can think of.": "She is not being mean. She lost the same ten children. She just wants you to stop hurting.",
+    "What do you say to your wife?": "What do you say to her?",
+    "“Shall we receive good at the hand of God, and shall we not receive evil?”": "\"We took the good days. We can take the bad ones too.\"",
+    "But he said to her, “You speak as one of the foolish women would speak. What? Shall we receive good at the hand of God, and shall we not receive evil?” In all this Job didn’t sin with his lips.": [
+      "Job said: we were happy to take the good days from God.",
+      "So we can take the hard days too.",
+      "And Job did not say one bad thing."
+    ],
+    "Job Didn't Sin With His Lips": "Job Does Not Say a Bad Thing",
+    "Job 2:10, WEB": "from the story of Job",
+    "She sits down in the ash beside you for a while, and then she goes back inside the ruin.\nThe road east of the heap is empty. It will not stay empty.": [
+      "She sits in the ashes next to you for a while.",
+      "Then she goes back inside."
+    ],
+    "Take her counsel: renounce God, and die.": "\"You are right. I am done.\"",
+    "You put down the potsherd.\nIt would be so easy. It would even be reasonable.\nYou open your mouth and let the word out, and something in you closes like a door.": [
+      "You put the broken pot down.",
+      "It would be so easy to stop.",
+      "You say the bad thing, and something in you goes quiet."
+    ],
+    "The scroll goes on without this page. Job's wife helps him inside, and no one in Uz ever hears of the ash heap again, and the three friends turn back at the border of the land. It is a quiet ending, and a real one. Nothing here is punished — the book simply closes early.": "And that is where Job's story stops. Nobody ever hears the rest of it.",
+    "I will be in the doorway of the house. Call me if it gets worse.": "I will be in the doorway. Call me if it gets worse.",
+    "You lower yourself into the ashes. Eliphaz sits, then Bildad, then Zophar — none of them closer than a few feet.\nThe first day goes out like a lamp, and no one has said anything.": [
+      "You sit down in the ashes.",
+      "Your three friends sit down too. Day one. Nobody says anything."
+    ],
+    "The second day. The wind comes up after noon and puts grit into everything that is open.\nZophar's lips move once, and stop.": [
+      "Day two. The wind blows dust everywhere.",
+      "Still nobody says anything."
+    ],
+    "The third day. You work the potsherd along your arm, slowly, the way you would card wool.\nBelow the ridge a dog barks, and then does not bark again.": [
+      "Day three. You scratch your sore arms with the broken pot.",
+      "A dog barks far away."
+    ],
+    "The fourth day. Bildad tears his robe a second time, though there is not much left of it to tear.\nThe sores have begun to crack when you move, so you have stopped moving.": [
+      "Day four. One friend rips his coat again.",
+      "Your sore places hurt when you move. So you stop moving."
+    ],
+    "The fifth day. Someone sets water down at arm's length and walks away without looking.\nThe light goes long and orange, and then it goes.": [
+      "Day five. Someone puts water near you and walks away.",
+      "The sun goes down."
+    ],
+    "The sixth day. Eliphaz has been forming a sentence since morning. He does not say it.\nThe stars come out over Uz in their thousands, and nobody counts them.": [
+      "Day six. One friend keeps almost saying something.",
+      "The stars come out. Nobody counts them."
+    ],
+    "The seventh day. Your mouth opens before you have decided to open it.": "Day seven. Your mouth opens before you decide to open it.",
+    "“Let the day perish in which I was born, the night which said, ‘There is a boy conceived.’\nLet that day be darkness. Don’t let God from above seek for it, neither let the light shine on it.\nLet darkness and the shadow of death claim it for their own. Let a cloud dwell on it. Let all that makes black the day terrify it.": [
+      "Job said: I wish I had never been born.",
+      "I wish that day had stayed dark."
+    ],
+    "Let the Day Perish": "Job Finally Speaks",
+    "Job 3:3–5, WEB": "from the story of Job",
+    "Why is light given to a man whose way is hidden, whom God has hedged in?\nFor my sighing comes before I eat. My groanings are poured out like water.\nFor the thing which I fear comes on me, That which I am afraid of comes to me.\nI am not at ease, neither am I quiet, neither have I rest; but trouble comes.”": [
+      "Why do I have to keep going when everything hurts?",
+      "The thing I was scared of came and got me.",
+      "I cannot rest."
+    ],
+    "Why Is Light Given": "Why Keep Going?",
+    "Job 3:23–26, WEB": "from the story of Job",
+    "The three of them lift their heads.\nSeven days they kept still for you. Now it has begun.": [
+      "Your three friends look up.",
+      "They were quiet for seven days. Now they start talking."
+    ],
+    "There is a place in the ashes beside them. Sit — as many days as it takes.": "There is a spot in the ashes next to them. Sit down for as long as it takes.",
+    "Now when Job’s three friends heard of all this evil that had come on him, they each came from his own place: Eliphaz the Temanite, Bildad the Shuhite, and Zophar the Naamathite; and they made an appointment together to come to sympathize with him and to comfort him.\nWhen they lifted up their eyes from a distance, and didn’t recognize him, they raised their voices, and wept; and they each tore his robe, and sprinkled dust on their heads toward the sky.\nSo they sat down with him on the ground seven days and seven nights, and no one spoke a word to him, for they saw that his grief was very great.": [
+      "Job's three friends heard what happened.",
+      "They came a long way to sit with him.",
+      "They sat with him for seven days and said nothing at all."
+    ],
+    "They Sat Down With Him": "His Friends Come",
+    "Job 2:11–13, WEB": "from the story of Job",
+    "Three old men, sitting down in the ash at a little distance. Nobody says anything.": "Three old men sit down in the ashes nearby. Nobody says anything.",
+    "A Traveler on the Road": "Someone Walking Up the Road",
+    "Eliphaz the Temanite": "Eliphaz, Job's Friend",
+    "Bildad the Shuhite": "Bildad, Job's Friend",
+    "Zophar the Naamathite": "Zophar, Job's Friend",
+    "A Young Man, Waiting": "A Young Man Waiting",
+    "Elihu the Buzite": "Elihu, a Young Man",
+    "We heard, and we came. We will not speak first.": "We heard what happened. We came. We will not talk first.",
+    "“Remember, now, whoever perished, being innocent? Or where were the upright cut off?\nAccording to what I have seen, those who plow iniquity, and sow trouble, reap the same.\nBy the breath of God they perish. By the blast of his anger are they consumed.": [
+      "Eliphaz said: think about it, Job.",
+      "Good people do not get hurt like this.",
+      "You must have done something wrong."
+    ],
+    "Eliphaz the Temanite Answers": "Eliphaz Talks",
+    "Job 4:7–9, WEB": "from the story of Job",
+    "“Behold, happy is the man whom God corrects. Therefore do not despise the chastening of the Almighty.\nFor he wounds, and binds up. He injures, and his hands make whole.\nHe will deliver you in six troubles; yes, in seven no evil shall touch you.": [
+      "God is only teaching you a lesson.",
+      "Say sorry and he will make you better."
+    ],
+    "Job 5:17–19, WEB": "from the story of Job",
+    "Eliphaz waits, kindly, for you to agree with him.": "Eliphaz waits for you to say he is right.",
+    "“The arrows of the Almighty are within me.”": "\"It hurts too much. I am going to say so.\"",
+    "“Oh that my anguish were weighed, and all my calamity laid in the balances!\nFor now it would be heavier than the sand of the seas, therefore have my words been rash.\nFor the arrows of the Almighty are within me. My spirit drinks up their poison. The terrors of God set themselves in array against me.": [
+      "Job said: if you could weigh how much this hurts,",
+      "it would be heavier than all the sand at the sea."
+    ],
+    "Oh That My Anguish Were Weighed": "It Hurts This Much",
+    "Job 6:2–4, WEB": "from the story of Job",
+    "“Therefore I will not keep silent. I will speak in the anguish of my spirit. I will complain in the bitterness of my soul.": "So I am not going to be quiet. I am going to say how sad I am.",
+    "Job 7:11, WEB": "from the story of Job",
+    "“Whoever perished, being innocent? I will not despise the chastening.”": "\"You are right. I will not complain.\"",
+    "You give him back his own sentence, in his own cadence.\nIt costs you nothing, and it is not true.": [
+      "You say his own words back to him.",
+      "It is easy. It is also not true."
+    ],
+    "There. That is the beginning of wisdom, Job.": "There. Now you are being sensible, Job.",
+    "Say nothing.": "Say nothing.",
+    "You look at the ash between your feet until he stops waiting.": "You look at the ashes by your feet until he gives up waiting.",
+    "Silence is an answer too. We will come back to it.": "Being quiet is an answer too. We will come back to this.",
+    "I have said what I know. Bildad will say the rest of it.": "I said what I know. Bildad can say the rest.",
+    "Does God pervert justice? Or does the Almighty pervert righteousness?\nIf your children have sinned against him, He has delivered them into the hand of their disobedience.\nIf you want to seek God diligently, make your supplication to the Almighty.\nIf you were pure and upright, surely now he would awaken for you, and make the habitation of your righteousness prosperous.\nThough your beginning was small, yet your latter end would greatly increase.": [
+      "Bildad said: God is always fair.",
+      "So if your children are gone, they must have done something wrong."
+    ],
+    "Bildad the Shuhite Answers": "Bildad Talks",
+    "Job 8:3–7, WEB": "from the story of Job",
+    "Bildad has just explained your children's deaths to you.": "Bildad just said your children got what they deserved.",
+    "“He destroys the blameless and the wicked.”": "\"That is not true. Good people get hurt too.\"",
+    "Though I am righteous, my own mouth shall condemn me. Though I am blameless, it shall prove me perverse.\nI am blameless. I don’t respect myself. I despise my life.\n“It is all the same. Therefore I say he destroys the blameless and the wicked.\nIf the scourge kills suddenly, he will mock at the trial of the innocent.\nThe earth is given into the hand of the wicked. He covers the faces of its judges. If not he, then who is it?": [
+      "Job said: I did nothing wrong, and it happened anyway.",
+      "Good people and bad people both get hurt. I have seen it."
+    ],
+    "It Is All the Same": "It Happens to Everyone",
+    "Job 9:20–24, WEB": "from the story of Job",
+    "For he is not a man, as I am, that I should answer him, that we should come together in judgment.\nThere is no umpire between us, that might lay his hand on us both.": [
+      "God is not a person I can argue with.",
+      "There is nobody to stand between us."
+    ],
+    "Job 9:32–33, WEB": "from the story of Job",
+    "“If my children sinned, he delivered them to their sin.”": "\"Maybe my children did do something wrong.\"",
+    "You say it about your own dead, in the voice you would use for someone else's.\nBildad is satisfied. You are not.": [
+      "You say it about your own children.",
+      "Bildad is happy. You are not."
+    ],
+    "Good. Seek God diligently, and your latter end will greatly increase.": "Good. Keep looking for God and things will get better.",
+    "You scrape at your arm and let the question stand there, unanswered, between you.": "You scratch your arm and let his question just sit there.",
+    "A man with nothing to hide would speak.": "A man with nothing to hide would answer.",
+    "Zophar has been waiting his turn. Let him have it.": "Zophar has been waiting his turn. Let him talk.",
+    "We did not know you when we came over the ridge. That is the truth of it.": "We did not recognize you when we came over the hill. That is the truth.",
+    "But oh that God would speak, and open his lips against you,\nthat he would show you the secrets of wisdom! For true wisdom has two sides. Know therefore that God exacts of you less than your iniquity deserves.": [
+      "Zophar said: I wish God would talk to you.",
+      "He would tell you God is going easier on you than you deserve."
+    ],
+    "Zophar the Naamathite Answers": "Zophar Talks",
+    "Job 11:5–6, WEB": "from the story of Job",
+    "“If you set your heart aright, stretch out your hands toward him.\nIf iniquity is in your hand, put it far away. Don’t let unrighteousness dwell in your tents.\nSurely then you shall lift up your face without spot; Yes, you shall be steadfast, and shall not fear:\nfor you shall forget your misery. You shall remember it like waters that have passed away.": [
+      "Just be good and put the bad things away.",
+      "Then you will not be sad any more."
+    ],
+    "Job 11:13–16, WEB": "from the story of Job",
+    "Zophar has told you that God is letting you off lightly.": "Zophar just said God is being easy on you.",
+    "“I desire to reason with God. You are physicians of no value.”": "\"I want to ask God myself. You three are not helping.\"",
+    "“Surely I would speak to the Almighty. I desire to reason with God.\nBut you are forgers of lies. You are all physicians of no value.\nOh that you would be completely silent! Then you would be wise.": [
+      "Job said: I want to talk to God myself.",
+      "You three are no help at all."
+    ],
+    "I Desire to Reason With God": "I Want to Ask God",
+    "Job 13:3–5, WEB": "from the story of Job",
+    "Behold, he will kill me. I have no hope. Nevertheless, I will maintain my ways before him.": "Even if it is the end of me, I am still going to say what is true.",
+    "Job 13:15, WEB": "from the story of Job",
+    "“If iniquity is in my hand, I will put it far away.”": "\"All right. I will put the bad things away.\"",
+    "You promise to put away an iniquity you cannot name.\nZophar takes the promise like a debt settled.": [
+      "You promise to stop doing something. You cannot say what.",
+      "Zophar is satisfied."
+    ],
+    "Then you shall lift up your face without spot, and forget your misery.": "Then you will feel better and forget all this.",
+    "The wind takes ash off the top of the heap and puts it down somewhere else.": "The wind picks up ash and puts it down somewhere else.",
+    "Even a fool answers when he is asked twice.": "Even a silly person answers when you ask twice.",
+    "Speak, Job. We cannot absolve a silence.": "Say something, Job. We cannot help you if you are quiet.",
+    "Let the young man talk, then. We are finished.": "Let the young man talk then. We are done.",
+    "There is nothing more I know how to say to you.": "I do not know what else to say to you.",
+    "I came the furthest of the three. I have had a long time to think about what to say.": "I came the longest way. I had a long time to think about what to say.",
+    "A man who will not answer his friends will not answer God either.": "If you will not answer your friends, you will not answer God either.",
+    "You have sat there like a stone since we came. That is not innocence.": "You have sat like a stone since we got here. That is not what innocent looks like.",
+    "Elihu the son of Barachel the Buzite answered, “I am young, and you are very old; Therefore I held back, and didn’t dare show you my opinion.\nI said, ‘Days should speak, and multitude of years should teach wisdom.’\nBut there is a spirit in man, and the breath of the Almighty gives them understanding.\nIt is not the great who are wise, nor the aged who understand justice.\nTherefore I said, ‘Listen to me; I also will show my opinion.’": [
+      "A young man had been listening the whole time.",
+      "He said: I am young, so I waited. But now I want to talk."
+    ],
+    "Job 32:6–10, WEB": "from the story of Job",
+    "“Behold, I will answer you. In this you are not just, for God is greater than man.\nWhy do you strive against him, because he doesn’t give account of any of his matters?\nFor God speaks once, yes twice, though man pays no attention.": [
+      "He said: God is bigger than any person.",
+      "God does speak. People just do not listen."
+    ],
+    "Job 33:12–14, WEB": "from the story of Job",
+    "Job does not answer him.\nThere is nothing in it that has not been said twice already, and none of it is about you.": [
+      "Job does not answer him.",
+      "None of it is really about Job."
+    ],
+    "“Yes, at this my heart trembles, and is moved out of its place.\nHear, oh, hear the noise of his voice, the sound that goes out of his mouth.\nHe sends it out under the whole sky, and his lightning to the ends of the earth.\nAfter it a voice roars. He thunders with the voice of his majesty. He doesn’t hold back anything when his voice is heard.\nGod thunders marvelously with his voice. He does great things, which we can’t comprehend.": [
+      "Listen! Do you hear that?",
+      "Thunder. A storm is coming."
+    ],
+    "While He Is Still Speaking": "A Storm Is Coming",
+    "Job 37:1–5, WEB": "from the story of Job",
+    "Now men don’t see the light which is bright in the skies, but the wind passes, and clears them.\nOut of the north comes golden splendor. With God is awesome majesty.": [
+      "The wind blows the clouds away.",
+      "Something very big is coming."
+    ],
+    "Job 37:21–22, WEB": "from the story of Job",
+    "I am young and you are all old men, so I have held my peace. I will not hold it much longer.": "I am young and you are all old. So I stayed quiet. I will not stay quiet much longer.",
+    "The three of them stop answering. They have run out of ways to say the same thing.\nBehind them, a young man who has been quiet for two rounds gets to his feet.": [
+      "The three friends stop talking.",
+      "Behind them, a young man stands up."
+    ],
+    "We have said everything twice. It has not helped.": "We have said it all twice. It did not help.",
+    "Eliphaz will begin again. He always begins again.": "Eliphaz will start again. He always starts again.",
+    "Zophar waits a long time. The sun goes over the ridge.": "Zophar waits a long time. The sun goes down behind the hill.",
+    "Then we have come three hundred miles to look at a man.": "So we walked all that way just to stare at you.",
+    "Act V": "Part 4",
+    "The Whirlwind": "The Big Storm",
+    "Then Yahweh answered Job out of the whirlwind,\n“Who is this who darkens counsel by words without knowledge?\nBrace yourself like a man, for I will question you, then you answer me!": [
+      "Then God answered Job out of the storm.",
+      "God said: who is this talking about things he does not know?",
+      "Stand up. I am going to ask you some questions."
+    ],
+    "Then Yahweh Answered Job": "God Answers",
+    "Job 38:1–3, WEB": "from the story of Job",
+    "The ash heap is gone. There is wind, and a country no one has ever been able to walk to.": "The ash pile is gone. There is only wind, and a place nobody can walk to.",
+    "A Waystone in the Storm": "A Stone in the Storm",
+    "A waystone stands in the storm ahead. There is nothing to fight here — only things to be shown.": "There is a stone up ahead. Nothing here can hurt you. There are only things to see.",
+    "“Where were you when I laid the foundations of the earth? Declare, if you have understanding.\nWho determined its measures, if you know? Or who stretched the line on it?\nWhereupon were its foundations fastened? Or who laid its cornerstone,\nwhen the morning stars sang together, and all the sons of God shouted for joy?": [
+      "God said: where were you when I made the world?",
+      "Who decided how big it should be?",
+      "Who was singing when I did it?"
+    ],
+    "The Foundations": "Who Made the World?",
+    "Job 38:4–7, WEB": "from the story of Job",
+    "You were not there. You had never once thought about it.\nThe wind moves you on.": [
+      "You were not there.",
+      "You never even thought about it before."
+    ],
+    "“Or who shut up the sea with doors, when it broke out of the womb,\nwhen I made clouds its garment, and wrapped it in thick darkness,\nmarked out for it my bound, set bars and doors,\nand said, ‘Here you may come, but no further. Here your proud waves shall be stayed?’": [
+      "Who told the sea where to stop?",
+      "I drew a line on the sand and said: come this far.",
+      "Not one step further."
+    ],
+    "The Sea's Doors": "The Sea Has a Door",
+    "Job 38:8–11, WEB": "from the story of Job",
+    "Nothing is asked about your children. Nothing is asked about your sores.": "God does not ask about your children. God does not ask about your sore places.",
+    "Water to the north as far as the storm allows you to see, and it stops at a line you cannot find.": "Water everywhere. It stops at a line you cannot see.",
+    "Have you entered the treasuries of the snow, or have you seen the treasures of the hail,\nwhich I have reserved against the time of trouble, against the day of battle and war?\nBy what way is the lightning distributed, or the east wind scattered on the earth?": [
+      "Have you been to the place where I keep the snow?",
+      "Have you seen where I keep the hail?",
+      "Do you know which way the lightning goes?"
+    ],
+    "The Treasuries of the Snow": "Where the Snow Is Kept",
+    "Job 38:22–24, WEB": "from the story of Job",
+    "Does the rain have a father? Or who fathers the drops of dew?\nOut of whose womb came the ice? The gray frost of the sky, who has given birth to it?\nThe waters become hard like stone, when the surface of the deep is frozen.": [
+      "Does the rain have a dad?",
+      "Who makes the little drops on the grass in the morning?",
+      "Where does ice come from?"
+    ],
+    "Job 38:28–30, WEB": "from the story of Job",
+    "The Storehouses": "The Snow Room",
+    "Cold. The ground under your feet is white and it creaks, and the air smells like iron.": "Cold! The ground is white and it creaks when you step.",
+    "“Who has set the wild donkey free? Or who has loosened the bonds of the swift donkey,\nWhose home I have made the wilderness, and the salt land his dwelling place?\nHe scorns the tumult of the city, neither does he hear the shouting of the driver.\nThe range of the mountains is his pasture, He searches after every green thing.": [
+      "Who let the wild donkey run free?",
+      "He lives out where nobody shouts at him.",
+      "He goes wherever he likes and eats whatever is green."
+    ],
+    "The Creatures That Owe You Nothing": "Animals Nobody Owns",
+    "Job 39:5–8, WEB": "from the story of Job",
+    "Every one of them was made, and fed, and let go, in a country where you have never been consulted.\nIt is not an insult. It is a good deal larger than an insult.": [
+      "Every animal out here was made and fed and let go.",
+      "Nobody asked you first. The world is very big."
+    ],
+    "The Ostrich": "The Ostrich",
+    "“The wings of the ostrich wave proudly; but are they the feathers and plumage of love?\nFor she leaves her eggs on the earth, warms them in the dust,\nand forgets that the foot may crush them, or that the wild animal may trample them.\nShe deals harshly with her young ones, as if they were not hers. Though her labor is in vain, she is without fear,\nbecause God has deprived her of wisdom, neither has he imparted to her understanding.": [
+      "Look at the ostrich flap her big silly wings!",
+      "She leaves her eggs right in the dust and forgets about them.",
+      "She is not very clever. But look how fast she runs!"
+    ],
+    "Job 39:13–17, WEB": "from the story of Job",
+    "The Horse": "The Horse",
+    "“Have you given the horse might? Have you clothed his neck with a quivering mane?\nHave you made him to leap as a locust? The glory of his snorting is awesome.\nHe paws in the valley, and rejoices in his strength. He goes out to meet the armed men.\nHe mocks at fear, and is not dismayed, neither does he turn back from the sword.": [
+      "Did you make the horse strong?",
+      "Did you put that big wavy mane on his neck?",
+      "He stamps his foot. He is not scared of anything."
+    ],
+    "Job 39:19–22, WEB": "from the story of Job",
+    "The Hawk": "The Hawk",
+    "“Is it by your wisdom that the hawk soars, and stretches her wings toward the south?\nIs it at your command that the eagle mounts up, and makes his nest on high?": [
+      "Did you teach the hawk how to fly?",
+      "Did you tell the eagle to build her nest way up high?"
+    ],
+    "Job 39:26–27, WEB": "from the story of Job",
+    "The Wild Places": "The Wild Country",
+    "Open country, and animals in it that have never once needed you.": "Wide open country. The animals here have never needed you once.",
+    "Behemoth, at the Edge of Sight": "Behemoth, Very Far Away",
+    "“See now, behemoth, which I made as well as you. He eats grass as an ox.\nLook now, his strength is in his thighs. His force is in the muscles of his belly.\nHe moves his tail like a cedar. The sinews of his thighs are knit together.\nHis bones are like tubes of brass. His limbs are like bars of iron.\nHe is the chief of the ways of God. He who made him gives him his sword.": [
+      "Look at Behemoth! I made him and I made you.",
+      "He eats grass like a cow.",
+      "His tail is as big as a tree. His bones are like metal pipes."
+    ],
+    "Behemoth": "Behemoth",
+    "Job 40:15–19, WEB": "from the story of Job",
+    "Leviathan, Mostly Out of Frame": "Leviathan, Too Big to See",
+    "“Can you draw out Leviathan with a fish hook, or press down his tongue with a cord?\nCan you put a rope into his nose, or pierce his jaw through with a hook?\nWill he make many petitions to you, or will he speak soft words to you?\nWill he make a covenant with you, that you should take him for a servant forever?": [
+      "Could you catch Leviathan with a fishing rod?",
+      "Could you put a rope on his nose?",
+      "Would he say please? Would he be your pet?"
+    ],
+    "Leviathan": "Leviathan",
+    "Job 41:1–4, WEB": "from the story of Job",
+    "On earth there is not his equal, that is made without fear.\nHe sees everything that is high. He is king over all the sons of pride.": [
+      "There is nothing else like him anywhere.",
+      "He is not afraid of one single thing."
+    ],
+    "Job 41:33–34, WEB": "from the story of Job",
+    "Behemoth and Leviathan": "Behemoth and Leviathan",
+    "Two shapes at the edge of the storm, too large to look at all at once. Neither of them turns around.": "Two huge shapes at the edge of the storm. They are too big to see all at once.",
+    "The Last Waystone": "The Last Stone",
+    "Moreover Yahweh answered Job,\n“Shall he who argues contend with the Almighty? He who argues with God, let him answer it.”": [
+      "God said to Job: you wanted to argue with me.",
+      "Here I am. Go on then."
+    ],
+    "Let Him Answer It": "Go On Then",
+    "Job 40:1–2, WEB": "from the story of Job",
+    "It is addressed to you. Every word of it has been addressed to you, and none of it is an accusation.\nYou have been arguing with God for six chapters, and God has come out to argue back, in person, in weather.": [
+      "All of this is for you.",
+      "You kept asking God why. And God came. In a storm. To talk to you.",
+      "God is not cross with you."
+    ],
+    "The storm waits for you.": "The storm is waiting for you.",
+    "“I lay my hand on my mouth.”": "\"I am very small. I will be quiet now.\"",
+    "Then Job answered Yahweh,\n“Behold, I am of small account. What shall I answer you? I lay my hand on my mouth.\nI have spoken once, and I will not answer; Yes, twice, but I will proceed no further.”": [
+      "Job said: I am very small.",
+      "I do not know what to say. I will put my hand over my mouth."
+    ],
+    "I Lay My Hand on My Mouth": "Job Goes Quiet",
+    "Job 40:3–5, WEB": "from the story of Job",
+    "Then Job answered Yahweh,\n“I know that you can do all things, and that no purpose of yours can be restrained.\nYou asked, ‘Who is this who hides counsel without knowledge?’ therefore I have uttered that which I did not understand, things too wonderful for me, which I didn’t know.\nYou said, ‘Listen, now, and I will speak; I will question you, and you will answer me.’\nI had heard of you by the hearing of the ear, but now my eye sees you.\nTherefore I abhor myself, and repent in dust and ashes.”": [
+      "Job said: you can do anything.",
+      "I talked about things that are too big for me.",
+      "I used to only hear about you. Now I have seen you."
+    ],
+    "Now My Eye Sees You": "Now I Have Seen You",
+    "Job 42:1–6, WEB": "from the story of Job",
+    "Nothing has been explained. You have not withdrawn one word of the protest, and no one has asked you to.\nThe wind drops. You can hear a dog barking somewhere a long way off, in a country with roads in it.": [
+      "Nobody explained anything. Job never took back what he said.",
+      "The wind stops. Far away, a dog is barking."
+    ],
+    "Answer him. Say all of it again, from the beginning.": "\"I want to say it all again.\"",
+    "Then Yahweh answered Job out of the whirlwind,\n“Now brace yourself like a man. I will question you, and you will answer me.\nWill you even annul my judgment? Will you condemn me, that you may be justified?\nOr do you have an arm like God? Can you thunder with a voice like him?\n“Now deck yourself with excellency and dignity. Array yourself with honor and majesty.\nPour out the fury of your anger. Look at everyone who is proud, and bring him low.\nThen I will also admit to you that your own right hand can save you.": [
+      "God said: all right. Stand up and ask me again.",
+      "Could you make thunder? Could you do my job for one day?"
+    ],
+    "Brace Yourself Like a Man": "Ask Me Again",
+    "Job 40:6–11, 14, WEB": "from the story of Job",
+    "You say it all again, and every word of it is still true, and it is still not an answer.\nThe storm is not angry with you. It simply asks again, and it can go on asking for as long as you like.": [
+      "You say it all again. It is all still true.",
+      "The storm is not angry. It just asks you again."
+    ],
+    "You reach for something to say and find the visitors' sentences where yours should have been.\nGod corrects the wicked. The upright are not cut off. Whoever perished, being innocent?\nThey were good enough to say to Eliphaz. They are no use at all out here.": [
+      "You open your mouth and your friends' words come out.",
+      "They sounded clever back at the ash pile.",
+      "Out here they are no help at all."
+    ],
+    "It was so, that after Yahweh had spoken these words to Job, Yahweh said to Eliphaz the Temanite, “My wrath is kindled against you, and against your two friends; for you have not spoken of me the thing that is right, as my servant Job has.": [
+      "God said to Job's three friends:",
+      "I am cross with you. You did not say true things about me.",
+      "Job did."
+    ],
+    "Job 42:7, WEB": "from the story of Job",
+    "In this telling, that sentence is not said about you.": "This time, God does not say that about you.",
+    "The whirlwind does not explain itself, and it does not ask you anything more. You go home. The roof is mended in time and the flocks are replaced in time, and nobody in Uz says the words 'ash heap' in front of you again. It is not a punishment — nothing is taken from you that was not already taken. It is only that the answer out of the storm was addressed to a man who said the true thing, and for six long arguments you said the safe one.": "The storm does not explain. It does not ask you anything else. You go home.",
+    "Act VI": "Part 5",
+    "The Latter Days": "After",
+    "It was so, that after Yahweh had spoken these words to Job, Yahweh said to Eliphaz the Temanite, “My wrath is kindled against you, and against your two friends; for you have not spoken of me the thing that is right, as my servant Job has.\nNow therefore, take to yourselves seven bulls and seven rams, and go to my servant Job, and offer up for yourselves a burnt offering; and my servant Job shall pray for you, for I will accept him, that I not deal with you according to your folly. For you have not spoken of me the thing that is right, as my servant Job has.”": [
+      "God told the three friends: you did not talk about me the right way.",
+      "Job did.",
+      "Go to Job. Ask him to pray for you."
+    ],
+    "You Have Not Spoken of Me the Thing That Is Right": "Job Was Right",
+    "Job 42:7–8, WEB": "from the story of Job",
+    "The three of them are standing in your yard with seven bulls and seven rams, and none of them has anything clever to say.": "Your three friends are standing in your yard. They do not have anything clever to say now.",
+    "The pardon is not yours to withhold, and it is not automatic either. Go to each of them and pray.": "Go to each one and pray for them.",
+    "You put your hand on the old man's head and pray for him.\nHe has been dreading this for three days. It takes less than a minute.": [
+      "You put your hand on the old man's head and pray for him.",
+      "He was scared about this for three days. It takes one minute."
+    ],
+    "I said what everybody says. I am sorry it was you I said it to.": "I said what everyone says. I am sorry I said it to you.",
+    "You prayed for me before I had finished apologizing. That is the part I cannot get over.": "You prayed for me before I even finished saying sorry.",
+    "Bildad kneels in the yard where he sat in the ash, and you pray for him by name.": "Bildad kneels down in your yard and you pray for him.",
+    "I told you your children got what they had earned. I would like that sentence back.": "I said your children deserved it. I wish I had not said that.",
+    "The bulls are seven and the rams are seven. It is a heavy price for being sure of myself.": "I brought a lot of animals to say sorry with. That is what being sure of myself cost.",
+    "Zophar, who came the furthest and said the least kindly thing, waits until last.\nYou pray for him too.": [
+      "Zophar came the longest way and said the meanest thing.",
+      "You pray for him too."
+    ],
+    "I said God was letting you off lightly. I have thought about that every day since.": "I said God was going easy on you. I have thought about that every day.",
+    "Three hundred miles home, and the whole way I will be practising how to say less.": "It is a long walk home. All the way I will practise saying less.",
+    "So Eliphaz the Temanite and Bildad the Shuhite and Zophar the Naamathite went, and did what Yahweh commanded them, and Yahweh accepted Job.\nYahweh turned the captivity of Job, when he prayed for his friends. Yahweh gave Job twice as much as he had before.": [
+      "The three friends did what God said.",
+      "And when Job prayed for his friends, God gave Job everything back.",
+      "Twice as much as before."
+    ],
+    "Yahweh Turned the Captivity of Job": "Everything Comes Back",
+    "Job 42:9–10, WEB": "from the story of Job",
+    "Fourteen Thousand Sheep": "Even More Sheep",
+    "Six Thousand Camels": "Even More Camels",
+    "So Yahweh blessed the latter end of Job more than his beginning. He had fourteen thousand sheep, six thousand camels, one thousand yoke of oxen, and a thousand female donkeys.\nHe had also seven sons and three daughters.\nHe called the name of the first, Jemimah; and the name of the second, Keziah; and the name of the third, Keren Happuch.": [
+      "God gave Job more than he had at the start.",
+      "So many sheep. So many camels.",
+      "And seven boys and three girls.",
+      "The girls were called Jemimah, Keziah and Keren Happuch."
+    ],
+    "Job 42:12–14, WEB": "from the story of Job",
+    "Jemimah": "Jemimah",
+    "Father, the scribe says a daughter cannot hold land. You told him to write it down anyway.": "Dad, they said girls cannot own land. You told them to write my name down anyway.",
+    "Keziah": "Keziah",
+    "You never talk about the first ten. That's all right. I know their names too.": "You do not talk about the first ten children. That is all right. I know their names too.",
+    "Keren Happuch": "Keren Happuch",
+    "My name means a horn of eye paint. Mother chose it. She said we had had enough of ashes.": "My name means a little pot of face paint. Mum picked it. She said we had had enough ashes.",
+    "In all the land were no women found so beautiful as the daughters of Job. Their father gave them an inheritance among their brothers.": [
+      "There were no girls anywhere as lovely as Job's daughters.",
+      "And their dad gave them land, just like their brothers."
+    ],
+    "Job 42:15, WEB": "from the story of Job",
+    "The Gate of the Yard": "The Gate",
+    "After this Job lived one hundred forty years, and saw his sons, and his sons’ sons, to four generations.\nSo Job died, being old and full of days.": [
+      "Job lived a long, long time after that.",
+      "He saw his children, and their children, and their children's children.",
+      "He was very old, and he had had a full life."
+    ],
+    "Old, and Full of Days": "A Long, Full Life",
+    "Job 42:16–17, WEB": "from the story of Job",
+    "You never learn about the wager. Nobody in the book ever tells Job why, and nobody ever tells you either — you only get the whirlwind, and the storehouses of the snow, and the wild donkey who has never heard of you, and it turns out that this is enough to go on living with. Yahweh said it to Eliphaz and not to you: you have spoken of me the thing that is right. It was the protest that was right. The yard is loud. Go in and eat something.": "Nobody ever tells Job why it happened. Nobody tells you either. You only get the storm, and the snow room, and the wild donkey who has never heard of you. And it turns out that is enough. The yard is noisy. Go and have something to eat.",
+    "The gate of the yard stands open on the east road.\nNothing has come up it yet.": [
+      "The gate is open. The road goes east.",
+      "Nothing has come up it yet."
+    ],
+    "The gate of the yard stands open at the east. Go and stand in it when you are ready.": "The gate is open at the east. Go and stand in it when you are ready.",
+    "Job, Seen From Above": "Job, From Far Away",
+    "Job, in His Latter Days": "Job, Afterwards",
+    "Job the Afflicted": "Job, Sore and Sad"
+  }
+}

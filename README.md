@@ -1,6 +1,13 @@
 # llm-rpg
 
+[![CI](https://github.com/ckopsa/llm-rpg/actions/workflows/ci.yml/badge.svg)](https://github.com/ckopsa/llm-rpg/actions/workflows/ci.yml)
+
 A 2D RPG engine designed for LLMs to **build** and **play** — and for humans to play the same games in a browser.
+
+**▶ Play in your browser: https://ckopsa.github.io/llm-rpg/** — works on a phone (on-screen d-pad), a
+gamepad, or a keyboard. Try [The Trial of Job](https://ckopsa.github.io/llm-rpg/?game=trial-of-job),
+or the [simple-words retelling](https://ckopsa.github.io/llm-rpg/?game=trial-of-job&lang=simple)
+written for a young listener — press **V** to have it read aloud.
 
 **Core idea: everything is data.** A game is one JSON document (maps, tiles, portals, entities, interactions, encounter tables). The engine validates it with actionable error messages, simulates it deterministically, and renders it two ways: as text for AI players, as a grid for human players. Both views run the identical engine on the identical file.
 
@@ -12,6 +19,29 @@ packages/play     AI-facing interfaces: CLI (interactive + replay mode), MCP ser
 apps/web          Human-facing renderer: Vite app, arrow keys + emoji grid
 games/demo        Ironwood Village — a game is just a JSON file in a directory
 ```
+
+## Accessibility
+
+The browser renderer reads itself aloud (**V**), so a player who cannot read yet can still play:
+dialogue, long-form passages, the choice menu and the endings are all spoken, and pacing follows the
+voice rather than a timer — passages turn their own pages. Movement chatter is deliberately not read.
+
+Two speech backends, local first: a [Piper](https://github.com/OHF-Voice/piper1-gpl) neural voice
+served by the dev server (offline, ~130 ms a line — see `apps/web/tools/piper-server.py`), falling
+back to the browser's own Web Speech voices. The local one exists because Web Speech is not
+dependable on Linux: Chromium-family browsers delegate to speech-dispatcher, and de-Googled builds
+expose no voices at all. On the hosted build above there is no server, so the browser's voices are
+used — which works well on Android and iOS.
+
+Games can also ship alternative scripts (`games/<id>/lang.<code>.json`): the same maps, entities and
+flags, different words. `?lang=simple` on The Trial of Job is a retelling for a five-year-old.
+
+## License
+
+Source code is MIT (see [LICENSE](LICENSE)). The bundled art is **not** — some sheets are CC0 and the
+battler sprites are CC-BY 3.0 and require attribution; see
+[apps/web/public/assets/LICENSES.md](apps/web/public/assets/LICENSES.md). Scripture quoted in
+`games/trial-of-job/` is the World English Bible, which is public domain.
 
 ## Quick start
 

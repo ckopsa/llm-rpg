@@ -11,6 +11,11 @@
  * closes on confirm, and re-opens by itself when the chosen option leads to
  * a nested follow-up choice.
  *
+ * Read-aloud: the menu is spoken as a numbered list when it opens, and moving
+ * the caret reads the highlighted option — which is what makes a choice
+ * answerable by someone who is listening rather than reading. Number keys
+ * still pick directly, so "press two" is a complete instruction.
+ *
  * There is no cancel — the engine has no "unchoose" — so Escape just shakes
  * the panel with a blip. Number keys 1-9 pick directly; arrows/W-S move and
  * Enter/Space/E confirm. Everything is feature-detected against the live
@@ -25,6 +30,9 @@ export interface ChoiceHooks {
   choose(word: string): void;
   blip(): void;
   confirm(): void;
+  /** Optional read-aloud. Called with the prompt and options when the menu
+   *  opens, and with a single option as the caret moves. */
+  speak?(text: string): void;
 }
 
 /** The slice of `pendingChoice` this menu renders. */
@@ -112,6 +120,12 @@ export class ChoiceMenu {
       this.isOpen = true;
       this.render(pending);
       this.root.classList.remove("hidden");
+      this.hooks.speak?.(
+        [
+          pending.prompt,
+          ...pending.options.map((o, i) => `${i + 1}. ${o.label}`),
+        ].join(". "),
+      );
     }
   }
 
@@ -183,6 +197,7 @@ export class ChoiceMenu {
     this.index = (this.index + delta + n) % n;
     this.hooks.blip();
     this.renderSelection();
+    this.hooks.speak?.(`${this.index + 1}. ${pending.options[this.index].label}`);
   }
 
   private confirm(index: number): void {
@@ -219,6 +234,7 @@ export class ChoiceMenu {
             this.index = i;
             this.hooks.blip();
             this.renderSelection();
+            this.hooks.speak?.(`${i + 1}. ${opt.label}`);
           }
         });
         li.addEventListener("click", () => this.confirm(i));

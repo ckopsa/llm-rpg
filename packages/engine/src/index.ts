@@ -6,4 +6,5 @@ export * from "./catalog.js";
 export * from "./battle.js";
 export * from "./battleObserve.js";
 export * from "./save.js";
+export * from "./language.js";
 export * from "./forge.js";

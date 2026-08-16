@@ -1,0 +1,94 @@
+name: CI
+
+# Every push and PR is checked; pushes to main also publish the playable build.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Test, validate and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Engine and play tests
+        run: npm test
+
+      - name: Typecheck
+        # packages/play is knowingly excluded — it has no typecheck script and
+        # currently fails tsc --noEmit (llm-rpg-319).
+        run: |
+          npx tsc --noEmit -p packages/engine
+          npx tsc --noEmit -p apps/web
+
+      - name: Validate every game
+        # A game that stops validating is a broken game, whether or not a test
+        # happens to cover it.
+        run: |
+          for game in games/*/game.json; do
+            echo "── $game"
+            npm run validate -- "$game"
+          done
+
+      - name: Build the web app
+        run: npm run build --workspace=@llm-rpg/web
+
+  deploy:
+    name: Publish to GitHub Pages
+    # Only a green build reaches the URL a five-year-old is playing on.
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build for Pages
+        # Pages serves the site from /<repo>/, so the bundle needs that base or
+        # every sprite 404s and the renderer silently falls back to emoji.
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build --workspace=@llm-rpg/web
+
+      - name: SPA-friendly 404
+        # Deep links (?game=…&lang=…) are query strings so they already work,
+        # but a stray path should land on the game rather than a Pages 404.
+        run: cp apps/web/dist/index.html apps/web/dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
