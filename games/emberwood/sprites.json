@@ -1,0 +1,51 @@
+{
+  "tiles": {
+    "tree": "tree_nw",
+    "grass": "grass",
+    "path": "path",
+    "tall grass": "tall_grass",
+    "water": "water",
+    "flowers": "flowers",
+    "rock": "rock",
+    "scree": "sand",
+    "cinder gravel": "grass_dark",
+    "wall": "house_roof_nw",
+    "floor": "sand"
+  },
+  "species": {
+    "emberling": "battler_11",
+    "pyrewyrm": "battler_26",
+    "puddlit": "battler_03",
+    "torrentide": "battler_21",
+    "sproutle": "battler_01",
+    "bramblore": "battler_25",
+    "fuzzle": "battler_14",
+    "gustwing": "battler_09",
+    "voltpup": "battler_20",
+    "stormhound": "battler_19",
+    "marshwick": "battler_31",
+    "pebblor": "battler_18",
+    "boulderon": "battler_28",
+    "cindertail": "battler_12",
+    "hushmoth": "battler_23",
+    "ashenmaw": "battler_27"
+  },
+  "entities": {
+    "maren": "elder",
+    "hermit-sedge": "elder",
+    "vespera": "elder",
+    "warden-hollis": "guard",
+    "gatewarden-lise": "guard",
+    "keeper-bram": "guard",
+    "keeper-fern": "npc1",
+    "villager-petra": "npc1",
+    "villager-wick": "npc1",
+    "trailhand-petto": "npc1",
+    "trailhand-wren": "npc1",
+    "trailhand-juna": "npc1",
+    "marshhand-odile": "npc1",
+    "trailhand-rooke": "npc1",
+    "vent-tender-mira": "npc1"
+  },
+  "player": "player"
+}

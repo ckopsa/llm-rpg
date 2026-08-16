@@ -1,0 +1,20 @@
+{
+  "name": "@llm-rpg/play",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "play": "tsx src/cli.ts",
+    "playtest": "tsx src/playtest.ts",
+    "validate": "tsx src/validate.ts",
+    "mcp": "tsx src/mcp.ts"
+  },
+  "dependencies": {
+    "@llm-rpg/engine": "*",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

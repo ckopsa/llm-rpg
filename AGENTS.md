@@ -1,5 +1,20 @@
 # Agent Instructions
 
+## Project: llm-rpg
+
+A 2D RPG engine designed for LLMs to build and play. **Everything is data**: a game is one JSON document (`games/demo/game.json`), zod-validated with actionable errors, simulated deterministically, rendered as text for AI players (`packages/play`: CLI + MCP) and as a web grid for humans (`apps/web`). Engine core in `packages/engine` is pure TS — no I/O, no `node:` imports; all randomness flows through the seeded, serializable `Rng` so (seed + action list) fully determines a playthrough, battles included. Games are multi-map overworlds: `maps` connected by `portals`, with `wild` legend tiles rolling per-map `encounters` tables against the embedded `catalog` (type chart, moves, species, items). A wild-tile hit starts a battle immediately (`state.battle`); battle actions are `move1..4`, `switch1..6`, `item1..9`, `catch`, `run` (catch/run wild-only). Entities with a `trainer` block ({ party, defeatFlag, lineOfSight?, rewardMoney?, rewardCommands?, intro/defeatText/outro }) battle on interact or on sight (`state.battleTrainer`); victory sets the flag and pays rewards, and defeated trainers chat like NPCs. Party (max 6), catching, XP (cubic curve, per faint), leveling, and evolution are wired through `Sim`; defeat respawns at `player.respawn` and halves money. Commands: `say`, `set_flag`, `win`, `give_species`, `give_item`, `give_money`, `heal_party`, `sell` (spatial shop counter: buy 1x itemId for price); interactions gate on `requiresFlag`/`forbidsFlag`. Save/load: `sim.snapshot()` / `Sim.fromSnapshot` restore everything mid-battle included; `makeSaveFile`/`loadSaveFile` add the `{ gameId, gameVersion, snapshot }` guard; CLI `save`/`load [slot]` + `--from <slot>`, MCP `save_game`/`load_game`, files in `<gameDir>/saves/` (gitignored).
+
+```bash
+npm install && npm test                    # build + engine tests (vitest)
+npm run validate -- games/demo/game.json   # validate a game file
+npm run play -- --actions "east,interact"  # stateless agent-friendly play
+npm run web                                # human-facing Vite renderer
+```
+
+See CLAUDE.md for full conventions.
+
+## Issue Tracking
+
 This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
 
 > **Architecture in one line:** Issues live in a local Dolt database

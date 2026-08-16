@@ -1,0 +1,2332 @@
+{
+  "meta": {
+    "id": "emberwood",
+    "title": "Emberwood",
+    "version": "0.1.0",
+    "goal": "Relight the Keeper's road and out-argue Vespera at Ashen Peak to wake the Great Hearth."
+  },
+  "catalog": {
+    "typeChart": {
+      "types": [
+        "fire",
+        "water",
+        "grass",
+        "electric",
+        "rock",
+        "normal"
+      ],
+      "effectiveness": {
+        "fire": {
+          "fire": 0.5,
+          "water": 0.5,
+          "grass": 2,
+          "rock": 0.5
+        },
+        "water": {
+          "fire": 2,
+          "water": 0.5,
+          "grass": 0.5,
+          "rock": 2
+        },
+        "grass": {
+          "fire": 0.5,
+          "water": 2,
+          "grass": 0.5,
+          "rock": 2
+        },
+        "electric": {
+          "water": 2,
+          "grass": 0.5,
+          "electric": 0.5,
+          "rock": 0
+        },
+        "rock": {
+          "fire": 2,
+          "electric": 2,
+          "rock": 0.5
+        },
+        "normal": {
+          "rock": 0.5
+        }
+      }
+    },
+    "moves": [
+      {
+        "id": "bonk",
+        "name": "Bonk",
+        "type": "normal",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 35
+      },
+      {
+        "id": "headlong",
+        "name": "Headlong",
+        "type": "normal",
+        "category": "physical",
+        "power": 65,
+        "accuracy": 0.95,
+        "pp": 15
+      },
+      {
+        "id": "honefangs",
+        "name": "Hone Fangs",
+        "type": "normal",
+        "category": "status",
+        "power": 0,
+        "accuracy": 1,
+        "pp": 20,
+        "effect": {
+          "kind": "raise_atk"
+        }
+      },
+      {
+        "id": "brace",
+        "name": "Brace",
+        "type": "normal",
+        "category": "status",
+        "power": 0,
+        "accuracy": 1,
+        "pp": 20,
+        "effect": {
+          "kind": "raise_def"
+        }
+      },
+      {
+        "id": "quickstep",
+        "name": "Quickstep",
+        "type": "normal",
+        "category": "status",
+        "power": 0,
+        "accuracy": 1,
+        "pp": 20,
+        "effect": {
+          "kind": "raise_spd"
+        }
+      },
+      {
+        "id": "dustkick",
+        "name": "Dust Kick",
+        "type": "normal",
+        "category": "status",
+        "power": 0,
+        "accuracy": 1,
+        "pp": 20,
+        "effect": {
+          "kind": "lower_def"
+        }
+      },
+      {
+        "id": "softmurmur",
+        "name": "Soft Murmur",
+        "type": "normal",
+        "category": "status",
+        "power": 0,
+        "accuracy": 1,
+        "pp": 15,
+        "effect": {
+          "kind": "lower_atk"
+        }
+      },
+      {
+        "id": "vinesnare",
+        "name": "Vine Snare",
+        "type": "grass",
+        "category": "status",
+        "power": 0,
+        "accuracy": 0.9,
+        "pp": 15,
+        "effect": {
+          "kind": "lower_spd"
+        }
+      },
+      {
+        "id": "emberflick",
+        "name": "Emberflick",
+        "type": "fire",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "flamejet",
+        "name": "Flame Jet",
+        "type": "fire",
+        "category": "special",
+        "power": 60,
+        "accuracy": 1,
+        "pp": 15
+      },
+      {
+        "id": "blazeburst",
+        "name": "Blaze Burst",
+        "type": "fire",
+        "category": "special",
+        "power": 85,
+        "accuracy": 0.9,
+        "pp": 8
+      },
+      {
+        "id": "puddlepop",
+        "name": "Puddle Pop",
+        "type": "water",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "riptide",
+        "name": "Riptide",
+        "type": "water",
+        "category": "special",
+        "power": 60,
+        "accuracy": 1,
+        "pp": 15
+      },
+      {
+        "id": "tidalcrush",
+        "name": "Tidal Crush",
+        "type": "water",
+        "category": "special",
+        "power": 85,
+        "accuracy": 0.9,
+        "pp": 8
+      },
+      {
+        "id": "leaflash",
+        "name": "Leaf Lash",
+        "type": "grass",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "thornwhip",
+        "name": "Thorn Whip",
+        "type": "grass",
+        "category": "physical",
+        "power": 60,
+        "accuracy": 1,
+        "pp": 15
+      },
+      {
+        "id": "bramblecrash",
+        "name": "Bramble Crash",
+        "type": "grass",
+        "category": "physical",
+        "power": 85,
+        "accuracy": 0.9,
+        "pp": 8
+      },
+      {
+        "id": "sparklesnap",
+        "name": "Sparkle Snap",
+        "type": "electric",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "staticjolt",
+        "name": "Static Jolt",
+        "type": "electric",
+        "category": "special",
+        "power": 60,
+        "accuracy": 1,
+        "pp": 15
+      },
+      {
+        "id": "stormcoil",
+        "name": "Storm Coil",
+        "type": "electric",
+        "category": "special",
+        "power": 85,
+        "accuracy": 0.85,
+        "pp": 8
+      },
+      {
+        "id": "pebbletoss",
+        "name": "Pebble Toss",
+        "type": "rock",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 0.95,
+        "pp": 30
+      },
+      {
+        "id": "screeslide",
+        "name": "Scree Slide",
+        "type": "rock",
+        "category": "physical",
+        "power": 60,
+        "accuracy": 0.9,
+        "pp": 15
+      },
+      {
+        "id": "boulderbash",
+        "name": "Boulder Bash",
+        "type": "rock",
+        "category": "physical",
+        "power": 85,
+        "accuracy": 0.8,
+        "pp": 8
+      }
+    ],
+    "species": [
+      {
+        "id": "emberling",
+        "name": "Emberling",
+        "glyph": "🔥",
+        "types": [
+          "fire"
+        ],
+        "baseStats": {
+          "hp": 44,
+          "atk": 52,
+          "def": 43,
+          "spd": 60
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 5,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 9,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 13,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 18,
+            "moveId": "blazeburst"
+          }
+        ],
+        "evolvesTo": {
+          "speciesId": "pyrewyrm",
+          "level": 16
+        },
+        "catchRate": 0.45,
+        "xpYield": 80
+      },
+      {
+        "id": "pyrewyrm",
+        "name": "Pyrewyrm",
+        "glyph": "🐉",
+        "types": [
+          "fire"
+        ],
+        "baseStats": {
+          "hp": 58,
+          "atk": 68,
+          "def": 55,
+          "spd": 80
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 9,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 18,
+            "moveId": "blazeburst"
+          },
+          {
+            "level": 21,
+            "moveId": "headlong"
+          }
+        ],
+        "catchRate": 0.1,
+        "xpYield": 170
+      },
+      {
+        "id": "puddlit",
+        "name": "Puddlit",
+        "glyph": "💧",
+        "types": [
+          "water"
+        ],
+        "baseStats": {
+          "hp": 50,
+          "atk": 48,
+          "def": 60,
+          "spd": 45
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "puddlepop"
+          },
+          {
+            "level": 5,
+            "moveId": "brace"
+          },
+          {
+            "level": 9,
+            "moveId": "riptide"
+          },
+          {
+            "level": 13,
+            "moveId": "dustkick"
+          },
+          {
+            "level": 18,
+            "moveId": "tidalcrush"
+          }
+        ],
+        "evolvesTo": {
+          "speciesId": "torrentide",
+          "level": 16
+        },
+        "catchRate": 0.5,
+        "xpYield": 80
+      },
+      {
+        "id": "torrentide",
+        "name": "Torrentide",
+        "glyph": "🌊",
+        "types": [
+          "water"
+        ],
+        "baseStats": {
+          "hp": 64,
+          "atk": 62,
+          "def": 72,
+          "spd": 52
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "puddlepop"
+          },
+          {
+            "level": 9,
+            "moveId": "riptide"
+          },
+          {
+            "level": 18,
+            "moveId": "tidalcrush"
+          },
+          {
+            "level": 21,
+            "moveId": "headlong"
+          }
+        ],
+        "catchRate": 0.1,
+        "xpYield": 170
+      },
+      {
+        "id": "sproutle",
+        "name": "Sproutle",
+        "glyph": "🌱",
+        "types": [
+          "grass"
+        ],
+        "baseStats": {
+          "hp": 46,
+          "atk": 50,
+          "def": 50,
+          "spd": 50
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "leaflash"
+          },
+          {
+            "level": 5,
+            "moveId": "vinesnare"
+          },
+          {
+            "level": 9,
+            "moveId": "thornwhip"
+          },
+          {
+            "level": 13,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 18,
+            "moveId": "bramblecrash"
+          }
+        ],
+        "evolvesTo": {
+          "speciesId": "bramblore",
+          "level": 16
+        },
+        "catchRate": 0.45,
+        "xpYield": 80
+      },
+      {
+        "id": "bramblore",
+        "name": "Bramblore",
+        "glyph": "🌿",
+        "types": [
+          "grass"
+        ],
+        "baseStats": {
+          "hp": 58,
+          "atk": 64,
+          "def": 58,
+          "spd": 74
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "leaflash"
+          },
+          {
+            "level": 9,
+            "moveId": "thornwhip"
+          },
+          {
+            "level": 18,
+            "moveId": "bramblecrash"
+          },
+          {
+            "level": 21,
+            "moveId": "quickstep"
+          }
+        ],
+        "catchRate": 0.1,
+        "xpYield": 170
+      },
+      {
+        "id": "fuzzle",
+        "name": "Fuzzle",
+        "glyph": "🐹",
+        "types": [
+          "normal"
+        ],
+        "baseStats": {
+          "hp": 68,
+          "atk": 45,
+          "def": 48,
+          "spd": 40
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 4,
+            "moveId": "brace"
+          },
+          {
+            "level": 8,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 12,
+            "moveId": "headlong"
+          },
+          {
+            "level": 18,
+            "moveId": "dustkick"
+          }
+        ],
+        "catchRate": 0.55,
+        "xpYield": 70
+      },
+      {
+        "id": "gustwing",
+        "name": "Gustwing",
+        "glyph": "🐦",
+        "types": [
+          "normal",
+          "electric"
+        ],
+        "baseStats": {
+          "hp": 40,
+          "atk": 48,
+          "def": 38,
+          "spd": 85
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "sparklesnap"
+          },
+          {
+            "level": 6,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 10,
+            "moveId": "staticjolt"
+          },
+          {
+            "level": 15,
+            "moveId": "headlong"
+          },
+          {
+            "level": 20,
+            "moveId": "stormcoil"
+          }
+        ],
+        "catchRate": 0.45,
+        "xpYield": 85
+      },
+      {
+        "id": "voltpup",
+        "name": "Voltpup",
+        "glyph": "⚡",
+        "types": [
+          "electric"
+        ],
+        "baseStats": {
+          "hp": 38,
+          "atk": 56,
+          "def": 40,
+          "spd": 88
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "sparklesnap"
+          },
+          {
+            "level": 5,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 9,
+            "moveId": "staticjolt"
+          },
+          {
+            "level": 14,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 20,
+            "moveId": "stormcoil"
+          }
+        ],
+        "evolvesTo": {
+          "speciesId": "stormhound",
+          "level": 18
+        },
+        "catchRate": 0.3,
+        "xpYield": 95
+      },
+      {
+        "id": "stormhound",
+        "name": "Stormhound",
+        "glyph": "🐺",
+        "types": [
+          "electric"
+        ],
+        "baseStats": {
+          "hp": 55,
+          "atk": 74,
+          "def": 52,
+          "spd": 100
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "sparklesnap"
+          },
+          {
+            "level": 9,
+            "moveId": "staticjolt"
+          },
+          {
+            "level": 14,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 18,
+            "moveId": "stormcoil"
+          },
+          {
+            "level": 22,
+            "moveId": "headlong"
+          }
+        ],
+        "catchRate": 0.1,
+        "xpYield": 180
+      },
+      {
+        "id": "marshwick",
+        "name": "Marshwick",
+        "glyph": "🕯",
+        "types": [
+          "water",
+          "grass"
+        ],
+        "baseStats": {
+          "hp": 55,
+          "atk": 52,
+          "def": 58,
+          "spd": 48
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "puddlepop"
+          },
+          {
+            "level": 1,
+            "moveId": "leaflash"
+          },
+          {
+            "level": 6,
+            "moveId": "vinesnare"
+          },
+          {
+            "level": 10,
+            "moveId": "riptide"
+          },
+          {
+            "level": 14,
+            "moveId": "thornwhip"
+          },
+          {
+            "level": 19,
+            "moveId": "tidalcrush"
+          }
+        ],
+        "catchRate": 0.4,
+        "xpYield": 100
+      },
+      {
+        "id": "pebblor",
+        "name": "Pebblor",
+        "glyph": "🪨",
+        "types": [
+          "rock"
+        ],
+        "baseStats": {
+          "hp": 60,
+          "atk": 58,
+          "def": 85,
+          "spd": 25
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "pebbletoss"
+          },
+          {
+            "level": 4,
+            "moveId": "brace"
+          },
+          {
+            "level": 9,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 13,
+            "moveId": "screeslide"
+          },
+          {
+            "level": 18,
+            "moveId": "boulderbash"
+          }
+        ],
+        "evolvesTo": {
+          "speciesId": "boulderon",
+          "level": 20
+        },
+        "catchRate": 0.35,
+        "xpYield": 100
+      },
+      {
+        "id": "boulderon",
+        "name": "Boulderon",
+        "glyph": "🗿",
+        "types": [
+          "rock"
+        ],
+        "baseStats": {
+          "hp": 78,
+          "atk": 76,
+          "def": 100,
+          "spd": 30
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "pebbletoss"
+          },
+          {
+            "level": 1,
+            "moveId": "brace"
+          },
+          {
+            "level": 13,
+            "moveId": "screeslide"
+          },
+          {
+            "level": 18,
+            "moveId": "boulderbash"
+          },
+          {
+            "level": 22,
+            "moveId": "headlong"
+          }
+        ],
+        "catchRate": 0.1,
+        "xpYield": 180
+      },
+      {
+        "id": "cindertail",
+        "name": "Cindertail",
+        "glyph": "🦎",
+        "types": [
+          "fire",
+          "rock"
+        ],
+        "baseStats": {
+          "hp": 62,
+          "atk": 58,
+          "def": 74,
+          "spd": 45
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 1,
+            "moveId": "pebbletoss"
+          },
+          {
+            "level": 6,
+            "moveId": "brace"
+          },
+          {
+            "level": 10,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 14,
+            "moveId": "screeslide"
+          },
+          {
+            "level": 18,
+            "moveId": "dustkick"
+          },
+          {
+            "level": 22,
+            "moveId": "blazeburst"
+          }
+        ],
+        "catchRate": 0.3,
+        "xpYield": 120
+      },
+      {
+        "id": "hushmoth",
+        "name": "Hushmoth",
+        "glyph": "🦋",
+        "types": [
+          "normal"
+        ],
+        "baseStats": {
+          "hp": 42,
+          "atk": 50,
+          "def": 40,
+          "spd": 95
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "softmurmur"
+          },
+          {
+            "level": 6,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 11,
+            "moveId": "headlong"
+          },
+          {
+            "level": 16,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 20,
+            "moveId": "dustkick"
+          }
+        ],
+        "catchRate": 0.15,
+        "xpYield": 140
+      },
+      {
+        "id": "ashenmaw",
+        "name": "Ashenmaw",
+        "glyph": "🐲",
+        "types": [
+          "fire",
+          "rock"
+        ],
+        "baseStats": {
+          "hp": 85,
+          "atk": 85,
+          "def": 80,
+          "spd": 60
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 1,
+            "moveId": "pebbletoss"
+          },
+          {
+            "level": 8,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 12,
+            "moveId": "screeslide"
+          },
+          {
+            "level": 16,
+            "moveId": "blazeburst"
+          },
+          {
+            "level": 20,
+            "moveId": "boulderbash"
+          }
+        ],
+        "catchRate": 0.05,
+        "xpYield": 240
+      }
+    ],
+    "items": [
+      {
+        "id": "embersalve",
+        "name": "Embersalve",
+        "kind": "heal",
+        "amount": 20,
+        "price": 10
+      },
+      {
+        "id": "great-embersalve",
+        "name": "Great Embersalve",
+        "kind": "heal",
+        "amount": 50,
+        "price": 30
+      },
+      {
+        "id": "kindling-snare",
+        "name": "Kindling Snare",
+        "kind": "capture",
+        "ballMod": 1,
+        "price": 20
+      },
+      {
+        "id": "warm-snare",
+        "name": "Warm Snare",
+        "kind": "capture",
+        "ballMod": 1.5,
+        "price": 45
+      }
+    ]
+  },
+  "legend": {
+    "#": {
+      "name": "tree",
+      "glyph": "🌲",
+      "walkable": false
+    },
+    ".": {
+      "name": "grass",
+      "glyph": "🟩",
+      "walkable": true
+    },
+    ",": {
+      "name": "path",
+      "glyph": "🟨",
+      "walkable": true
+    },
+    "*": {
+      "name": "tall grass",
+      "glyph": "🌿",
+      "walkable": true,
+      "wild": true
+    },
+    "~": {
+      "name": "water",
+      "glyph": "🟦",
+      "walkable": false
+    },
+    "f": {
+      "name": "flowers",
+      "glyph": "🌼",
+      "walkable": true
+    },
+    "^": {
+      "name": "rock",
+      "glyph": "⛰",
+      "walkable": false
+    },
+    ":": {
+      "name": "scree",
+      "glyph": "🟫",
+      "walkable": true
+    },
+    "%": {
+      "name": "cinder gravel",
+      "glyph": "🍂",
+      "walkable": true,
+      "wild": true
+    },
+    "=": {
+      "name": "wall",
+      "glyph": "🧱",
+      "walkable": false
+    },
+    "_": {
+      "name": "floor",
+      "glyph": "⬜",
+      "walkable": true
+    }
+  },
+  "maps": {
+    "kilnhearth": {
+      "rows": [
+        "#######,########",
+        "#......,.......#",
+        "#.====.,..~~...#",
+        "#.====.,..~~...#",
+        "#.=,==.,.......#",
+        "#......,.......#",
+        "#......,..f....#",
+        "#..f...,.......#",
+        "#......,,,.....#",
+        "#.f......,..f..#",
+        "#........,.....#",
+        "################"
+      ],
+      "entities": [
+        {
+          "id": "warden-hollis",
+          "name": "Warden Hollis",
+          "glyph": "💂",
+          "x": 7,
+          "y": 1,
+          "passableWithFlag": "starter_chosen",
+          "interactions": [
+            {
+              "requiresFlag": "starter_chosen",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "That's a good little flame you've got there. North for the Trail — brazier first, then Mosshollow."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "No one walks the Trail without a kindred, love. Maren's kiln is the stone house west — go choose yours."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hearth-kilnhearth",
+          "name": "Kiln-hearth",
+          "glyph": "🔥",
+          "x": 12,
+          "y": 5,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The kiln-hearth crackles like it's pleased with itself. Your kindred lean into the warmth."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "biscuit",
+          "name": "Biscuit the dog",
+          "glyph": "🐕",
+          "x": 3,
+          "y": 6,
+          "blocking": false,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Woof! (Biscuit smells of warm bread and rain, and is very pleased about something.)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "villager-petra",
+          "name": "Old Petra",
+          "glyph": "👵",
+          "x": 13,
+          "y": 3,
+          "interactions": [
+            {
+              "requiresFlag": "badge_bram",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Two Keeper's marks, and the kettle sang all morning. Go finish it, love."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "badge_fern",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Fern's mark already? Your mother would have burst her buttons."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The kettle's gone cold twice this week with a fire under it. Kettles don't do that."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sign-kilnhearth",
+          "name": "Village sign",
+          "glyph": "🪧",
+          "x": 5,
+          "y": 8,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "KILNHEARTH — feed the dog, mind the kettle, keep the fire."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 7,
+          "y": 0,
+          "toMap": "verdant-trail",
+          "toX": 6,
+          "toY": 12
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "toMap": "kiln-interior",
+          "toX": 4,
+          "toY": 5
+        }
+      ]
+    },
+    "kiln-interior": {
+      "rows": [
+        "=========",
+        "=_______=",
+        "=_______=",
+        "=_______=",
+        "=_______=",
+        "=_______=",
+        "====_===="
+      ],
+      "entities": [
+        {
+          "id": "maren",
+          "name": "Elder Maren",
+          "glyph": "🧙",
+          "x": 4,
+          "y": 4,
+          "interactions": [
+            {
+              "requiresFlag": "starter_chosen",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Relight the Trail brazier first; the road remembers the rest. And if you meet Vespera up there... be kind before you're clever."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The Trail brazier guttered out this morning, and my knees won't make the climb. Three young kindred wait by the north wall — warm your hands and choose one."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pedestal-emberling",
+          "name": "Emberling's pedestal",
+          "glyph": "🕯",
+          "x": 1,
+          "y": 2,
+          "interactions": [
+            {
+              "forbidsFlag": "starter_chosen",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The emberling hops off its pedestal before you've finished reaching. A coal with opinions, this one."
+                },
+                {
+                  "type": "give_species",
+                  "speciesId": "emberling",
+                  "level": 5
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "starter_chosen"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The pedestal is warm where the emberling sat."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pedestal-puddlit",
+          "name": "Puddlit's pedestal",
+          "glyph": "🕯",
+          "x": 4,
+          "y": 2,
+          "interactions": [
+            {
+              "forbidsFlag": "starter_chosen",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The puddlit pours itself into your hands, then reshapes, pleased. It will follow you home now; that's simply what it does."
+                },
+                {
+                  "type": "give_species",
+                  "speciesId": "puddlit",
+                  "level": 5
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "starter_chosen"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "A damp ring marks where the puddlit waited."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pedestal-sproutle",
+          "name": "Sproutle's pedestal",
+          "glyph": "🕯",
+          "x": 7,
+          "y": 2,
+          "interactions": [
+            {
+              "forbidsFlag": "starter_chosen",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The sproutle grabs your sleeve with one leafy hand and does not let go. It has been sleeping in this plant pot all winter."
+                },
+                {
+                  "type": "give_species",
+                  "speciesId": "sproutle",
+                  "level": 5
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "starter_chosen"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "An empty plant pot, still faintly warm."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 4,
+          "y": 6,
+          "toMap": "kilnhearth",
+          "toX": 3,
+          "toY": 5
+        }
+      ]
+    },
+    "verdant-trail": {
+      "rows": [
+        "#######,########",
+        "#......,.......#",
+        "#.***..,..***..#",
+        "#.***..,..***..#",
+        "#.***..,,..**..#",
+        "#.......,......#",
+        "#..##...,..##..#",
+        "#.......,......#",
+        "#..***..,......#",
+        "#..***..,,,....#",
+        "#..***....,....#",
+        "#.....,,,,,....#",
+        "#.....,........#",
+        "######,#########"
+      ],
+      "entities": [
+        {
+          "id": "brazier-verdant",
+          "name": "Waystone brazier",
+          "glyph": "🏮",
+          "x": 8,
+          "y": 7,
+          "interactions": [
+            {
+              "requiresFlag": "brazier_trail",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The brazier holds its small flame against the grey. Your kindred lean in."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The waystone brazier is cold, its ash fine as flour. You rake the coals, strike your firebox, and coax it back."
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "brazier_trail"
+                },
+                {
+                  "type": "heal_party"
+                },
+                {
+                  "type": "say",
+                  "text": "Warmth rolls down the Trail like something let out of a jar. Somewhere south, a kettle sings."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "trailhand-petto",
+          "name": "Trailhand Petto",
+          "glyph": "🤠",
+          "x": 8,
+          "y": 12,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "sproutle",
+                "level": 7
+              }
+            ],
+            "defeatFlag": "petto_defeated",
+            "lineOfSight": {
+              "dir": "north",
+              "range": 2
+            },
+            "rewardMoney": 30,
+            "intro": "You walk like you've somewhere to be. Nobody's got somewhere to be anymore.",
+            "defeatText": "Huh. Maybe somewhere's worth walking to after all.",
+            "outro": "Mind the grass past the bend — it rustles even when the wind doesn't."
+          },
+          "interactions": []
+        },
+        {
+          "id": "trailhand-wren",
+          "name": "Trailhand Wren",
+          "glyph": "👒",
+          "x": 13,
+          "y": 3,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "fuzzle",
+                "level": 5
+              },
+              {
+                "speciesId": "gustwing",
+                "level": 6
+              }
+            ],
+            "defeatFlag": "wren_defeated",
+            "lineOfSight": {
+              "dir": "west",
+              "range": 3
+            },
+            "rewardMoney": 35,
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "embersalve",
+                "qty": 1
+              }
+            ],
+            "intro": "Hold up — my two haven't stretched their legs since the frost came.",
+            "defeatText": "Well scrapped. Warm work is good work.",
+            "outro": "The brazier went dark on my watch, and I hate that. Glad someone's climbing."
+          },
+          "interactions": []
+        },
+        {
+          "id": "trailhand-juna",
+          "name": "Trailhand Juna",
+          "glyph": "🧢",
+          "x": 13,
+          "y": 5,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "voltpup",
+                "level": 8
+              }
+            ],
+            "defeatFlag": "juna_defeated",
+            "lineOfSight": {
+              "dir": "west",
+              "range": 3
+            },
+            "rewardMoney": 40,
+            "intro": "Shh, you'll scare the voltpup. Ah — too late, fight me.",
+            "defeatText": "Fair's fair. The pup likes you, which is annoying.",
+            "outro": "Voltpups nest in the east grass. Bring a snare and patience."
+          },
+          "interactions": []
+        },
+        {
+          "id": "sign-trail",
+          "name": "Trail sign",
+          "glyph": "🪧",
+          "x": 4,
+          "y": 12,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "VERDANT TRAIL — the grass is lively; travelers keep a snare handy."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 6,
+          "y": 13,
+          "toMap": "kilnhearth",
+          "toX": 7,
+          "toY": 2
+        },
+        {
+          "x": 7,
+          "y": 0,
+          "toMap": "mosshollow",
+          "toX": 8,
+          "toY": 10
+        }
+      ],
+      "encounters": {
+        "rate": 0.18,
+        "table": [
+          {
+            "speciesId": "fuzzle",
+            "minLevel": 3,
+            "maxLevel": 5,
+            "weight": 4
+          },
+          {
+            "speciesId": "gustwing",
+            "minLevel": 3,
+            "maxLevel": 5,
+            "weight": 2
+          },
+          {
+            "speciesId": "sproutle",
+            "minLevel": 4,
+            "maxLevel": 6,
+            "weight": 1.5
+          },
+          {
+            "speciesId": "voltpup",
+            "minLevel": 4,
+            "maxLevel": 6,
+            "weight": 1
+          }
+        ]
+      }
+    },
+    "mosshollow": {
+      "rows": [
+        "########,#########",
+        "#......#,#.......#",
+        "#......#.#...~~..#",
+        "#................#",
+        "#................#",
+        ",................#",
+        "#................#",
+        "#................#",
+        "#..........##,##.#",
+        "#..........#...#.#",
+        "#..........#####.#",
+        "########,#########"
+      ],
+      "entities": [
+        {
+          "id": "gatewarden-lise",
+          "name": "Gatewarden Lise",
+          "glyph": "💂",
+          "x": 8,
+          "y": 1,
+          "passableWithFlag": "badge_fern",
+          "interactions": [
+            {
+              "requiresFlag": "badge_fern",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Fern's mark, plain as morning. The Ascent is open to you — mind the vents."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The high road stays shut till a Keeper vouches for you. Fern keeps her grove southeast, past the market."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "counter-salve",
+          "name": "Salve counter",
+          "glyph": "🧴",
+          "x": 3,
+          "y": 3,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Embersalve, ten coins the jar — kiln-warm, mind your fingers."
+                },
+                {
+                  "type": "sell",
+                  "itemId": "embersalve",
+                  "price": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "counter-great-salve",
+          "name": "Great salve counter",
+          "glyph": "🫙",
+          "x": 6,
+          "y": 3,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Great embersalve, thirty coins — for the hurt you can't walk off."
+                },
+                {
+                  "type": "sell",
+                  "itemId": "great-embersalve",
+                  "price": 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "counter-snare",
+          "name": "Snare counter",
+          "glyph": "🪤",
+          "x": 9,
+          "y": 3,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Kindling snares, twenty — the weave takes best on a tired kindred."
+                },
+                {
+                  "type": "sell",
+                  "itemId": "kindling-snare",
+                  "price": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "counter-warm-snare",
+          "name": "Warm snare counter",
+          "glyph": "🧶",
+          "x": 12,
+          "y": 3,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Warm snares, forty-five — the good weave, holds heat and patience."
+                },
+                {
+                  "type": "sell",
+                  "itemId": "warm-snare",
+                  "price": 45
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hearth-mosshollow",
+          "name": "Moss-hearth",
+          "glyph": "🔥",
+          "x": 14,
+          "y": 7,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The town hearth burns low and steady, ringed with drying socks. Your kindred settle into the warmth."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "keeper-fern",
+          "name": "Keeper Fern",
+          "glyph": "🌾",
+          "x": 13,
+          "y": 9,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "sproutle",
+                "level": 13
+              },
+              {
+                "speciesId": "marshwick",
+                "level": 14
+              }
+            ],
+            "defeatFlag": "badge_fern",
+            "rewardMoney": 150,
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "warm-snare",
+                "qty": 3
+              }
+            ],
+            "intro": "Maren sent you? Then show me she taught you more than kindling.",
+            "defeatText": "There it is — the stubbornness the road needs. Take my mark, and warm snares in place of the charm; the charms won't hold their heat anymore.",
+            "outro": "The marsh folk say the west reeds are lonely. Kindred hate lonely."
+          },
+          "interactions": []
+        },
+        {
+          "id": "villager-wick",
+          "name": "Wick the beekeeper",
+          "glyph": "🧑‍🌾",
+          "x": 3,
+          "y": 8,
+          "interactions": [
+            {
+              "requiresFlag": "badge_bram",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The hives hummed today — first time since autumn. Whatever you're doing up there, don't stop."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "badge_fern",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Fern vouches for you, so I'll say it plain: the bees stopped humming, and I'm frightened."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Quiet hives. Bees don't hum when they're cold, and nothing's colder than this spring."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sign-mosshollow",
+          "name": "Town sign",
+          "glyph": "🪧",
+          "x": 5,
+          "y": 6,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "MOSSHOLLOW — market row north, Keeper Fern's grove southeast. The hearth is free, always."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 8,
+          "y": 11,
+          "toMap": "verdant-trail",
+          "toX": 7,
+          "toY": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "toMap": "mistmarsh",
+          "toX": 14,
+          "toY": 5
+        },
+        {
+          "x": 8,
+          "y": 0,
+          "toMap": "cinder-ascent",
+          "toX": 7,
+          "toY": 12
+        }
+      ]
+    },
+    "mistmarsh": {
+      "rows": [
+        "################",
+        "#..~~...**...~~#",
+        "#..~~..***....~#",
+        "#......***.....#",
+        "#......,,,.....#",
+        "#..,,,,,....,,,,",
+        "#..~~...**..~~.#",
+        "#.......**.....#",
+        "#..**..........#",
+        "#..**...~~.....#",
+        "################"
+      ],
+      "entities": [
+        {
+          "id": "hermit-sedge",
+          "name": "Hermit Sedge",
+          "glyph": "🧓",
+          "x": 2,
+          "y": 4,
+          "interactions": [
+            {
+              "requiresFlag": "sedge_gift",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "She'll sing when the fog rolls in. Let her."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "brazier_trail",
+              "forbidsFlag": "sedge_gift",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "You smell of woodsmoke — proper smoke, Trail smoke. Then you'll do."
+                },
+                {
+                  "type": "give_species",
+                  "speciesId": "marshwick",
+                  "level": 10
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "sedge_gift"
+                },
+                {
+                  "type": "say",
+                  "text": "Her name's her own business, but she answers to Wick. Keep her out of the wind."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Cold hands, cold lantern. Light the Trail brazier and we'll talk."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "marshhand-odile",
+          "name": "Marsh-hand Odile",
+          "glyph": "🎣",
+          "x": 5,
+          "y": 7,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "puddlit",
+                "level": 8
+              },
+              {
+                "speciesId": "marshwick",
+                "level": 9
+              }
+            ],
+            "defeatFlag": "odile_defeated",
+            "lineOfSight": {
+              "dir": "north",
+              "range": 2
+            },
+            "rewardMoney": 60,
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "kindling-snare",
+                "qty": 2
+              }
+            ],
+            "intro": "Fog's thick enough to lean on today. Let's see if your kindred keep their footing.",
+            "defeatText": "Sure-footed after all. Take the coins before they rust.",
+            "outro": "The old one in the west reeds doesn't care for strangers. Trail smoke on your coat might change his mind."
+          },
+          "interactions": []
+        },
+        {
+          "id": "quiet-heron",
+          "name": "Grey heron",
+          "glyph": "🪿",
+          "x": 11,
+          "y": 2,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "A grey heron stands in the shallows, doing nothing loudly."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 15,
+          "y": 5,
+          "toMap": "mosshollow",
+          "toX": 1,
+          "toY": 5
+        }
+      ],
+      "encounters": {
+        "rate": 0.2,
+        "table": [
+          {
+            "speciesId": "marshwick",
+            "minLevel": 7,
+            "maxLevel": 10,
+            "weight": 3
+          },
+          {
+            "speciesId": "puddlit",
+            "minLevel": 6,
+            "maxLevel": 9,
+            "weight": 2
+          }
+        ]
+      }
+    },
+    "cinder-ascent": {
+      "rows": [
+        "#######,########",
+        "#::::::,:::::::#",
+        "#^^^^^^^,^^^^^^#",
+        "#::::%%:,::::::#",
+        "#::%%%::,::%%::#",
+        "#:::::::,::::%:#",
+        "#^^^,^^^^^^^^^^#",
+        "#:::,:::%%%::::#",
+        "#:::,,,:%%%::::#",
+        "#:::::,:%%%::::#",
+        "#^^^^^,^^^^^^^^#",
+        "#:::::,::::%%::#",
+        "#:::::,,:::::::#",
+        "#######,########"
+      ],
+      "entities": [
+        {
+          "id": "keeper-bram",
+          "name": "Keeper Bram",
+          "glyph": "🧔",
+          "x": 8,
+          "y": 2,
+          "passableWithFlag": "badge_bram",
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "pebblor",
+                "level": 16
+              },
+              {
+                "speciesId": "cindertail",
+                "level": 17
+              },
+              {
+                "speciesId": "boulderon",
+                "level": 18
+              }
+            ],
+            "defeatFlag": "badge_bram",
+            "lineOfSight": {
+              "dir": "south",
+              "range": 3
+            },
+            "rewardMoney": 250,
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "great-embersalve",
+                "qty": 2
+              }
+            ],
+            "intro": "Ironwood's gate taught me to stand still; this mountain taught me why. Show me your flame, traveler.",
+            "defeatText": "Ha — you'd have talked your way past my old gate too. Go up, and don't let the quiet fool you.",
+            "outro": "I still say 'the elder sends her blessing' in my sleep. Don't tell Fern."
+          },
+          "interactions": []
+        },
+        {
+          "id": "vent-tender-mira",
+          "name": "Vent-tender Mira",
+          "glyph": "🧤",
+          "x": 8,
+          "y": 4,
+          "passableWithFlag": "mira_defeated",
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "cindertail",
+                "level": 14
+              }
+            ],
+            "defeatFlag": "mira_defeated",
+            "lineOfSight": {
+              "dir": "south",
+              "range": 2
+            },
+            "rewardMoney": 100,
+            "intro": "The vents are running cold, and cold vents make me nervous. Prove you're worth the worry.",
+            "defeatText": "Warm hands, warm heart, whatever. Go on up.",
+            "outro": "Cindertails sleep in the warm gravel. Step soft and carry a snare."
+          },
+          "interactions": []
+        },
+        {
+          "id": "trailhand-rooke",
+          "name": "Trailhand Rooke",
+          "glyph": "⛏",
+          "x": 11,
+          "y": 8,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "pebblor",
+                "level": 13
+              },
+              {
+                "speciesId": "gustwing",
+                "level": 12
+              }
+            ],
+            "defeatFlag": "rooke_defeated",
+            "lineOfSight": {
+              "dir": "west",
+              "range": 3
+            },
+            "rewardMoney": 90,
+            "intro": "Rockfall took the path twice this month. My pebblor and I put it back — twice.",
+            "defeatText": "Solid work. Bram will want a look at you.",
+            "outro": "Keeper Bram holds the high gate. Softer than the mountain, but not by much."
+          },
+          "interactions": []
+        },
+        {
+          "id": "sign-cinder",
+          "name": "Scorched sign",
+          "glyph": "🪧",
+          "x": 4,
+          "y": 12,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "CINDER ASCENT — the vents run warm underfoot, or used to. Keeper Bram holds the high gate."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 7,
+          "y": 13,
+          "toMap": "mosshollow",
+          "toX": 8,
+          "toY": 2
+        },
+        {
+          "x": 7,
+          "y": 0,
+          "toMap": "ashen-peak",
+          "toX": 6,
+          "toY": 10
+        }
+      ],
+      "encounters": {
+        "rate": 0.18,
+        "table": [
+          {
+            "speciesId": "pebblor",
+            "minLevel": 12,
+            "maxLevel": 15,
+            "weight": 3
+          },
+          {
+            "speciesId": "cindertail",
+            "minLevel": 12,
+            "maxLevel": 15,
+            "weight": 2
+          },
+          {
+            "speciesId": "gustwing",
+            "minLevel": 11,
+            "maxLevel": 14,
+            "weight": 2
+          }
+        ]
+      }
+    },
+    "ashen-peak": {
+      "rows": [
+        "##############",
+        "#^^^^^^:^^^^^#",
+        "#::::::::::::#",
+        "#^^^^:^^^^^^^#",
+        "#::%%::::::::#",
+        "#^^^^^^^^:^^^#",
+        "#:::%%:::,:::#",
+        "#:%%:::,,,::^#",
+        "#::::%%,::%%:#",
+        "#^^^^^^,^^^^^#",
+        "#:::::,,:::::#",
+        "######,#######"
+      ],
+      "entities": [
+        {
+          "id": "vespera",
+          "name": "Vespera",
+          "glyph": "🕰",
+          "x": 7,
+          "y": 2,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "hushmoth",
+                "level": 20
+              },
+              {
+                "speciesId": "stormhound",
+                "level": 21
+              },
+              {
+                "speciesId": "boulderon",
+                "level": 21
+              },
+              {
+                "speciesId": "ashenmaw",
+                "level": 22
+              }
+            ],
+            "defeatFlag": "vespera_stilled",
+            "lineOfSight": {
+              "dir": "west",
+              "range": 3
+            },
+            "rewardCommands": [
+              {
+                "type": "say",
+                "text": "Then grieve loud, all of you. Perhaps that was the braver way to keep a fire."
+              },
+              {
+                "type": "say",
+                "text": "Vespera says nothing for a long while. Then she hands you the long iron, and steps aside."
+              },
+              {
+                "type": "set_flag",
+                "flag": "hearth_relit"
+              },
+              {
+                "type": "win",
+                "text": "You touch the iron to the banked coals and the Great Hearth catches with a sound like the valley exhaling. Morning comes up loud — birdsong, geyser-hiss, kettles knocking, and far below, Biscuit barking at all of it."
+              }
+            ],
+            "intro": "You relit them. Even knowing everything goes out, you relit them."
+          },
+          "interactions": []
+        },
+        {
+          "id": "great-hearth",
+          "name": "The Great Hearth",
+          "glyph": "🌋",
+          "x": 7,
+          "y": 1,
+          "interactions": [
+            {
+              "requiresFlag": "hearth_relit",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The Great Hearth roars, young again. The whole mountain hums like a struck bell."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The Great Hearth, banked coal by coal to a whisper. It is not out — it is waiting."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hearth-summit",
+          "name": "Keeper's hearth",
+          "glyph": "🔥",
+          "x": 10,
+          "y": 4,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "A little hearth, still lit, swept daily. Someone up here keeps one fire against the dark."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "brazier-peak-south",
+          "name": "Cold brazier",
+          "glyph": "🏮",
+          "x": 4,
+          "y": 8,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Long cold. When you lean close, something pale flutters up out of the ash."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "brazier-peak-north",
+          "name": "Cold brazier",
+          "glyph": "🏮",
+          "x": 10,
+          "y": 6,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Scratched into the rim, old and shallow: 'V & T'. You leave it be."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 6,
+          "y": 11,
+          "toMap": "cinder-ascent",
+          "toX": 7,
+          "toY": 1
+        }
+      ],
+      "encounters": {
+        "rate": 0.12,
+        "table": [
+          {
+            "speciesId": "hushmoth",
+            "minLevel": 15,
+            "maxLevel": 18,
+            "weight": 1
+          }
+        ]
+      }
+    }
+  },
+  "player": {
+    "glyph": "🙂",
+    "map": "kilnhearth",
+    "x": 9,
+    "y": 10,
+    "party": [],
+    "money": 200,
+    "inventory": [
+      {
+        "itemId": "embersalve",
+        "qty": 3
+      },
+      {
+        "itemId": "kindling-snare",
+        "qty": 5
+      }
+    ],
+    "respawn": {
+      "map": "kilnhearth",
+      "x": 9,
+      "y": 10
+    }
+  }
+}

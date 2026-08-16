@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emberwood</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="top">
+        <h1 id="title">Emberwood</h1>
+        <p id="goal"></p>
+      </header>
+      <div id="stage">
+        <canvas id="game"></canvas>
+        <div id="hud">
+          <span id="hud-map" class="chip"></span>
+          <span id="hud-money" class="chip"></span>
+        </div>
+        <div id="party" class="hidden"></div>
+        <div id="battle" class="hidden"></div>
+        <div id="msgbox" class="hidden">
+          <span class="msg-text"></span>
+          <span class="msg-more hidden">&#9660;</span>
+        </div>
+        <div id="banner" class="hidden"></div>
+        <div id="pause" class="hidden"></div>
+        <div id="title-screen" class="hidden"></div>
+        <span id="mute" class="chip hidden" title="Toggle sound (M)"></span>
+        <div id="fade"></div>
+        <div id="status">Kindling the hearth&hellip;</div>
+      </div>
+      <p id="help" class="help"></p>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

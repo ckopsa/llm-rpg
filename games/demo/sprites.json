@@ -1,0 +1,26 @@
+{
+  "_comment": "Sprite mapping for the demo game: tile NAMES (from the game legend), species ids, and entity ids to sprite ids in apps/web/public/assets/manifest.json. A tile may map to a plain sprite id or to { base, overlay } when the sprite is a transparent overlay (e.g. tall grass tufts over plain grass). Anything unmapped falls back to the game's emoji glyph.",
+  "tiles": {
+    "grass": "grass",
+    "road": "path",
+    "water": "water",
+    "tree": { "base": "grass", "overlay": "bush" },
+    "tall grass": { "base": "grass", "overlay": "tall_grass" }
+  },
+  "species": {
+    "emberling": "battler_11",
+    "pyrewyrm": "battler_26",
+    "puddlit": "battler_03",
+    "sproutle": "battler_33",
+    "voltpup": "battler_20",
+    "pebblor": "battler_18",
+    "fluffit": "battler_15"
+  },
+  "entities": {
+    "elder": "elder",
+    "guard": "guard",
+    "peddler": "npc1",
+    "trailhand-ivo": "npc1"
+  },
+  "player": "player"
+}

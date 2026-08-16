@@ -1,0 +1,324 @@
+{
+  "masterGain": 0.15,
+  "music": {
+    "byMapSubstring": {
+      "town": "town",
+      "village": "town",
+      "hollow": "town",
+      "hearth": "town",
+      "kiln": "town",
+      "house": "town",
+      "home": "town",
+      "interior": "town",
+      "shop": "town",
+      "inn": "town",
+      "hall": "town"
+    },
+    "default": "route",
+    "battle": "battle",
+    "victory": "victory"
+  },
+  "tracks": {
+    "town": {
+      "tempo": 76,
+      "loop": true,
+      "lengthBeats": 32,
+      "voices": [
+        {
+          "wave": "triangle",
+          "gain": 0.55,
+          "notes": [
+            { "t": 0, "dur": 1.5, "midi": 64 },
+            { "t": 1.5, "dur": 0.5, "midi": 67 },
+            { "t": 2, "dur": 1, "midi": 69 },
+            { "t": 3, "dur": 1, "midi": 67 },
+            { "t": 4, "dur": 2, "midi": 64 },
+            { "t": 6, "dur": 2, "midi": 60 },
+            { "t": 8, "dur": 1.5, "midi": 62 },
+            { "t": 9.5, "dur": 0.5, "midi": 64 },
+            { "t": 10, "dur": 1, "midi": 65 },
+            { "t": 11, "dur": 1, "midi": 64 },
+            { "t": 12, "dur": 2.5, "midi": 62 },
+            { "t": 16, "dur": 1.5, "midi": 64 },
+            { "t": 17.5, "dur": 0.5, "midi": 67 },
+            { "t": 18, "dur": 1, "midi": 69 },
+            { "t": 19, "dur": 1, "midi": 71 },
+            { "t": 20, "dur": 2, "midi": 72 },
+            { "t": 22, "dur": 2, "midi": 69 },
+            { "t": 24, "dur": 1.5, "midi": 67 },
+            { "t": 25.5, "dur": 0.5, "midi": 64 },
+            { "t": 26, "dur": 1, "midi": 62 },
+            { "t": 27, "dur": 1, "midi": 64 },
+            { "t": 28, "dur": 3, "midi": 60 }
+          ]
+        },
+        {
+          "wave": "triangle",
+          "gain": 0.4,
+          "notes": [
+            { "t": 0, "dur": 2, "midi": 48 },
+            { "t": 2, "dur": 2, "midi": 55 },
+            { "t": 4, "dur": 2, "midi": 45 },
+            { "t": 6, "dur": 2, "midi": 52 },
+            { "t": 8, "dur": 2, "midi": 41 },
+            { "t": 10, "dur": 2, "midi": 48 },
+            { "t": 12, "dur": 2, "midi": 43 },
+            { "t": 14, "dur": 2, "midi": 50 },
+            { "t": 16, "dur": 2, "midi": 48 },
+            { "t": 18, "dur": 2, "midi": 55 },
+            { "t": 20, "dur": 2, "midi": 41 },
+            { "t": 22, "dur": 2, "midi": 48 },
+            { "t": 24, "dur": 2, "midi": 43 },
+            { "t": 26, "dur": 2, "midi": 50 },
+            { "t": 28, "dur": 4, "midi": 48 }
+          ]
+        }
+      ]
+    },
+    "route": {
+      "tempo": 108,
+      "loop": true,
+      "lengthBeats": 32,
+      "voices": [
+        {
+          "wave": "square",
+          "gain": 0.32,
+          "notes": [
+            { "t": 0, "dur": 1, "midi": 67 },
+            { "t": 1, "dur": 0.5, "midi": 69 },
+            { "t": 1.5, "dur": 0.5, "midi": 71 },
+            { "t": 2, "dur": 1, "midi": 74 },
+            { "t": 3, "dur": 1, "midi": 71 },
+            { "t": 4, "dur": 1.5, "midi": 69 },
+            { "t": 5.5, "dur": 0.5, "midi": 67 },
+            { "t": 6, "dur": 2, "midi": 64 },
+            { "t": 8, "dur": 1, "midi": 72 },
+            { "t": 9, "dur": 0.5, "midi": 71 },
+            { "t": 9.5, "dur": 0.5, "midi": 69 },
+            { "t": 10, "dur": 1, "midi": 71 },
+            { "t": 11, "dur": 1, "midi": 67 },
+            { "t": 12, "dur": 2, "midi": 69 },
+            { "t": 14, "dur": 2, "midi": 62 },
+            { "t": 16, "dur": 1, "midi": 67 },
+            { "t": 17, "dur": 0.5, "midi": 69 },
+            { "t": 17.5, "dur": 0.5, "midi": 71 },
+            { "t": 18, "dur": 1, "midi": 74 },
+            { "t": 19, "dur": 1, "midi": 76 },
+            { "t": 20, "dur": 1.5, "midi": 74 },
+            { "t": 21.5, "dur": 0.5, "midi": 71 },
+            { "t": 22, "dur": 2, "midi": 67 },
+            { "t": 24, "dur": 1, "midi": 72 },
+            { "t": 25, "dur": 1, "midi": 76 },
+            { "t": 26, "dur": 1, "midi": 74 },
+            { "t": 27, "dur": 1, "midi": 71 },
+            { "t": 28, "dur": 3, "midi": 67 }
+          ]
+        },
+        {
+          "wave": "triangle",
+          "gain": 0.42,
+          "notes": [
+            { "t": 0, "dur": 1, "midi": 43 },
+            { "t": 1, "dur": 1, "midi": 50 },
+            { "t": 2, "dur": 1, "midi": 43 },
+            { "t": 3, "dur": 1, "midi": 50 },
+            { "t": 4, "dur": 1, "midi": 40 },
+            { "t": 5, "dur": 1, "midi": 47 },
+            { "t": 6, "dur": 1, "midi": 40 },
+            { "t": 7, "dur": 1, "midi": 47 },
+            { "t": 8, "dur": 1, "midi": 48 },
+            { "t": 9, "dur": 1, "midi": 55 },
+            { "t": 10, "dur": 1, "midi": 48 },
+            { "t": 11, "dur": 1, "midi": 55 },
+            { "t": 12, "dur": 1, "midi": 50 },
+            { "t": 13, "dur": 1, "midi": 45 },
+            { "t": 14, "dur": 1, "midi": 50 },
+            { "t": 15, "dur": 1, "midi": 45 },
+            { "t": 16, "dur": 1, "midi": 43 },
+            { "t": 17, "dur": 1, "midi": 50 },
+            { "t": 18, "dur": 1, "midi": 43 },
+            { "t": 19, "dur": 1, "midi": 50 },
+            { "t": 20, "dur": 1, "midi": 48 },
+            { "t": 21, "dur": 1, "midi": 55 },
+            { "t": 22, "dur": 1, "midi": 48 },
+            { "t": 23, "dur": 1, "midi": 55 },
+            { "t": 24, "dur": 1, "midi": 48 },
+            { "t": 25, "dur": 1, "midi": 55 },
+            { "t": 26, "dur": 1, "midi": 50 },
+            { "t": 27, "dur": 1, "midi": 45 },
+            { "t": 28, "dur": 1, "midi": 43 },
+            { "t": 29, "dur": 1, "midi": 50 },
+            { "t": 30, "dur": 2, "midi": 43 }
+          ]
+        }
+      ]
+    },
+    "battle": {
+      "tempo": 140,
+      "loop": true,
+      "lengthBeats": 32,
+      "voices": [
+        {
+          "wave": "square",
+          "gain": 0.3,
+          "notes": [
+            { "t": 0, "dur": 0.5, "midi": 69 },
+            { "t": 0.5, "dur": 0.5, "midi": 69 },
+            { "t": 1, "dur": 0.5, "midi": 72 },
+            { "t": 1.5, "dur": 0.5, "midi": 69 },
+            { "t": 2, "dur": 1, "midi": 76 },
+            { "t": 3, "dur": 0.5, "midi": 74 },
+            { "t": 3.5, "dur": 0.5, "midi": 72 },
+            { "t": 4, "dur": 1, "midi": 71 },
+            { "t": 5, "dur": 0.5, "midi": 67 },
+            { "t": 5.5, "dur": 0.5, "midi": 71 },
+            { "t": 6, "dur": 1.5, "midi": 64 },
+            { "t": 8, "dur": 0.5, "midi": 69 },
+            { "t": 8.5, "dur": 0.5, "midi": 69 },
+            { "t": 9, "dur": 0.5, "midi": 72 },
+            { "t": 9.5, "dur": 0.5, "midi": 69 },
+            { "t": 10, "dur": 1, "midi": 77 },
+            { "t": 11, "dur": 0.5, "midi": 76 },
+            { "t": 11.5, "dur": 0.5, "midi": 74 },
+            { "t": 12, "dur": 1, "midi": 76 },
+            { "t": 13, "dur": 0.5, "midi": 72 },
+            { "t": 13.5, "dur": 0.5, "midi": 71 },
+            { "t": 14, "dur": 2, "midi": 69 },
+            { "t": 16, "dur": 0.5, "midi": 72 },
+            { "t": 16.5, "dur": 0.5, "midi": 72 },
+            { "t": 17, "dur": 0.5, "midi": 76 },
+            { "t": 17.5, "dur": 0.5, "midi": 72 },
+            { "t": 18, "dur": 1, "midi": 79 },
+            { "t": 19, "dur": 0.5, "midi": 77 },
+            { "t": 19.5, "dur": 0.5, "midi": 76 },
+            { "t": 20, "dur": 1, "midi": 74 },
+            { "t": 21, "dur": 0.5, "midi": 71 },
+            { "t": 21.5, "dur": 0.5, "midi": 74 },
+            { "t": 22, "dur": 1.5, "midi": 67 },
+            { "t": 24, "dur": 1, "midi": 77 },
+            { "t": 25, "dur": 1, "midi": 76 },
+            { "t": 26, "dur": 1, "midi": 74 },
+            { "t": 27, "dur": 1, "midi": 72 },
+            { "t": 28, "dur": 1, "midi": 71 },
+            { "t": 29, "dur": 1, "midi": 76 },
+            { "t": 30, "dur": 2, "midi": 69 }
+          ]
+        },
+        {
+          "wave": "triangle",
+          "gain": 0.4,
+          "notes": [
+            { "t": 0, "dur": 0.5, "midi": 45 },
+            { "t": 1, "dur": 0.5, "midi": 57 },
+            { "t": 2, "dur": 0.5, "midi": 45 },
+            { "t": 3, "dur": 0.5, "midi": 57 },
+            { "t": 4, "dur": 0.5, "midi": 40 },
+            { "t": 5, "dur": 0.5, "midi": 52 },
+            { "t": 6, "dur": 0.5, "midi": 40 },
+            { "t": 7, "dur": 0.5, "midi": 52 },
+            { "t": 8, "dur": 0.5, "midi": 45 },
+            { "t": 9, "dur": 0.5, "midi": 57 },
+            { "t": 10, "dur": 0.5, "midi": 45 },
+            { "t": 11, "dur": 0.5, "midi": 57 },
+            { "t": 12, "dur": 0.5, "midi": 45 },
+            { "t": 13, "dur": 0.5, "midi": 52 },
+            { "t": 14, "dur": 0.5, "midi": 45 },
+            { "t": 15, "dur": 0.5, "midi": 52 },
+            { "t": 16, "dur": 0.5, "midi": 48 },
+            { "t": 17, "dur": 0.5, "midi": 60 },
+            { "t": 18, "dur": 0.5, "midi": 48 },
+            { "t": 19, "dur": 0.5, "midi": 60 },
+            { "t": 20, "dur": 0.5, "midi": 43 },
+            { "t": 21, "dur": 0.5, "midi": 55 },
+            { "t": 22, "dur": 0.5, "midi": 43 },
+            { "t": 23, "dur": 0.5, "midi": 55 },
+            { "t": 24, "dur": 0.5, "midi": 41 },
+            { "t": 25, "dur": 0.5, "midi": 53 },
+            { "t": 26, "dur": 0.5, "midi": 41 },
+            { "t": 27, "dur": 0.5, "midi": 53 },
+            { "t": 28, "dur": 0.5, "midi": 40 },
+            { "t": 29, "dur": 0.5, "midi": 52 },
+            { "t": 30, "dur": 0.5, "midi": 40 },
+            { "t": 31, "dur": 0.5, "midi": 52 }
+          ]
+        }
+      ]
+    },
+    "victory": {
+      "tempo": 140,
+      "loop": false,
+      "lengthBeats": 6,
+      "voices": [
+        {
+          "wave": "square",
+          "gain": 0.32,
+          "notes": [
+            { "t": 0, "dur": 0.4, "midi": 72 },
+            { "t": 0.5, "dur": 0.4, "midi": 76 },
+            { "t": 1, "dur": 0.4, "midi": 79 },
+            { "t": 1.5, "dur": 1.4, "midi": 84 },
+            { "t": 3, "dur": 0.4, "midi": 79 },
+            { "t": 3.5, "dur": 2, "midi": 84 }
+          ]
+        },
+        {
+          "wave": "triangle",
+          "gain": 0.42,
+          "notes": [
+            { "t": 0, "dur": 1.5, "midi": 48 },
+            { "t": 1.5, "dur": 1.5, "midi": 55 },
+            { "t": 3, "dur": 2.5, "midi": 48 },
+            { "t": 3.5, "dur": 2, "midi": 60 }
+          ]
+        }
+      ]
+    }
+  },
+  "sfx": {
+    "blip": {
+      "notes": [{ "t": 0, "dur": 0.045, "freq": 660, "wave": "square", "gain": 0.2 }]
+    },
+    "confirm": {
+      "notes": [
+        { "t": 0, "dur": 0.06, "freq": 523, "wave": "square", "gain": 0.25 },
+        { "t": 0.07, "dur": 0.1, "freq": 784, "wave": "square", "gain": 0.25 }
+      ]
+    },
+    "hit": {
+      "notes": [
+        { "t": 0, "dur": 0.09, "wave": "noise", "gain": 0.3 },
+        { "t": 0, "dur": 0.08, "freq": 170, "wave": "square", "gain": 0.18 }
+      ]
+    },
+    "faint": {
+      "notes": [
+        { "t": 0, "dur": 0.12, "freq": 392, "wave": "triangle", "gain": 0.35 },
+        { "t": 0.12, "dur": 0.12, "freq": 294, "wave": "triangle", "gain": 0.35 },
+        { "t": 0.24, "dur": 0.24, "freq": 196, "wave": "triangle", "gain": 0.35 }
+      ]
+    },
+    "catch": {
+      "notes": [
+        { "t": 0, "dur": 0.08, "freq": 523, "wave": "square", "gain": 0.22 },
+        { "t": 0.09, "dur": 0.08, "freq": 659, "wave": "square", "gain": 0.22 },
+        { "t": 0.18, "dur": 0.08, "freq": 784, "wave": "square", "gain": 0.22 },
+        { "t": 0.27, "dur": 0.22, "freq": 1047, "wave": "triangle", "gain": 0.3 }
+      ]
+    },
+    "heal": {
+      "notes": [
+        { "t": 0, "dur": 0.12, "freq": 523, "wave": "triangle", "gain": 0.3 },
+        { "t": 0.12, "dur": 0.12, "freq": 659, "wave": "triangle", "gain": 0.3 },
+        { "t": 0.24, "dur": 0.2, "freq": 880, "wave": "triangle", "gain": 0.3 }
+      ]
+    },
+    "levelup": {
+      "notes": [
+        { "t": 0, "dur": 0.07, "freq": 587, "wave": "square", "gain": 0.22 },
+        { "t": 0.08, "dur": 0.07, "freq": 740, "wave": "square", "gain": 0.22 },
+        { "t": 0.16, "dur": 0.07, "freq": 880, "wave": "square", "gain": 0.22 },
+        { "t": 0.24, "dur": 0.16, "freq": 1175, "wave": "square", "gain": 0.26 }
+      ]
+    }
+  }
+}

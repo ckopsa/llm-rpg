@@ -1,0 +1,22 @@
+{
+  "name": "llm-rpg",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspace=@llm-rpg/engine",
+    "validate": "npm run validate --workspace=@llm-rpg/play --",
+    "play": "npm run play --workspace=@llm-rpg/play --",
+    "playtest": "npm run playtest --workspace=@llm-rpg/play --",
+    "mcp": "npm run mcp --workspace=@llm-rpg/play --",
+    "web": "npm run dev --workspace=@llm-rpg/web"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.25.12": true
+  }
+}

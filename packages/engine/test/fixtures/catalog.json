@@ -1,0 +1,151 @@
+{
+  "typeChart": {
+    "types": ["fire", "water", "grass", "electric", "rock", "normal"],
+    "effectiveness": {
+      "fire": { "fire": 0.5, "water": 0.5, "grass": 2, "rock": 0.5 },
+      "water": { "fire": 2, "water": 0.5, "grass": 0.5, "rock": 2 },
+      "grass": { "fire": 0.5, "water": 2, "grass": 0.5, "rock": 2 },
+      "electric": { "water": 2, "grass": 0.5, "electric": 0.5, "rock": 0 },
+      "rock": { "fire": 2, "electric": 2, "rock": 0.5 },
+      "normal": { "rock": 0.5 }
+    }
+  },
+  "moves": [
+    { "id": "bonk", "name": "Bonk", "type": "normal", "category": "physical", "power": 40, "accuracy": 1, "pp": 35 },
+    { "id": "honefangs", "name": "Hone Fangs", "type": "normal", "category": "status", "power": 0, "accuracy": 1, "pp": 20, "effect": { "kind": "raise_atk" } },
+    { "id": "dustkick", "name": "Dust Kick", "type": "normal", "category": "status", "power": 0, "accuracy": 1, "pp": 20, "effect": { "kind": "lower_def" } },
+    { "id": "flamejet", "name": "Flame Jet", "type": "fire", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+    { "id": "blazeburst", "name": "Blaze Burst", "type": "fire", "category": "special", "power": 65, "accuracy": 0.9, "pp": 10 },
+    { "id": "puddlepop", "name": "Puddle Pop", "type": "water", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+    { "id": "tidalcrush", "name": "Tidal Crush", "type": "water", "category": "special", "power": 65, "accuracy": 0.9, "pp": 10 },
+    { "id": "leaflash", "name": "Leaf Lash", "type": "grass", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+    { "id": "vinesnare", "name": "Vine Snare", "type": "grass", "category": "status", "power": 0, "accuracy": 0.9, "pp": 15, "effect": { "kind": "lower_spd" } },
+    { "id": "sparklesnap", "name": "Sparkle Snap", "type": "electric", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+    { "id": "stormcoil", "name": "Storm Coil", "type": "electric", "category": "special", "power": 65, "accuracy": 0.85, "pp": 10 },
+    { "id": "pebbletoss", "name": "Pebble Toss", "type": "rock", "category": "physical", "power": 40, "accuracy": 0.95, "pp": 30 },
+    { "id": "boulderbash", "name": "Boulder Bash", "type": "rock", "category": "physical", "power": 75, "accuracy": 0.8, "pp": 8 }
+  ],
+  "species": [
+    {
+      "id": "emberling",
+      "name": "Emberling",
+      "glyph": "🦎",
+      "types": ["fire"],
+      "baseStats": { "hp": 44, "atk": 52, "def": 43, "spd": 65 },
+      "learnset": [
+        { "level": 1, "moveId": "bonk" },
+        { "level": 1, "moveId": "flamejet" },
+        { "level": 7, "moveId": "honefangs" },
+        { "level": 13, "moveId": "blazeburst" }
+      ],
+      "evolvesTo": { "speciesId": "pyrewyrm", "level": 16 },
+      "catchRate": 0.45,
+      "xpYield": 62
+    },
+    {
+      "id": "pyrewyrm",
+      "name": "Pyrewyrm",
+      "glyph": "🐉",
+      "types": ["fire"],
+      "baseStats": { "hp": 58, "atk": 64, "def": 58, "spd": 80 },
+      "learnset": [
+        { "level": 1, "moveId": "bonk" },
+        { "level": 1, "moveId": "flamejet" },
+        { "level": 13, "moveId": "blazeburst" },
+        { "level": 20, "moveId": "boulderbash" }
+      ],
+      "catchRate": 0.2,
+      "xpYield": 142
+    },
+    {
+      "id": "puddlit",
+      "name": "Puddlit",
+      "glyph": "💧",
+      "types": ["water"],
+      "baseStats": { "hp": 50, "atk": 48, "def": 65, "spd": 43 },
+      "learnset": [
+        { "level": 1, "moveId": "bonk" },
+        { "level": 1, "moveId": "puddlepop" },
+        { "level": 8, "moveId": "dustkick" },
+        { "level": 14, "moveId": "tidalcrush" }
+      ],
+      "catchRate": 0.45,
+      "xpYield": 63
+    },
+    {
+      "id": "sproutle",
+      "name": "Sproutle",
+      "glyph": "🌱",
+      "types": ["grass"],
+      "baseStats": { "hp": 45, "atk": 49, "def": 49, "spd": 45 },
+      "learnset": [
+        { "level": 1, "moveId": "bonk" },
+        { "level": 1, "moveId": "leaflash" },
+        { "level": 9, "moveId": "vinesnare" }
+      ],
+      "catchRate": 0.45,
+      "xpYield": 64
+    },
+    {
+      "id": "voltpup",
+      "name": "Voltpup",
+      "glyph": "⚡",
+      "types": ["electric"],
+      "baseStats": { "hp": 35, "atk": 55, "def": 40, "spd": 90 },
+      "learnset": [
+        { "level": 1, "moveId": "bonk" },
+        { "level": 1, "moveId": "sparklesnap" },
+        { "level": 11, "moveId": "stormcoil" }
+      ],
+      "catchRate": 0.35,
+      "xpYield": 82
+    },
+    {
+      "id": "pebblor",
+      "name": "Pebblor",
+      "glyph": "🪨",
+      "types": ["rock"],
+      "baseStats": { "hp": 60, "atk": 60, "def": 85, "spd": 25 },
+      "learnset": [
+        { "level": 1, "moveId": "pebbletoss" },
+        { "level": 4, "moveId": "honefangs" },
+        { "level": 12, "moveId": "boulderbash" }
+      ],
+      "catchRate": 0.35,
+      "xpYield": 86
+    },
+    {
+      "id": "mosskrag",
+      "name": "Mosskrag",
+      "glyph": "🗿",
+      "types": ["rock", "grass"],
+      "baseStats": { "hp": 70, "atk": 62, "def": 78, "spd": 30 },
+      "learnset": [
+        { "level": 1, "moveId": "pebbletoss" },
+        { "level": 1, "moveId": "leaflash" },
+        { "level": 10, "moveId": "vinesnare" },
+        { "level": 16, "moveId": "boulderbash" }
+      ],
+      "catchRate": 0.25,
+      "xpYield": 120
+    },
+    {
+      "id": "fluffit",
+      "name": "Fluffit",
+      "glyph": "🐹",
+      "types": ["normal"],
+      "baseStats": { "hp": 65, "atk": 45, "def": 40, "spd": 55 },
+      "learnset": [
+        { "level": 1, "moveId": "bonk" },
+        { "level": 5, "moveId": "honefangs" },
+        { "level": 10, "moveId": "dustkick" }
+      ],
+      "catchRate": 0.6,
+      "xpYield": 45
+    }
+  ],
+  "items": [
+    { "id": "embersalve", "name": "Embersalve", "kind": "heal", "amount": 20, "price": 10 },
+    { "id": "kindling-snare", "name": "Kindling Snare", "kind": "capture", "ballMod": 1, "price": 20 }
+  ]
+}

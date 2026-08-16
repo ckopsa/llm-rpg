@@ -1,0 +1,340 @@
+{
+  "meta": {
+    "id": "ironwood-village",
+    "title": "Ironwood Village",
+    "version": "0.4.0",
+    "goal": "The guard blocks the east road. Get the elder's blessing, then talk to the guard to leave the village."
+  },
+  "catalog": {
+    "typeChart": {
+      "types": ["fire", "water", "grass", "electric", "rock", "normal"],
+      "effectiveness": {
+        "fire": { "fire": 0.5, "water": 0.5, "grass": 2, "rock": 0.5 },
+        "water": { "fire": 2, "water": 0.5, "grass": 0.5, "rock": 2 },
+        "grass": { "fire": 0.5, "water": 2, "grass": 0.5, "rock": 2 },
+        "electric": { "water": 2, "grass": 0.5, "electric": 0.5, "rock": 0 },
+        "rock": { "fire": 2, "electric": 2, "rock": 0.5 },
+        "normal": { "rock": 0.5 }
+      }
+    },
+    "moves": [
+      { "id": "bonk", "name": "Bonk", "type": "normal", "category": "physical", "power": 40, "accuracy": 1, "pp": 35 },
+      { "id": "honefangs", "name": "Hone Fangs", "type": "normal", "category": "status", "power": 0, "accuracy": 1, "pp": 20, "effect": { "kind": "raise_atk" } },
+      { "id": "dustkick", "name": "Dust Kick", "type": "normal", "category": "status", "power": 0, "accuracy": 1, "pp": 20, "effect": { "kind": "lower_def" } },
+      { "id": "flamejet", "name": "Flame Jet", "type": "fire", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+      { "id": "blazeburst", "name": "Blaze Burst", "type": "fire", "category": "special", "power": 65, "accuracy": 0.9, "pp": 10 },
+      { "id": "puddlepop", "name": "Puddle Pop", "type": "water", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+      { "id": "tidalcrush", "name": "Tidal Crush", "type": "water", "category": "special", "power": 65, "accuracy": 0.9, "pp": 10 },
+      { "id": "leaflash", "name": "Leaf Lash", "type": "grass", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+      { "id": "vinesnare", "name": "Vine Snare", "type": "grass", "category": "status", "power": 0, "accuracy": 0.9, "pp": 15, "effect": { "kind": "lower_spd" } },
+      { "id": "sparklesnap", "name": "Sparkle Snap", "type": "electric", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+      { "id": "stormcoil", "name": "Storm Coil", "type": "electric", "category": "special", "power": 65, "accuracy": 0.85, "pp": 10 },
+      { "id": "pebbletoss", "name": "Pebble Toss", "type": "rock", "category": "physical", "power": 40, "accuracy": 0.95, "pp": 30 },
+      { "id": "boulderbash", "name": "Boulder Bash", "type": "rock", "category": "physical", "power": 75, "accuracy": 0.8, "pp": 8 }
+    ],
+    "species": [
+      {
+        "id": "emberling",
+        "name": "Emberling",
+        "glyph": "🦎",
+        "types": ["fire"],
+        "baseStats": { "hp": 44, "atk": 52, "def": 43, "spd": 65 },
+        "learnset": [
+          { "level": 1, "moveId": "bonk" },
+          { "level": 1, "moveId": "flamejet" },
+          { "level": 7, "moveId": "honefangs" },
+          { "level": 13, "moveId": "blazeburst" }
+        ],
+        "evolvesTo": { "speciesId": "pyrewyrm", "level": 16 },
+        "catchRate": 0.45,
+        "xpYield": 62
+      },
+      {
+        "id": "pyrewyrm",
+        "name": "Pyrewyrm",
+        "glyph": "🐉",
+        "types": ["fire"],
+        "baseStats": { "hp": 58, "atk": 64, "def": 58, "spd": 80 },
+        "learnset": [
+          { "level": 1, "moveId": "bonk" },
+          { "level": 1, "moveId": "flamejet" },
+          { "level": 13, "moveId": "blazeburst" },
+          { "level": 20, "moveId": "boulderbash" }
+        ],
+        "catchRate": 0.2,
+        "xpYield": 142
+      },
+      {
+        "id": "puddlit",
+        "name": "Puddlit",
+        "glyph": "💧",
+        "types": ["water"],
+        "baseStats": { "hp": 50, "atk": 48, "def": 65, "spd": 43 },
+        "learnset": [
+          { "level": 1, "moveId": "bonk" },
+          { "level": 1, "moveId": "puddlepop" },
+          { "level": 8, "moveId": "dustkick" },
+          { "level": 14, "moveId": "tidalcrush" }
+        ],
+        "catchRate": 0.45,
+        "xpYield": 63
+      },
+      {
+        "id": "sproutle",
+        "name": "Sproutle",
+        "glyph": "🌱",
+        "types": ["grass"],
+        "baseStats": { "hp": 45, "atk": 49, "def": 49, "spd": 45 },
+        "learnset": [
+          { "level": 1, "moveId": "bonk" },
+          { "level": 1, "moveId": "leaflash" },
+          { "level": 9, "moveId": "vinesnare" }
+        ],
+        "catchRate": 0.45,
+        "xpYield": 64
+      },
+      {
+        "id": "voltpup",
+        "name": "Voltpup",
+        "glyph": "⚡",
+        "types": ["electric"],
+        "baseStats": { "hp": 35, "atk": 55, "def": 40, "spd": 90 },
+        "learnset": [
+          { "level": 1, "moveId": "bonk" },
+          { "level": 1, "moveId": "sparklesnap" },
+          { "level": 11, "moveId": "stormcoil" }
+        ],
+        "catchRate": 0.35,
+        "xpYield": 82
+      },
+      {
+        "id": "pebblor",
+        "name": "Pebblor",
+        "glyph": "🪨",
+        "types": ["rock"],
+        "baseStats": { "hp": 60, "atk": 60, "def": 85, "spd": 25 },
+        "learnset": [
+          { "level": 1, "moveId": "pebbletoss" },
+          { "level": 4, "moveId": "honefangs" },
+          { "level": 12, "moveId": "boulderbash" }
+        ],
+        "catchRate": 0.35,
+        "xpYield": 86
+      },
+      {
+        "id": "fluffit",
+        "name": "Fluffit",
+        "glyph": "🐹",
+        "types": ["normal"],
+        "baseStats": { "hp": 65, "atk": 45, "def": 40, "spd": 55 },
+        "learnset": [
+          { "level": 1, "moveId": "bonk" },
+          { "level": 5, "moveId": "honefangs" },
+          { "level": 10, "moveId": "dustkick" }
+        ],
+        "catchRate": 0.6,
+        "xpYield": 45
+      }
+    ],
+    "items": [
+      { "id": "embersalve", "name": "Embersalve", "kind": "heal", "amount": 20, "price": 10 },
+      { "id": "kindling-snare", "name": "Kindling Snare", "kind": "capture", "ballMod": 1, "price": 20 },
+      { "id": "warm-snare", "name": "Warm Snare", "kind": "capture", "ballMod": 1.5, "price": 45 }
+    ]
+  },
+  "legend": {
+    "#": { "name": "tree", "glyph": "🌲", "walkable": false },
+    ".": { "name": "grass", "glyph": "🟩", "walkable": true },
+    "~": { "name": "water", "glyph": "🟦", "walkable": false },
+    ",": { "name": "road", "glyph": "🟨", "walkable": true },
+    "*": { "name": "tall grass", "glyph": "🌿", "walkable": true, "wild": true }
+  },
+  "maps": {
+    "village": {
+      "rows": [
+        "############",
+        "#..........#",
+        "#..~~......#",
+        "#..~~......#",
+        "#......#...#",
+        "#..........#",
+        "#........,,,",
+        "#..........#",
+        "############"
+      ],
+      "entities": [
+        {
+          "id": "elder",
+          "name": "Elder Maren",
+          "glyph": "🧙",
+          "x": 9,
+          "y": 2,
+          "interactions": [
+            {
+              "requiresFlag": "elder_blessing",
+              "commands": [
+                { "type": "say", "text": "Go on now — the guard is waiting for you." }
+              ]
+            },
+            {
+              "forbidsFlag": "elder_blessing",
+              "commands": [
+                { "type": "say", "text": "Leaving Ironwood? Take this little one, some salve, and a few snares — the tall grass is lively this season." },
+                { "type": "give_species", "speciesId": "emberling", "level": 7 },
+                { "type": "give_item", "itemId": "embersalve", "qty": 2 },
+                { "type": "give_item", "itemId": "kindling-snare", "qty": 3 },
+                { "type": "give_money", "amount": 25 },
+                { "type": "say", "text": "Tell the guard: the elder sends her blessing." },
+                { "type": "set_flag", "flag": "elder_blessing" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "guard",
+          "name": "Guard Bram",
+          "glyph": "💂",
+          "x": 9,
+          "y": 6,
+          "passableWithFlag": "elder_blessing",
+          "interactions": [
+            {
+              "requiresFlag": "elder_blessing",
+              "commands": [
+                { "type": "say", "text": "The elder's blessing? Then the road is yours, traveler." },
+                { "type": "win", "text": "Bram steps aside and you walk out onto the east road, Ironwood at your back." }
+              ]
+            },
+            {
+              "commands": [
+                { "type": "say", "text": "None shall pass without the elder's word." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dog",
+          "name": "Biscuit the dog",
+          "glyph": "🐕",
+          "x": 5,
+          "y": 5,
+          "blocking": false,
+          "interactions": [
+            { "commands": [{ "type": "say", "text": "Woof! (Biscuit wags his tail.)" }] }
+          ]
+        },
+        {
+          "id": "peddler",
+          "name": "Peddler Sela",
+          "glyph": "🧺",
+          "x": 5,
+          "y": 1,
+          "interactions": [
+            {
+              "commands": [
+                { "type": "say", "text": "Embersalve, fresh from the kiln — ten coins a jar." },
+                { "type": "sell", "itemId": "embersalve", "price": 10 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "snare-stall",
+          "name": "Snare stall",
+          "glyph": "🪤",
+          "x": 6,
+          "y": 1,
+          "interactions": [
+            {
+              "commands": [
+                { "type": "say", "text": "Kindling snares, twenty coins — mind your fingers." },
+                { "type": "sell", "itemId": "kindling-snare", "price": 20 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hearth",
+          "name": "Village hearth",
+          "glyph": "🔥",
+          "x": 2,
+          "y": 1,
+          "interactions": [
+            {
+              "commands": [
+                { "type": "say", "text": "The hearth crackles. Your kindred lean into the warmth." },
+                { "type": "heal_party" }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        { "x": 11, "y": 6, "toMap": "east-road", "toX": 1, "toY": 2 }
+      ]
+    },
+    "east-road": {
+      "rows": [
+        "############",
+        "#...*****..#",
+        ",,,,*****..#",
+        "#...*****..#",
+        "#..........#",
+        "############"
+      ],
+      "entities": [
+        {
+          "id": "trailhand-ivo",
+          "name": "Trailhand Ivo",
+          "glyph": "🤠",
+          "x": 10,
+          "y": 3,
+          "trainer": {
+            "party": [
+              { "speciesId": "fluffit", "level": 4 },
+              { "speciesId": "sproutle", "level": 5 }
+            ],
+            "defeatFlag": "ivo_defeated",
+            "lineOfSight": { "dir": "west", "range": 3 },
+            "rewardMoney": 40,
+            "rewardCommands": [
+              { "type": "give_item", "itemId": "warm-snare", "qty": 1 }
+            ],
+            "intro": "Hey! My kindred need the exercise.",
+            "defeatText": "Well fought — take these for the road.",
+            "outro": "The grass out here gets livelier every week."
+          },
+          "interactions": []
+        },
+        {
+          "id": "route-sign",
+          "name": "Wooden sign",
+          "glyph": "🪧",
+          "x": 2,
+          "y": 1,
+          "interactions": [
+            { "commands": [{ "type": "say", "text": "EAST ROAD — wild creatures rustle in the tall grass. Travel prepared." }] }
+          ]
+        }
+      ],
+      "portals": [
+        { "x": 0, "y": 2, "toMap": "village", "toX": 10, "toY": 6 }
+      ],
+      "encounters": {
+        "rate": 0.2,
+        "table": [
+          { "speciesId": "emberling", "minLevel": 2, "maxLevel": 4, "weight": 3 },
+          { "speciesId": "puddlit", "minLevel": 2, "maxLevel": 5, "weight": 1 }
+        ]
+      }
+    }
+  },
+  "player": {
+    "glyph": "🙂",
+    "map": "village",
+    "x": 2,
+    "y": 6,
+    "money": 20,
+    "respawn": { "map": "village", "x": 2, "y": 6 }
+  }
+}
