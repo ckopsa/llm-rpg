@@ -1,7 +1,9 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
+import { forgePlugin } from "./forge-plugin";
 
 export default defineConfig({
+  plugins: [forgePlugin()],
   optimizeDeps: {
     exclude: ["@llm-rpg/engine"],
   },

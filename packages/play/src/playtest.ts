@@ -1,17 +1,22 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { Sim, observe, parseAction, speciesById } from "@llm-rpg/engine";
 import { loadGame, resolveGamePath, resolveUserPath } from "./load.js";
+import { type TranscriptEntry } from "./autoplay.js";
 import {
-  runExplorer,
-  type TranscriptEntry,
-  type ExplorerReport,
-} from "./autoplay.js";
+  parseScriptWords,
+  partyLine,
+  runExplore,
+  runScript,
+  type ExploreReport,
+  type ScriptReport,
+} from "./run.js";
+import { analyzeReachability, type ReachabilityReport } from "./reachability.js";
 
 /**
  * Autoplay playtest harness — the build-side QA loop. Plays a game without a
  * human and reports either "completed" with stats or "stuck here" with a
- * diagnosis. Two modes:
+ * diagnosis. This file is a thin CLI over the library in run.ts and
+ * reachability.ts (the MCP Forge server calls those directly). Three modes:
  *
  *  Script mode (replay a known action list):
  *    npm run playtest -- --game <path> --script <file>
@@ -29,7 +34,17 @@ import {
  *  (and why) it stopped. This is what you run first on new content to find
  *  unreachable maps and broken gates.
  *
- *  --transcript <file> (both modes) writes one JSON object per action:
+ *  Reachability mode (instant, no simulation):
+ *    npm run playtest -- --game <path> --goal reach
+ *  Static BFS from the player start through walkable tiles and portals, in
+ *  two passes: OPTIMISTIC (flag-gated blockers treated as open) and
+ *  PESSIMISTIC (they never open). Reports per-map reachability under both,
+ *  unreachable entities, orphan portals, and dead wild zones — in
+ *  milliseconds, for tight authoring loops. Exit code 0 only on a pass.
+ *
+ *  --json (any mode) prints the report as JSON — the ONLY thing written to
+ *  stdout; the human-readable report goes to stderr instead.
+ *  --transcript <file> (script/explore) writes one JSON object per action:
  *  {step, action, events, map, battle}.  Exit code 0 only on a win.
  */
 
@@ -42,10 +57,11 @@ interface Args {
   seed: number;
   transcript?: string;
   strict: boolean;
+  json: boolean;
 }
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { maxSteps: 1000, seed: 1, strict: false };
+  const args: Args = { maxSteps: 1000, seed: 1, strict: false, json: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--game") args.game = argv[++i];
@@ -56,6 +72,7 @@ function parseArgs(argv: string[]): Args {
     else if (a === "--seed") args.seed = Number(argv[++i]);
     else if (a === "--transcript") args.transcript = argv[++i];
     else if (a === "--strict") args.strict = true;
+    else if (a === "--json") args.json = true;
     else if (!a.startsWith("--")) args.game = a;
     else fail(`Unknown option "${a}". ${USAGE}`);
   }
@@ -66,72 +83,12 @@ const USAGE = `Usage:
   playtest --game <game.json> --script <file>          replay a script file
   playtest --game <game.json> --actions "n n interact" replay inline actions
   playtest --game <game.json> --goal explore           built-in coverage autoplayer
-Options: --max-steps N (default 1000) --seed N (default 1) --transcript <file.jsonl> --strict`;
+  playtest --game <game.json> --goal reach             static reachability analysis
+Options: --max-steps N (default 1000) --seed N (default 1) --transcript <file.jsonl> --strict --json`;
 
 function fail(msg: string): never {
   console.error(msg);
   process.exit(2);
-}
-
-/** Events that mean the action did not do what the script intended. */
-const REJECTION_PATTERNS: RegExp[] = [
-  /^You can't go /,
-  /^You are in a battle — valid actions/,
-  /^There is no battle right now/,
-  /^The game is already won/,
-  /^The battle is already over/,
-  /^There is no move in slot/,
-  /has no PP left — choose another move\.$/,
-  /^There is no party member in slot/,
-  /is already out\.$/,
-  /has fainted and can't battle\.$/,
-  /has fainted — you must switch/,
-  /^There is no item in slot/,
-  /^You aren't carrying any items\.$/,
-  /^You have nothing to catch with/,
-  /^You can't catch another keeper's kindred!$/,
-  /^You can't run from a trainer battle!$/,
-  /^There is nothing next to you to interact with\.$/,
-  /is standing there\. Try "interact"\.$/,
-  /^You shouldn't step into the tall grass/,
-  /too weary for the tall grass/,
-  /No kindred fit to battle/,
-];
-
-function rejectionIn(events: string[]): string | undefined {
-  return events.find((ev) => REJECTION_PATTERNS.some((p) => p.test(ev)));
-}
-
-function partyLine(sim: Sim): string {
-  if (sim.state.party.length === 0) return "(empty)";
-  return sim.state.party
-    .map((c) => {
-      const s = speciesById(sim.game.catalog, c.speciesId);
-      return `${s.name} Lv${c.level} ${c.hp}/${c.maxHp}`;
-    })
-    .join(" · ");
-}
-
-function writeTranscript(path: string, entries: TranscriptEntry[]): void {
-  const resolved = resolveUserPath(path);
-  mkdirSync(dirname(resolved), { recursive: true });
-  writeFileSync(resolved, entries.map((e) => JSON.stringify(e)).join("\n") + "\n");
-  console.log(`Transcript: ${entries.length} entries written to ${resolved}`);
-}
-
-function tailEvents(transcript: TranscriptEntry[], n: number): string[] {
-  const flat: string[] = [];
-  for (const t of transcript) {
-    for (const ev of t.events) flat.push(`step ${t.step} (${t.action}): ${ev}`);
-  }
-  return flat.slice(-n);
-}
-
-function printFailureDetail(sim: Sim, transcript: TranscriptEntry[]): void {
-  console.log("\nLast 20 events:");
-  for (const line of tailEvents(transcript, 20)) console.log(`  ${line}`);
-  console.log("\nFinal observation:");
-  console.log(observe(sim));
 }
 
 // ---------------------------------------------------------------------------
@@ -148,123 +105,168 @@ if (!Number.isInteger(args.maxSteps) || args.maxSteps < 1) {
 }
 if (!Number.isFinite(args.seed)) fail("--seed must be a number.");
 
-console.log("== PLAYTEST REPORT ==");
-console.log(`Game: ${game.meta.title} (${game.meta.id} v${game.meta.version}) — ${gamePath}`);
+/** Human-readable lines: stdout normally, stderr in --json mode (stdout is
+ *  reserved for the report object there). */
+const out = args.json
+  ? (line = "") => console.error(line)
+  : (line = "") => console.log(line);
 
-let won: boolean;
+out("== PLAYTEST REPORT ==");
+out(`Game: ${game.meta.title} (${game.meta.id} v${game.meta.version}) — ${gamePath}`);
 
-if (args.goal !== undefined) {
+let ok: boolean;
+
+if (args.goal === "reach") {
+  if (args.transcript) fail("--transcript is not available with --goal reach.");
+  out(`Mode: goal=reach`);
+  const report = analyzeReachability(game);
+  printReachabilityReport(report);
+  emitJson(report);
+  ok = report.verdict === "pass";
+} else if (args.goal !== undefined) {
   if (args.goal !== "explore") {
-    fail(`Unknown goal "${args.goal}" — the only goal is "explore".`);
+    fail(`Unknown goal "${args.goal}" — valid goals: "explore", "reach".`);
   }
-  console.log(`Mode: goal=explore (seed ${args.seed}, max-steps ${args.maxSteps})`);
-  const { sim, report, transcript } = runExplorer(game, {
+  out(`Mode: goal=explore (seed ${args.seed}, max-steps ${args.maxSteps})`);
+  const transcript: TranscriptEntry[] = [];
+  const report = runExplore(game, {
     maxSteps: args.maxSteps,
     seed: args.seed,
+    onStep: (e) => transcript.push(e),
   });
-  printExplorerReport(sim, report);
-  if (!report.won) printFailureDetail(sim, transcript);
+  printExplorerReport(report);
+  if (!report.win) printFailureDetail(report);
   if (args.transcript) writeTranscript(args.transcript, transcript);
-  won = report.won;
+  emitJson(report);
+  ok = report.win;
 } else {
   const source =
     args.script !== undefined
       ? readFileSync(resolveUserPath(args.script), "utf8")
       : args.actions!;
-  const words = source
-    .replace(/#[^\n]*/g, " ")
-    .split(/[\s,]+/)
-    .filter(Boolean);
+  const words = parseScriptWords(source);
   if (words.length === 0) fail("The script contains no actions.");
-  console.log(
+  out(
     `Mode: script (${words.length} actions from ${
       args.script ? resolveUserPath(args.script) : "--actions"
     }, seed ${args.seed}${args.strict ? ", strict" : ""})`,
   );
-  won = runScript(words);
+  const transcript: TranscriptEntry[] = [];
+  const report = runScript(game, words, {
+    seed: args.seed,
+    strict: args.strict,
+    onStep: (e) => transcript.push(e),
+  });
+  printScriptReport(report);
+  if (!report.win) printFailureDetail(report);
+  if (args.transcript) writeTranscript(args.transcript, transcript);
+  emitJson(report);
+  ok = report.win;
 }
 
-process.exit(won ? 0 : 1);
+process.exit(ok ? 0 : 1);
 
 // ---------------------------------------------------------------------------
 
-function runScript(words: string[]): boolean {
-  const sim = new Sim(game, args.seed);
-  const transcript: TranscriptEntry[] = [];
-  const rejections: { step: number; word: string; event: string }[] = [];
-  let executed = 0;
-  let stopped: string | undefined;
-
-  for (const word of words) {
-    const action = parseAction(word);
-    if (!action) {
-      stopped = `unknown action "${word}" at step ${executed + 1} — valid: north south east west interact | move1..4 switch1..6 item1..9 catch run`;
-      break;
-    }
-    executed += 1;
-    const events = sim.act(action);
-    transcript.push({
-      step: executed,
-      action: word,
-      events,
-      map: sim.state.map,
-      battle: !!sim.state.battle,
-    });
-    const rejected = rejectionIn(events);
-    if (rejected) {
-      rejections.push({ step: executed, word, event: rejected });
-      if (args.strict) {
-        stopped = `action "${word}" rejected at step ${executed}: ${rejected}`;
-        break;
-      }
-    }
-    if (sim.state.won) break;
-  }
-
-  const winner = sim.state.won;
-  const result = winner
-    ? "WIN"
-    : stopped
-      ? `STOPPED — ${stopped}`
-      : "NOT WON — script ran out before the win condition";
-  console.log(`Result: ${result}`);
-  console.log(`Steps executed: ${executed} of ${words.length}`);
-  console.log(`Turns: ${sim.state.turn}`);
-  console.log(
-    `Final: map=${sim.state.map}, pos=(${sim.state.playerX}, ${sim.state.playerY}), money=${sim.state.money}${sim.state.battle ? ", in battle" : ""}`,
-  );
-  console.log(`Party: ${partyLine(sim)}`);
-  console.log(`Flags: ${sim.state.flags.join(", ") || "(none)"}`);
-  if (rejections.length > 0) {
-    console.log(`Rejected steps: ${rejections.length} (harmless no-ops unless the run failed)`);
-    for (const r of rejections.slice(0, 10)) {
-      console.log(`  step ${r.step} (${r.word}): ${r.event}`);
-    }
-    if (rejections.length > 10) console.log(`  ... and ${rejections.length - 10} more`);
-  }
-  if (!winner) printFailureDetail(sim, transcript);
-  if (args.transcript) writeTranscript(args.transcript, transcript);
-  return winner;
+function emitJson(report: ScriptReport | ExploreReport | ReachabilityReport): void {
+  if (args.json) process.stdout.write(JSON.stringify(report, null, 2) + "\n");
 }
 
-function printExplorerReport(sim: Sim, r: ExplorerReport): void {
-  console.log(`Result: ${r.won ? "WIN" : `INCOMPLETE — ${r.stopReason}: ${r.stopDetail}`}`);
-  console.log(`Steps: ${r.steps} (turns: ${r.turns})`);
-  console.log(
+function writeTranscript(path: string, entries: TranscriptEntry[]): void {
+  const resolved = resolveUserPath(path);
+  mkdirSync(dirname(resolved), { recursive: true });
+  writeFileSync(resolved, entries.map((e) => JSON.stringify(e)).join("\n") + "\n");
+  out(`Transcript: ${entries.length} entries written to ${resolved}`);
+}
+
+function printFailureDetail(r: ScriptReport | ExploreReport): void {
+  out("\nLast 20 events:");
+  for (const line of r.lastEvents) out(`  ${line}`);
+  out("\nFinal observation:");
+  out(r.finalObservation);
+}
+
+function printScriptReport(r: ScriptReport): void {
+  const result = r.win
+    ? "WIN"
+    : r.stopReason === "stopped"
+      ? `STOPPED — ${r.stopDetail}`
+      : `NOT WON — ${r.stopDetail}`;
+  out(`Result: ${result}`);
+  out(`Steps executed: ${r.steps} of ${r.totalActions}`);
+  out(`Turns: ${r.turns}`);
+  out(
+    `Final: map=${r.finalMap}, pos=(${r.finalX}, ${r.finalY}), money=${r.money}${r.inBattle ? ", in battle" : ""}`,
+  );
+  out(`Party: ${partyLine(r.party)}`);
+  out(`Flags: ${r.flags.join(", ") || "(none)"}`);
+  if (r.rejections.length > 0) {
+    out(`Rejected steps: ${r.rejections.length} (harmless no-ops unless the run failed)`);
+    for (const rej of r.rejections.slice(0, 10)) {
+      out(`  step ${rej.step} (${rej.action}): ${rej.event}`);
+    }
+    if (r.rejections.length > 10) out(`  ... and ${r.rejections.length - 10} more`);
+  }
+}
+
+function printExplorerReport(r: ExploreReport): void {
+  out(`Result: ${r.win ? "WIN" : `INCOMPLETE — ${r.stopReason}: ${r.stopDetail}`}`);
+  out(`Steps: ${r.steps} (turns: ${r.turns})`);
+  out(
     `Maps visited (${r.mapsVisited.length}/${r.mapsVisited.length + r.mapsUnvisited.length}): ${r.mapsVisited.join(", ")}`,
   );
   if (r.mapsUnvisited.length > 0) {
-    console.log(`Maps NOT reached: ${r.mapsUnvisited.join(", ")}`);
+    out(`Maps NOT reached: ${r.mapsUnvisited.join(", ")}`);
   }
-  console.log(
+  out(
     `Entities interacted: ${r.entitiesInteracted.length}/${r.entitiesTotal} unique (${r.interactionCount} interactions across flag-states)`,
   );
-  console.log(`Flags set (${r.flags.length}): ${r.flags.join(", ") || "(none)"}`);
-  console.log(
+  out(`Flags set (${r.flags.length}): ${r.flags.join(", ") || "(none)"}`);
+  out(
     `Battles: ${r.battles.fought} fought — ${r.battles.won} won, ${r.battles.lost} lost, ${r.battles.fled} fled`,
   );
-  console.log(
-    `Final: map=${r.finalMap}, pos=(${r.finalX}, ${r.finalY}), money=${r.money}`,
-  );
-  console.log(`Party: ${partyLine(sim)}`);
+  out(`Final: map=${r.finalMap}, pos=(${r.finalX}, ${r.finalY}), money=${r.money}`);
+  out(`Party: ${partyLine(r.party)}`);
+}
+
+function printReachabilityReport(r: ReachabilityReport): void {
+  out(`Verdict: ${r.verdict === "pass" ? "PASS" : "FAIL"} — ${r.summary}`);
+  const total = r.maps.length;
+  const opt = r.maps.filter((m) => m.optimistic).length;
+  const pess = r.maps.filter((m) => m.pessimistic).length;
+  out(`Start: ${r.start.map} (${r.start.x}, ${r.start.y})`);
+  out(`Maps (optimistic ${opt}/${total} reachable, pessimistic ${pess}/${total}):`);
+  for (const m of r.maps) {
+    const note = !m.optimistic
+      ? "  <- UNREACHABLE"
+      : !m.pessimistic
+        ? "  <- flag-gated"
+        : "";
+    out(
+      `  ${m.id}: optimistic=${m.optimistic ? "yes" : "no"}, pessimistic=${m.pessimistic ? "yes" : "no"}${note}`,
+    );
+  }
+  if (r.unreachableEntities.length > 0) {
+    out(`Unreachable entities (${r.unreachableEntities.length}):`);
+    for (const e of r.unreachableEntities) {
+      out(`  ${e.id} (${e.name}) on ${e.map} at (${e.x}, ${e.y})`);
+    }
+  }
+  if (r.flagGatedEntities.length > 0) {
+    out(
+      `Flag-gated entities (${r.flagGatedEntities.length}, reachable only once gates open): ${r.flagGatedEntities.map((e) => e.id).join(", ")}`,
+    );
+  }
+  if (r.orphanPortals.length > 0) {
+    out(`Orphan portals (${r.orphanPortals.length}):`);
+    for (const p of r.orphanPortals) {
+      out(
+        `  ${p.map}.portals[${p.index}] at (${p.x}, ${p.y}) -> ${p.toMap} (${p.toX}, ${p.toY}): ${p.reason}`,
+      );
+    }
+  }
+  if (r.wildZoneIssues.length > 0) {
+    out(`Wild zone issues (${r.wildZoneIssues.length}):`);
+    for (const w of r.wildZoneIssues) out(`  ${w.map}: ${w.reason}`);
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "_comment": "Sprite mapping for the starter template: tile NAMES (from the game legend), species ids, and entity ids to sprite ids in apps/web/public/assets/manifest.json. A tile may map to a plain sprite id or to { base, overlay } when the sprite is a transparent overlay (e.g. tall grass tufts over plain grass). Anything unmapped falls back to the game's emoji glyph.",
+  "tiles": {
+    "grass": "grass",
+    "road": "path",
+    "tree": { "base": "grass", "overlay": "bush" },
+    "tall grass": { "base": "grass", "overlay": "tall_grass" }
+  },
+  "species": {
+    "cinderpup": "battler_11",
+    "ashhound": "battler_26",
+    "mosskit": "battler_33"
+  },
+  "entities": {
+    "elder-wren": "elder"
+  },
+  "player": "player"
+}

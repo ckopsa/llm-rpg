@@ -2,11 +2,16 @@
   "name": "@llm-rpg/play",
   "version": "0.1.0",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "play": "tsx src/cli.ts",
     "playtest": "tsx src/playtest.ts",
     "validate": "tsx src/validate.ts",
-    "mcp": "tsx src/mcp.ts"
+    "mcp": "tsx src/mcp.ts",
+    "forge": "tsx src/forge-mcp.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@llm-rpg/engine": "*",
@@ -14,7 +19,9 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
   }
 }

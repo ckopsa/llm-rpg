@@ -30,9 +30,28 @@ export function updateHud(sim: Sim, mapEl: HTMLElement, moneyEl: HTMLElement): v
   moneyEl.textContent = `${sim.state.money} coins`;
 }
 
+/**
+ * True when the loaded game has battle content: a catalog with at least one
+ * species. A catalog-free narrative game must never enter battle paths, so
+ * every battle affordance checks this first. Optional-chained on purpose —
+ * it stays cheap and safe whether the engine has made `catalog` optional yet
+ * or not.
+ */
+export function hasBattleContent(sim: Sim): boolean {
+  return (sim.game.catalog?.species?.length ?? 0) > 0;
+}
+
 export function updateParty(sim: Sim, container: HTMLElement): void {
+  const catalog = sim.game.catalog;
+  // Catalog-free (battle-less) games have no party strip at all — and no
+  // species to resolve names against, so bail before any lookups.
+  if (!catalog || (catalog.species?.length ?? 0) === 0 || sim.state.party.length === 0) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+    return;
+  }
   const cards = sim.state.party.map((c) => {
-    const species = speciesById(sim.game.catalog, c.speciesId);
+    const species = speciesById(catalog, c.speciesId);
     const fainted = c.hp <= 0 ? " fainted" : "";
     return `<div class="party-card${fainted}">
       <div class="party-line"><span class="party-name">${species.name}</span><span class="party-lv">Lv ${c.level}</span></div>
@@ -40,5 +59,5 @@ export function updateParty(sim: Sim, container: HTMLElement): void {
     </div>`;
   });
   container.innerHTML = cards.join("");
-  container.classList.toggle("hidden", cards.length === 0);
+  container.classList.remove("hidden");
 }

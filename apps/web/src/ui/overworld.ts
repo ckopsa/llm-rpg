@@ -7,6 +7,7 @@
 import type { Sim } from "@llm-rpg/engine";
 import type { Renderer, Direction, MapData, TileGrid } from "../render/renderer";
 import type { SpriteMap } from "../render/spriteMap";
+import { hasBattleContent } from "./hud";
 import type { MessageBox } from "./messages";
 
 export interface WorldHolder {
@@ -38,6 +39,29 @@ const filterMoves = (events: string[]) =>
     // Steps are visible on the canvas, and the win line has its own banner.
     (e) => !e.startsWith("You move ") && e !== "*** YOU WIN ***",
   );
+
+/**
+ * The engine mirrors every passage into `lastEvents` as one multi-line
+ * string (so text observers see it); the web renders passages in the
+ * passage pane instead, so the mirrored strings are dropped from the
+ * chatter box. Exact-match against the engine's rendering — anything that
+ * doesn't match passes through untouched, and pre-passage engines
+ * (no lastPassages) are a no-op.
+ */
+function withoutPassageEvents(sim: Sim, events: string[]): string[] {
+  const passages = (sim.state as { lastPassages?: unknown }).lastPassages;
+  if (!Array.isArray(passages) || passages.length === 0) return events;
+  const rendered = new Set<string>();
+  for (const p of passages as { title?: string; lines?: string[]; citation?: string }[]) {
+    if (!Array.isArray(p?.lines)) continue;
+    const parts: string[] = [];
+    if (p.title !== undefined) parts.push(p.title, "");
+    parts.push(...p.lines);
+    if (p.citation !== undefined) parts.push(`— ${p.citation}`);
+    rendered.add(parts.join("\n"));
+  }
+  return events.filter((e) => !rendered.has(e));
+}
 
 export class OverworldView {
   private renderer: Renderer;
@@ -123,6 +147,11 @@ export class OverworldView {
     this.suspended = true;
   }
 
+  /** Dev-only forge hook: swap the sprite mapping (caller calls rebuild()). */
+  setSpriteMap(map: SpriteMap): void {
+    this.spriteMap = map;
+  }
+
   releaseKeys(): void {
     this.held = [];
   }
@@ -146,8 +175,8 @@ export class OverworldView {
     if (this.suspended || this.renderer.isMoving("player")) return;
     const sim = this.world.sim;
     const events = sim.act({ type: "interact" });
-    this.msg.push(filterMoves(events));
-    if (sim.state.battle) {
+    this.msg.push(withoutPassageEvents(sim, filterMoves(events)));
+    if (sim.state.battle && hasBattleContent(sim)) {
       // Trainers battle when spoken to.
       this.suspended = true;
       window.setTimeout(() => this.hooks.onBattleStart(), 240);
@@ -166,7 +195,7 @@ export class OverworldView {
     const prevMap = sim.state.map;
     const prevX = sim.state.playerX;
     const prevY = sim.state.playerY;
-    const events = filterMoves(sim.act({ type: "move", dir }));
+    const events = withoutPassageEvents(sim, filterMoves(sim.act({ type: "move", dir })));
     this.playerFacing = dir;
 
     if (sim.state.map !== prevMap) {
@@ -181,7 +210,7 @@ export class OverworldView {
     if (moved) {
       this.renderer.walk("player", dir);
       this.msg.push(events);
-      if (sim.state.battle) {
+      if (sim.state.battle && hasBattleContent(sim)) {
         this.suspended = true;
         // Let the step-into-the-grass tween land before the battle swallows
         // the screen.

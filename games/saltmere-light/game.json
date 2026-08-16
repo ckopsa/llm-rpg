@@ -1,0 +1,812 @@
+{
+  "meta": {
+    "id": "saltmere-light",
+    "title": "Saltmere Light",
+    "version": "0.1.0",
+    "goal": "Relight the Saltmere lamp before the fog takes another ship."
+  },
+  "catalog": {
+    "typeChart": {
+      "types": [
+        "tide",
+        "gale",
+        "ember",
+        "stone"
+      ],
+      "effectiveness": {
+        "tide": {
+          "stone": 2,
+          "gale": 0.5
+        },
+        "stone": {
+          "ember": 2,
+          "tide": 0.5
+        },
+        "ember": {
+          "gale": 2,
+          "stone": 0.5
+        },
+        "gale": {
+          "tide": 2,
+          "ember": 0.5
+        }
+      }
+    },
+    "moves": [
+      {
+        "id": "tidejet",
+        "name": "Tidejet",
+        "type": "tide",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "ripcurrent",
+        "name": "Ripcurrent",
+        "type": "tide",
+        "category": "physical",
+        "power": 65,
+        "accuracy": 0.9,
+        "pp": 15
+      },
+      {
+        "id": "deepsurge",
+        "name": "Deepsurge",
+        "type": "tide",
+        "category": "physical",
+        "power": 85,
+        "accuracy": 0.85,
+        "pp": 10
+      },
+      {
+        "id": "gustflick",
+        "name": "Gustflick",
+        "type": "gale",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "keening-squall",
+        "name": "Keening Squall",
+        "type": "gale",
+        "category": "physical",
+        "power": 60,
+        "accuracy": 0.95,
+        "pp": 15
+      },
+      {
+        "id": "embergnaw",
+        "name": "Embergnaw",
+        "type": "ember",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "ashenflare",
+        "name": "Ashenflare",
+        "type": "ember",
+        "category": "physical",
+        "power": 60,
+        "accuracy": 0.9,
+        "pp": 15
+      },
+      {
+        "id": "shellbash",
+        "name": "Shellbash",
+        "type": "stone",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "pierbreaker",
+        "name": "Pierbreaker",
+        "type": "stone",
+        "category": "physical",
+        "power": 65,
+        "accuracy": 0.9,
+        "pp": 15
+      }
+    ],
+    "species": [
+      {
+        "id": "glimmerling",
+        "name": "Glimmerling",
+        "glyph": "🐟",
+        "types": [
+          "tide"
+        ],
+        "baseStats": {
+          "hp": 45,
+          "atk": 50,
+          "def": 42,
+          "spd": 60
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "tidejet"
+          },
+          {
+            "level": 7,
+            "moveId": "ripcurrent"
+          }
+        ],
+        "evolvesTo": {
+          "speciesId": "lanternjaw",
+          "level": 9
+        },
+        "catchRate": 0.45,
+        "xpYield": 60
+      },
+      {
+        "id": "lanternjaw",
+        "name": "Lanternjaw",
+        "glyph": "🐋",
+        "types": [
+          "tide"
+        ],
+        "baseStats": {
+          "hp": 62,
+          "atk": 68,
+          "def": 58,
+          "spd": 70
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "tidejet"
+          },
+          {
+            "level": 7,
+            "moveId": "ripcurrent"
+          },
+          {
+            "level": 12,
+            "moveId": "deepsurge"
+          }
+        ],
+        "catchRate": 0.2,
+        "xpYield": 120
+      },
+      {
+        "id": "mistwisp",
+        "name": "Mistwisp",
+        "glyph": "🌫️",
+        "types": [
+          "gale"
+        ],
+        "baseStats": {
+          "hp": 38,
+          "atk": 44,
+          "def": 36,
+          "spd": 66
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "gustflick"
+          },
+          {
+            "level": 7,
+            "moveId": "keening-squall"
+          }
+        ],
+        "catchRate": 0.55,
+        "xpYield": 48
+      },
+      {
+        "id": "saltcrab",
+        "name": "Saltcrab",
+        "glyph": "🦀",
+        "types": [
+          "stone"
+        ],
+        "baseStats": {
+          "hp": 52,
+          "atk": 46,
+          "def": 60,
+          "spd": 30
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "shellbash"
+          },
+          {
+            "level": 8,
+            "moveId": "pierbreaker"
+          }
+        ],
+        "catchRate": 0.55,
+        "xpYield": 55
+      },
+      {
+        "id": "cinderpuff",
+        "name": "Cinderpuff",
+        "glyph": "🔥",
+        "types": [
+          "ember"
+        ],
+        "baseStats": {
+          "hp": 40,
+          "atk": 52,
+          "def": 40,
+          "spd": 55
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "embergnaw"
+          },
+          {
+            "level": 8,
+            "moveId": "ashenflare"
+          }
+        ],
+        "catchRate": 0.35,
+        "xpYield": 58
+      }
+    ],
+    "items": [
+      {
+        "id": "brine-salve",
+        "name": "Brine Salve",
+        "kind": "heal",
+        "amount": 20
+      },
+      {
+        "id": "deep-salve",
+        "name": "Deep Salve",
+        "kind": "heal",
+        "amount": 50
+      },
+      {
+        "id": "kelp-snare",
+        "name": "Kelp Snare",
+        "kind": "capture",
+        "ballMod": 1
+      }
+    ]
+  },
+  "legend": {
+    ".": {
+      "name": "grass",
+      "glyph": "🟩",
+      "walkable": true,
+      "wild": false
+    },
+    "#": {
+      "name": "tree",
+      "glyph": "🌲",
+      "walkable": false,
+      "wild": false
+    },
+    "~": {
+      "name": "water",
+      "glyph": "🟦",
+      "walkable": false,
+      "wild": false
+    },
+    "*": {
+      "name": "tall grass",
+      "glyph": "🌿",
+      "walkable": true,
+      "wild": true
+    },
+    ",": {
+      "name": "road",
+      "glyph": "🟫",
+      "walkable": true,
+      "wild": false
+    },
+    "%": {
+      "name": "brick wall",
+      "glyph": "🧱",
+      "walkable": false,
+      "wild": false
+    },
+    "=": {
+      "name": "plank floor",
+      "glyph": "⬜",
+      "walkable": true,
+      "wild": false
+    }
+  },
+  "maps": {
+    "harbor": {
+      "rows": [
+        "##############",
+        "#............#",
+        "#............#",
+        "#............#",
+        "#,,,,,,,,,,,,,",
+        "#............#",
+        "#............#",
+        "#~~~~~,,~~~~~#",
+        "#~~~~~,,~~~~~#",
+        "##############"
+      ],
+      "entities": [
+        {
+          "id": "harbormaster-brannoc",
+          "name": "Harbormaster Brannoc",
+          "glyph": "🧔",
+          "x": 4,
+          "y": 3,
+          "blocking": true,
+          "interactions": [
+            {
+              "forbidsFlag": "starter_given",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Light's been dark three nights, and Maris won't answer her door. Take this glimmerling — she swims better than any of us sail."
+                },
+                {
+                  "type": "give_species",
+                  "speciesId": "glimmerling",
+                  "level": 8
+                },
+                {
+                  "type": "give_item",
+                  "itemId": "brine-salve",
+                  "qty": 2
+                },
+                {
+                  "type": "give_money",
+                  "amount": 15
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "starter_given"
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Kettle's hot by the south wall if your kindred need warming."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "chandler-stall-salves",
+          "name": "Chandlery: Salves",
+          "glyph": "🧴",
+          "x": 6,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Brine salve, ten coins. Smells worse than it works — and it works fine."
+                },
+                {
+                  "type": "sell",
+                  "itemId": "brine-salve",
+                  "price": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "chandler-stall-snares",
+          "name": "Chandlery: Snares",
+          "glyph": "🪢",
+          "x": 8,
+          "y": 2,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Kelp snares, twelve coins. Soak them before you throw — they knot better wet."
+                },
+                {
+                  "type": "sell",
+                  "itemId": "kelp-snare",
+                  "price": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "keepers-kettle",
+          "name": "Keeper's Kettle",
+          "glyph": "🫖",
+          "x": 2,
+          "y": 6,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The kettle is hot. Your kindred crowd in close and steam."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dock-sign",
+          "name": "Dock Sign",
+          "glyph": "🪧",
+          "x": 7,
+          "y": 6,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "SALTMERE HARBOR — no light, no landing. The ships wait out past the shoals."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 13,
+          "y": 4,
+          "toMap": "cliff-path",
+          "toX": 0,
+          "toY": 5
+        }
+      ]
+    },
+    "cliff-path": {
+      "rows": [
+        "################",
+        "#....*****.....#",
+        "#....*****.....#",
+        "#....*****.....#",
+        "#..............#",
+        ",,,,,,,,,,,,,,,,",
+        "#..............#",
+        "#.....******...#",
+        "#.....******...#",
+        "#..............#",
+        "################"
+      ],
+      "entities": [
+        {
+          "id": "deckhand-piet",
+          "name": "Deckhand Piet",
+          "glyph": "🎣",
+          "x": 7,
+          "y": 2,
+          "blocking": true,
+          "interactions": [],
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "saltcrab",
+                "level": 5
+              },
+              {
+                "speciesId": "saltcrab",
+                "level": 6
+              }
+            ],
+            "defeatFlag": "piet_defeated",
+            "rewardMoney": 25,
+            "lineOfSight": {
+              "dir": "south",
+              "range": 3
+            },
+            "intro": "You walk like the fog's chasing you. Slow down and fight me.",
+            "defeatText": "Fair enough. Buy a snare with it — the grass gets rowdy near the cliffs.",
+            "outro": "Oda's down by the south grass. She vouches for folk, when she feels like it."
+          }
+        },
+        {
+          "id": "net-mender-oda",
+          "name": "Net-Mender Oda",
+          "glyph": "🧶",
+          "x": 12,
+          "y": 7,
+          "blocking": true,
+          "interactions": [],
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "cinderpuff",
+                "level": 5
+              },
+              {
+                "speciesId": "saltcrab",
+                "level": 6
+              }
+            ],
+            "defeatFlag": "oda_defeated",
+            "rewardMoney": 30,
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "kelp-snare",
+                "qty": 1
+              },
+              {
+                "type": "give_species",
+                "speciesId": "saltcrab",
+                "level": 7
+              },
+              {
+                "type": "say",
+                "text": "And take this saltcrab out of my nets — she's steadier than she looks."
+              }
+            ],
+            "intro": "The Warden barred that door for a reason. Show me you'd survive what's inside.",
+            "defeatText": "You'll do. Tell the door I said so — it listens to my knots.",
+            "outro": "Mind the pinch stairs — Maris keeps her cinderpuff hungry."
+          }
+        },
+        {
+          "id": "knotted-bar",
+          "name": "Knotted Bar",
+          "glyph": "🚪",
+          "x": 14,
+          "y": 5,
+          "blocking": true,
+          "passableWithFlag": "oda_defeated",
+          "interactions": [
+            {
+              "requiresFlag": "oda_defeated",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The knots slip loose at your touch, like they were waiting for Oda's word."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Rope knots thick as your arm bar the way. Oda's work — she would have to vouch for you."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "warden-sign",
+          "name": "Warden's Sign",
+          "glyph": "🪧",
+          "x": 13,
+          "y": 4,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "LIGHTHOUSE — keep out. The dark is kinder than you think. — M."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "warm-tide-pool",
+          "name": "Warm Tide-Pool",
+          "glyph": "💧",
+          "x": 3,
+          "y": 8,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "A warm tide-pool, sheltered from the wind. Your kindred paddle and perk up."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 0,
+          "y": 5,
+          "toMap": "harbor",
+          "toX": 13,
+          "toY": 4
+        },
+        {
+          "x": 15,
+          "y": 5,
+          "toMap": "lighthouse",
+          "toX": 4,
+          "toY": 10
+        }
+      ],
+      "encounters": {
+        "rate": 0.2,
+        "table": [
+          {
+            "speciesId": "mistwisp",
+            "minLevel": 3,
+            "maxLevel": 5,
+            "weight": 3
+          },
+          {
+            "speciesId": "saltcrab",
+            "minLevel": 3,
+            "maxLevel": 5,
+            "weight": 3
+          },
+          {
+            "speciesId": "cinderpuff",
+            "minLevel": 4,
+            "maxLevel": 6,
+            "weight": 1
+          }
+        ]
+      }
+    },
+    "lighthouse": {
+      "rows": [
+        "%%%%%%%%%",
+        "%=======%",
+        "%=======%",
+        "%%%%=%%%%",
+        "%=======%",
+        "%=======%",
+        "%%%%=%%%%",
+        "%=======%",
+        "%=======%",
+        "%=======%",
+        "%%%%=%%%%",
+        "%%%%%%%%%"
+      ],
+      "entities": [
+        {
+          "id": "warden-maris",
+          "name": "Warden Maris",
+          "glyph": "🧙",
+          "x": 4,
+          "y": 3,
+          "blocking": true,
+          "passableWithFlag": "warden_stood_down",
+          "interactions": [],
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "cinderpuff",
+                "level": 8
+              },
+              {
+                "speciesId": "lanternjaw",
+                "level": 8
+              }
+            ],
+            "defeatFlag": "warden_stood_down",
+            "intro": "Every ship that light calls in brings nets and noise. The sea was quieter dark.",
+            "defeatText": "Your glimmerling fights like the harbor's worth saving. Maybe it is. Go on up.",
+            "outro": "Trim the wick before you strike it. I'll mind the stairs."
+          }
+        },
+        {
+          "id": "keepers-cot",
+          "name": "Keeper's Cot",
+          "glyph": "🛏️",
+          "x": 2,
+          "y": 8,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The keeper's cot, still made. Your kindred rest a moment in the quiet."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "keepers-journal",
+          "name": "Keeper's Journal",
+          "glyph": "📖",
+          "x": 6,
+          "y": 8,
+          "blocking": true,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Day 41: Oda says I owe the harbor a light. I say the harbor owes the sea a little dark."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "the-great-lamp",
+          "name": "The Great Lamp",
+          "glyph": "🔆",
+          "x": 4,
+          "y": 1,
+          "blocking": true,
+          "interactions": [
+            {
+              "requiresFlag": "warden_stood_down",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The wick takes flame on the first strike. Light floods the gallery, the shoals, the waiting sails."
+                },
+                {
+                  "type": "win",
+                  "text": "Far past the shoals, a horn answers the light. Saltmere is open again."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The great lamp is cold. Salt crusts the glass."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 4,
+          "y": 10,
+          "toMap": "cliff-path",
+          "toX": 15,
+          "toY": 5
+        }
+      ]
+    }
+  },
+  "player": {
+    "glyph": "🙂",
+    "map": "harbor",
+    "x": 2,
+    "y": 4,
+    "party": [],
+    "money": 15,
+    "inventory": [],
+    "respawn": {
+      "map": "harbor",
+      "x": 2,
+      "y": 4
+    }
+  }
+}

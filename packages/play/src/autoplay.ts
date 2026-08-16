@@ -90,6 +90,10 @@ const TRAINER_LOSS_CAP = 2;
 /** Consecutive planned moves that change nothing before the run aborts. */
 const STALL_LIMIT = 25;
 
+/** Identical presentations of the same choice before the explorer moves on
+ *  to the next option (first-option policy with a loop escape). */
+const CHOICE_REPEAT_LIMIT = 3;
+
 /** Compact string form of an Action (inverse of parseAction). */
 export function actionWord(a: Action): string {
   switch (a.type) {
@@ -97,6 +101,8 @@ export function actionWord(a: Action): string {
       return a.dir;
     case "interact":
       return "interact";
+    case "choose":
+      return `choose${a.index + 1}`;
     case "battle_move":
       return `move${a.index + 1}`;
     case "battle_switch":
@@ -117,6 +123,8 @@ export function actionWord(a: Action): string {
  * when nothing has PP — the engine substitutes Flail).
  */
 export function chooseBattleAction(sim: Sim): Action {
+  // Only called while a battle is active — which requires a catalog; a
+  // catalog-free narrative game never reaches this policy.
   const b = sim.state.battle!;
   if (b.needsSwitch) {
     const idx = b.player.party.findIndex((c) => c.hp > 0);
@@ -132,7 +140,7 @@ export function chooseBattleAction(sim: Sim): Action {
   let bestPower = -1;
   me.moves.forEach((slot, i) => {
     if (slot.pp <= 0) return;
-    const power = moveById(sim.game.catalog, slot.moveId).power;
+    const power = moveById(sim.game.catalog!, slot.moveId).power;
     if (power > bestPower) {
       bestPower = power;
       best = i;
@@ -155,6 +163,7 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
   const interacted = new Set<string>(); // `${entityId}|${flagsKey}`
   const interactedEntities = new Set<string>();
   const trainerLosses = new Map<string, number>();
+  const choiceSeen = new Map<string, number>(); // identical-presentation counts
   const battles: BattleStats = { fought: 0, won: 0, lost: 0, fled: 0 };
 
   // Pre-split rows once (mirrors the sim's grids, which are private).
@@ -293,7 +302,26 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
 
     let action: Action;
     let target: string | undefined;
-    if (sim.state.battle) {
+    if (sim.state.pendingChoice) {
+      // First-option policy, with a loop escape: an identical presentation
+      // (same prompt/options/flags/vars) seen CHOICE_REPEAT_LIMIT times moves
+      // on to the next option; a fully exhausted choice aborts as stalled.
+      const pc = sim.state.pendingChoice;
+      const varsKey = JSON.stringify(
+        Object.entries(sim.state.vars).sort(([a], [b]) => (a < b ? -1 : 1)),
+      );
+      const key = `${pc.sourceId}|${pc.prompt}|${pc.options.map((o) => o.label).join("|")}|${flagsKey()}|${varsKey}`;
+      const seen = choiceSeen.get(key) ?? 0;
+      choiceSeen.set(key, seen + 1);
+      const index = Math.floor(seen / CHOICE_REPEAT_LIMIT);
+      if (index >= pc.options.length) {
+        stopReason = "stalled";
+        stopDetail = `the choice "${pc.prompt}" re-presented identically ${seen} times — every option tried ${CHOICE_REPEAT_LIMIT} times without changing state`;
+        break;
+      }
+      action = { type: "choose", index };
+      target = `choice: ${pc.prompt} -> option ${index + 1} (${pc.options[index].label})`;
+    } else if (sim.state.battle) {
       action = chooseBattleAction(sim);
       target = lastTarget || undefined;
     } else {

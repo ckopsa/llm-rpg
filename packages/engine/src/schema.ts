@@ -21,45 +21,190 @@ export const TileSchema = z.object({
 });
 export type Tile = z.infer<typeof TileSchema>;
 
+/**
+ * Unified condition object, usable on interactions and on every command
+ * (`when`). Evaluated by `evalWhen` against { flags, vars, money }:
+ *  - { flag } / { notFlag }        — boolean flag tests
+ *  - { var, op, value }            — compare a variable against a number or
+ *    string. A missing var reads as 0 for number comparisons and "" for
+ *    string comparisons. "money" is a built-in readable var (player money).
+ *  - { all } / { any } / { not }   — composition (arbitrarily nested)
+ * `requiresFlag`/`forbidsFlag` on interactions remain as sugar and are ANDed
+ * with `when`.
+ */
+export type WhenOp = "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
+
+export type When =
+  | { flag: string }
+  | { notFlag: string }
+  | { var: string; op: WhenOp; value: number | string }
+  | { all: When[] }
+  | { any: When[] }
+  | { not: When };
+
+export const WhenSchema: z.ZodType<When> = z.lazy(() =>
+  z.union([
+    z.object({ flag: z.string().min(1) }).strict(),
+    z.object({ notFlag: z.string().min(1) }).strict(),
+    z
+      .object({
+        var: z.string().min(1),
+        op: z.enum(["eq", "ne", "lt", "lte", "gt", "gte"]),
+        value: z.union([z.number(), z.string()]),
+      })
+      .strict(),
+    z.object({ all: z.array(WhenSchema).min(1) }).strict(),
+    z.object({ any: z.array(WhenSchema).min(1) }).strict(),
+    z.object({ not: WhenSchema }).strict(),
+  ]),
+);
+
+/** What `evalWhen` reads. `vars` are game variables; `money` backs the
+ *  built-in "money" var. */
+export interface WhenContext {
+  flags: readonly string[];
+  vars: Readonly<Record<string, number | string>>;
+  money: number;
+}
+
+function compareSame(op: WhenOp, a: number | string, b: number | string): boolean {
+  // Callers guarantee typeof a === typeof b; JS <,> compare strings lexically.
+  switch (op) {
+    case "eq":
+      return a === b;
+    case "ne":
+      return a !== b;
+    case "lt":
+      return (a as number) < (b as number);
+    case "lte":
+      return (a as number) <= (b as number);
+    case "gt":
+      return (a as number) > (b as number);
+    case "gte":
+      return (a as number) >= (b as number);
+  }
+}
+
+/** Evaluate a When condition. Type-mismatched var comparisons (a string var
+ *  against a number value, or vice versa) are never equal and never ordered:
+ *  only "ne" is true. */
+export function evalWhen(ctx: WhenContext, when: When): boolean {
+  if ("flag" in when) return ctx.flags.includes(when.flag);
+  if ("notFlag" in when) return !ctx.flags.includes(when.notFlag);
+  if ("all" in when) return when.all.every((w) => evalWhen(ctx, w));
+  if ("any" in when) return when.any.some((w) => evalWhen(ctx, w));
+  if ("not" in when) return !evalWhen(ctx, when.not);
+  const raw = when.var === "money" ? ctx.money : ctx.vars[when.var];
+  const actual = raw ?? (typeof when.value === "number" ? 0 : "");
+  if (typeof actual !== typeof when.value) return when.op === "ne";
+  return compareSame(when.op, actual, when.value);
+}
+
+/** Shared shape helper: every command variant carries an optional `when`
+ *  gate (the command is silently skipped when it evaluates false). */
+function command<T extends string, S extends z.ZodRawShape>(type: T, shape: S) {
+  return z.object({
+    type: z.literal(type),
+    ...shape,
+    when: WhenSchema.optional(),
+  });
+}
+
+/** One option of a `choice` command. `when`-gated options are hidden when the
+ *  gate fails; the chosen option's commands run, then any commands that were
+ *  suspended after the choice resume. Recursive: options may contain further
+ *  `choice` commands (nested chains). */
+export interface ChoiceOption {
+  label: string;
+  when?: When;
+  commands: Command[];
+}
+
+export const ChoiceOptionSchema: z.ZodType<ChoiceOption> = z.lazy(() =>
+  z.object({
+    label: z.string().min(1),
+    when: WhenSchema.optional(),
+    commands: z
+      .array(CommandSchema)
+      .min(1, "commands needs at least one command"),
+  }),
+);
+
 export const CommandSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("say"), text: z.string().min(1) }),
-  z.object({ type: z.literal("set_flag"), flag: z.string().min(1) }),
-  z.object({ type: z.literal("win"), text: z.string().min(1) }),
+  command("say", { text: z.string().min(1) }),
+  command("set_flag", { flag: z.string().min(1) }),
+  command("win", { text: z.string().min(1) }),
+  /** Set a variable to a number or string (creates it if missing). */
+  command("set_var", {
+    var: z.string().min(1),
+    value: z.union([z.number(), z.string()]),
+  }),
+  /** Add to a numeric variable (a missing var starts at 0). Adding to a
+   *  string-valued var is a validation error where statically knowable and a
+   *  runtime event otherwise. */
+  command("add_var", {
+    var: z.string().min(1),
+    amount: z.number(),
+  }),
+  /** Long-form text: a multi-line passage (poetry, narration, scripture).
+   *  Rendered in full by observers — the text carries the weight. */
+  command("passage", {
+    title: z.string().min(1).optional(),
+    lines: z
+      .array(z.string().min(1))
+      .min(1, "lines needs at least one line of text"),
+    citation: z.string().min(1).optional(),
+  }),
   /** Add a creature to the party (fails with an event if the party is full).
    *  Starter choice is spatial: three pedestal entities each give a different
    *  starter and set a shared flag like "starter_chosen" via forbidsFlag gates. */
-  z.object({
-    type: z.literal("give_species"),
+  command("give_species", {
     speciesId: z.string().min(1),
     level: z.number().int().min(1, "level must be at least 1"),
   }),
-  z.object({
-    type: z.literal("give_item"),
+  command("give_item", {
     itemId: z.string().min(1),
     qty: z.number().int().min(1, "qty must be at least 1"),
   }),
-  z.object({
-    type: z.literal("give_money"),
+  command("give_money", {
     amount: z.number().int().min(1, "amount must be at least 1"),
   }),
   /** Heal-hearth: restores every party member's HP and PP. */
-  z.object({ type: z.literal("heal_party") }),
+  command("heal_party", {}),
   /** Shop counter: the player BUYS 1x itemId for `price` coins (deducted on
    *  success; a failure event names the shortfall). Shops are spatial — one
    *  shopkeeper/counter entity (or one interaction) per item, no menu system. */
-  z.object({
-    type: z.literal("sell"),
+  command("sell", {
     itemId: z.string().min(1),
     price: z.number().int().min(0, "price must be zero or more"),
   }),
+  /** Dialogue choice (overworld only — a validation error inside trainer
+   *  rewardCommands, which run battle-side). Presenting a choice SUSPENDS the
+   *  remaining commands of the current list and sets `state.pendingChoice`;
+   *  the sim then accepts only `choose1..chooseN`. The chosen option's
+   *  commands run first, then the suspended commands resume — so
+   *  "say → choice → say-epilogue" reads the way an author expects. Options
+   *  whose `when` fails are hidden; if none remain, an event explains it and
+   *  the choice is skipped. Nested choices stack. */
+  command("choice", {
+    prompt: z.string().min(1),
+    options: z
+      .array(ChoiceOptionSchema)
+      .min(1, "options needs at least one option"),
+  }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
+/** The `choice` command variant (see CommandSchema). */
+export type ChoiceCommand = Extract<Command, { type: "choice" }>;
 
 export const InteractionSchema = z.object({
   requiresFlag: z.string().optional(),
   /** Interaction is SKIPPED if this flag is set — for one-time gifts
    *  (e.g. starter pedestals that all check "starter_chosen"). */
   forbidsFlag: z.string().optional(),
+  /** Unified condition, ANDed with requiresFlag/forbidsFlag (which remain
+   *  as sugar). The first interaction whose gates all pass runs. */
+  when: WhenSchema.optional(),
   commands: z.array(CommandSchema).min(1),
 });
 export type Interaction = z.infer<typeof InteractionSchema>;
@@ -173,8 +318,10 @@ export const GameSchema = z.object({
     goal: z.string().describe("One sentence telling the player what winning means"),
   }),
   /** The creature catalog: type chart, moves, species, items. One document,
-   *  one truth — encounter tables and commands are checked against it. */
-  catalog: CatalogSchema,
+   *  one truth — encounter tables and commands are checked against it.
+   *  OPTIONAL: a game without a catalog is a narrative game — no battles,
+   *  party, items, or encounters (validation errors name each conflict). */
+  catalog: CatalogSchema.optional(),
   /** Map row characters -> tile definitions. Keys must be exactly one character.
    *  Shared by every map. */
   legend: z.record(z.string(), TileSchema),
@@ -234,10 +381,17 @@ export function validateGame(data: unknown): ValidationResult {
   const warnings: string[] = [];
 
   // Catalog cross-references (type chart, learnsets, evolutions, items).
-  const catalogResult = validateCatalog(game.catalog);
-  for (const e of catalogResult.errors) errors.push(`catalog.${e}`);
-  const speciesIds = new Set(game.catalog.species.map((s) => s.id));
-  const itemIds = new Set(game.catalog.items.map((i) => i.id));
+  // No catalog = narrative game: every battle-dependent feature below errors
+  // with a message naming the fix.
+  const hasCatalog = game.catalog !== undefined;
+  if (game.catalog) {
+    const catalogResult = validateCatalog(game.catalog);
+    for (const e of catalogResult.errors) errors.push(`catalog.${e}`);
+  }
+  const speciesIds = new Set((game.catalog?.species ?? []).map((s) => s.id));
+  const itemIds = new Set((game.catalog?.items ?? []).map((i) => i.id));
+  const noCatalogFix = (feature: string, fix: string) =>
+    `${feature} needs a creature catalog, but this game has none — ${fix}, or add a top-level "catalog" (typeChart, moves, species)`;
   const speciesList = () => [...speciesIds].join(", ");
   const itemList = () =>
     itemIds.size > 0 ? [...itemIds].join(", ") : "(none defined — add items to the catalog)";
@@ -316,22 +470,88 @@ export function validateGame(data: unknown): ValidationResult {
     checkPos("player", game.player.map, game.player.x, game.player.y);
   }
 
+  // Flag/var read-write bookkeeping, for the warning pass at the end.
+  const flagReads = new Set<string>();
+  const flagWrites = new Set<string>();
+  const varReads = new Set<string>();
+  const varWrites = new Set<string>();
+  const varSetNumber = new Set<string>(); // set_var with a number value
+  const varSetString = new Set<string>(); // set_var with a string value
+  const addVarSites = new Map<string, string[]>(); // var -> add_var labels
+
+  const collectWhen = (when: When): void => {
+    if ("flag" in when) flagReads.add(when.flag);
+    else if ("notFlag" in when) flagReads.add(when.notFlag);
+    else if ("all" in when) when.all.forEach(collectWhen);
+    else if ("any" in when) when.any.forEach(collectWhen);
+    else if ("not" in when) collectWhen(when.not);
+    else if (when.var !== "money") varReads.add(when.var); // "money" is built-in
+  };
+
   // Command lists (interactions and trainer rewardCommands) share one checker.
-  const checkCommands = (label: string, commands: Command[]) => {
+  // `battleSide` marks lists that run from a battle (trainer rewardCommands):
+  // `choice` is overworld-only and errors there. Recurses into choice options.
+  const checkCommands = (label: string, commands: Command[], battleSide = false) => {
     const winIdx = commands.findIndex((c) => c.type === "win");
     if (winIdx !== -1 && winIdx !== commands.length - 1) {
       errors.push(`${label}: "win" must be the last command — commands after it never run`);
     }
     for (const [j, cmd] of commands.entries()) {
-      if (cmd.type === "give_species" && !speciesIds.has(cmd.speciesId)) {
-        errors.push(
-          `${label}[${j}]: speciesId "${cmd.speciesId}" is not in the catalog — use one of: ${speciesList()}`,
-        );
+      if (cmd.when) collectWhen(cmd.when);
+      if (cmd.type === "choice") {
+        if (battleSide) {
+          errors.push(
+            `${label}[${j}]: "choice" can't run from a battle — rewardCommands run at battle end; move the choice into the trainer's post-defeat interactions`,
+          );
+        }
+        if (cmd.options.every((o) => o.when !== undefined)) {
+          warnings.push(
+            `${label}[${j}]: every option of this choice is when-gated — if none pass, the choice is skipped at runtime; add an ungated option (no "when") as a guaranteed fallback, or make sure some gate always passes`,
+          );
+        }
+        for (const [k, option] of cmd.options.entries()) {
+          if (option.when) collectWhen(option.when);
+          checkCommands(`${label}[${j}].options[${k}].commands`, option.commands, battleSide);
+        }
       }
-      if ((cmd.type === "give_item" || cmd.type === "sell") && !itemIds.has(cmd.itemId)) {
-        errors.push(
-          `${label}[${j}]: itemId "${cmd.itemId}" is not in the catalog — use one of: ${itemList()}`,
-        );
+      if (cmd.type === "set_flag") flagWrites.add(cmd.flag);
+      if (cmd.type === "set_var" || cmd.type === "add_var") {
+        if (cmd.var === "money") {
+          errors.push(
+            `${label}[${j}]: "money" is the built-in money counter and can't be written as a var — use give_money (or sell) to change money, or pick another var name`,
+          );
+        }
+        varWrites.add(cmd.var);
+      }
+      if (cmd.type === "set_var") {
+        (typeof cmd.value === "number" ? varSetNumber : varSetString).add(cmd.var);
+      }
+      if (cmd.type === "add_var") {
+        const sites = addVarSites.get(cmd.var) ?? [];
+        sites.push(`${label}[${j}]`);
+        addVarSites.set(cmd.var, sites);
+      }
+      if (cmd.type === "give_species") {
+        if (!hasCatalog) {
+          errors.push(
+            `${label}[${j}]: ${noCatalogFix("give_species", "remove this command")}`,
+          );
+        } else if (!speciesIds.has(cmd.speciesId)) {
+          errors.push(
+            `${label}[${j}]: speciesId "${cmd.speciesId}" is not in the catalog — use one of: ${speciesList()}`,
+          );
+        }
+      }
+      if (cmd.type === "give_item" || cmd.type === "sell") {
+        if (!hasCatalog) {
+          errors.push(
+            `${label}[${j}]: ${noCatalogFix(`${cmd.type} (items live in the catalog)`, "remove this command")}`,
+          );
+        } else if (!itemIds.has(cmd.itemId)) {
+          errors.push(
+            `${label}[${j}]: itemId "${cmd.itemId}" is not in the catalog — use one of: ${itemList()}`,
+          );
+        }
       }
     }
   };
@@ -351,6 +571,7 @@ export function validateGame(data: unknown): ValidationResult {
         );
       }
       seenIds.set(e.id, mapId);
+      if (e.passableWithFlag) flagReads.add(e.passableWithFlag);
       if (checkPos(`maps.${mapId}.entities.${e.id}`, mapId, e.x, e.y)) {
         const key = `${e.x},${e.y}`;
         const other = seenPos.get(key);
@@ -362,22 +583,32 @@ export function validateGame(data: unknown): ValidationResult {
         seenPos.set(key, e.id);
       }
       for (const [i, interaction] of e.interactions.entries()) {
+        if (interaction.requiresFlag) flagReads.add(interaction.requiresFlag);
+        if (interaction.forbidsFlag) flagReads.add(interaction.forbidsFlag);
+        if (interaction.when) collectWhen(interaction.when);
         checkCommands(
           `maps.${mapId}.entities.${e.id}.interactions[${i}].commands`,
           interaction.commands,
         );
       }
       if (e.trainer) {
+        // The defeatFlag is set by the engine on victory — it counts as a write.
+        flagWrites.add(e.trainer.defeatFlag);
         const tLabel = `maps.${mapId}.entities.${e.id}.trainer`;
+        if (!hasCatalog) {
+          errors.push(
+            `${tLabel}: ${noCatalogFix("a trainer (battles use catalog species)", "remove the trainer block")}`,
+          );
+        }
         for (const [i, member] of e.trainer.party.entries()) {
-          if (!speciesIds.has(member.speciesId)) {
+          if (hasCatalog && !speciesIds.has(member.speciesId)) {
             errors.push(
               `${tLabel}.party[${i}]: speciesId "${member.speciesId}" is not in the catalog — use one of: ${speciesList()}`,
             );
           }
         }
         if (e.trainer.rewardCommands) {
-          checkCommands(`${tLabel}.rewardCommands`, e.trainer.rewardCommands);
+          checkCommands(`${tLabel}.rewardCommands`, e.trainer.rewardCommands, true);
         }
       }
     }
@@ -433,6 +664,19 @@ export function validateGame(data: unknown): ValidationResult {
         if (game.legend[ch].wild) wildTiles.add(game.legend[ch].name);
       }
     }
+    if (!hasCatalog) {
+      if (wildTiles.size > 0) {
+        errors.push(
+          `maps.${mapId}: has wild tiles (${[...wildTiles].map((n) => `"${n}"`).join(", ")}) — ${noCatalogFix("wild encounters", "remove the wild tiles (or their \"wild\": true)")}`,
+        );
+      }
+      if (def.encounters) {
+        errors.push(
+          `maps.${mapId}.encounters: ${noCatalogFix("an encounter zone", "remove the encounters zone")}`,
+        );
+      }
+      continue;
+    }
     if (wildTiles.size > 0 && !def.encounters) {
       errors.push(
         `maps.${mapId}: has wild tiles (${[...wildTiles].map((n) => `"${n}"`).join(", ")}) but no encounters zone — add maps.${mapId}.encounters with a rate and a species table, or remove the wild tiles`,
@@ -460,15 +704,25 @@ export function validateGame(data: unknown): ValidationResult {
   }
 
   // Player party, inventory, respawn.
+  if (!hasCatalog && game.player.party.length > 0) {
+    errors.push(
+      `player.party: ${noCatalogFix("a starting party", 'set "party": []')}`,
+    );
+  }
+  if (!hasCatalog && game.player.inventory.length > 0) {
+    errors.push(
+      `player.inventory: ${noCatalogFix("starting items (items live in the catalog)", 'set "inventory": []')}`,
+    );
+  }
   for (const [i, member] of game.player.party.entries()) {
-    if (!speciesIds.has(member.speciesId)) {
+    if (hasCatalog && !speciesIds.has(member.speciesId)) {
       errors.push(
         `player.party[${i}]: speciesId "${member.speciesId}" is not in the catalog — use one of: ${speciesList()}`,
       );
     }
   }
   for (const [i, entry] of game.player.inventory.entries()) {
-    if (!itemIds.has(entry.itemId)) {
+    if (hasCatalog && !itemIds.has(entry.itemId)) {
       errors.push(
         `player.inventory[${i}]: itemId "${entry.itemId}" is not in the catalog — use one of: ${itemList()}`,
       );
@@ -482,6 +736,34 @@ export function validateGame(data: unknown): ValidationResult {
       );
     } else {
       checkPos("player.respawn", r.map, r.x, r.y);
+    }
+  }
+
+  // add_var on a var that is only ever set to text is statically wrong.
+  for (const [v, sites] of addVarSites) {
+    if (varSetString.has(v) && !varSetNumber.has(v)) {
+      for (const site of sites) {
+        errors.push(
+          `${site}: add_var needs "${v}" to hold a number, but every set_var writes "${v}" as text — set_var it to a number, or change those writes`,
+        );
+      }
+    }
+  }
+
+  // Read-never-written checks are WARNINGS: the game loads, but a condition
+  // that can never change state is usually a typo'd name.
+  for (const v of [...varReads].sort()) {
+    if (!varWrites.has(v)) {
+      warnings.push(
+        `vars: "${v}" is read in a when condition but never written — conditions will always see 0 (or "" against text); add a set_var/add_var, or fix the var name`,
+      );
+    }
+  }
+  for (const f of [...flagReads].sort()) {
+    if (!flagWrites.has(f)) {
+      warnings.push(
+        `flags: "${f}" is read (requiresFlag, forbidsFlag, passableWithFlag, or a when condition) but never set — no set_flag or trainer defeatFlag writes it, so the gate can never change; add a writer, or fix the flag name`,
+      );
     }
   }
 

@@ -49,6 +49,9 @@ export class MessageBox {
   private idleHide = true;
   /** Optional hook fired as each message becomes visible (SFX etc.). */
   onShow: ((text: string) => void) | null = null;
+  /** While this returns true, queued messages wait (e.g. a passage pane is
+   *  open) — ordinary chatter resumes once the reading closes. */
+  gate: (() => boolean) | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -101,6 +104,12 @@ export class MessageBox {
   }
 
   private showNext(): void {
+    if (this.gate?.()) {
+      // Held: poll gently until the gate lifts, then play on.
+      if (this.timer !== null) window.clearTimeout(this.timer);
+      this.timer = window.setTimeout(() => this.showNext(), 200);
+      return;
+    }
     const next = this.queue.shift();
     if (!next) return;
     this.current = next;

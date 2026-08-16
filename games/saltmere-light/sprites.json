@@ -1,0 +1,7 @@
+{
+  "_comment": "Maps tile NAMES (from the game legend), species ids, and entity ids to sprite ids in apps/web/public/assets/manifest.json. Anything unmapped falls back to the game's emoji glyph.",
+  "tiles": {},
+  "species": {},
+  "entities": {},
+  "player": "player"
+}

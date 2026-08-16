@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "id": "starter-template",
+    "title": "Hearthside",
+    "version": "0.1.0",
+    "goal": "The trail brazier has gone cold. Get a kindred from Elder Wren, relight the brazier on Ember Trail, then tell her the good news."
+  },
+  "catalog": {
+    "typeChart": {
+      "types": ["fire", "grass", "normal"],
+      "effectiveness": {
+        "fire": { "fire": 0.5, "grass": 2 },
+        "grass": { "fire": 0.5, "grass": 0.5 }
+      }
+    },
+    "moves": [
+      { "id": "nuzzle", "name": "Nuzzle", "type": "normal", "category": "physical", "power": 40, "accuracy": 1, "pp": 35 },
+      { "id": "emberbite", "name": "Emberbite", "type": "fire", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+      { "id": "ashenroar", "name": "Ashen Roar", "type": "fire", "category": "special", "power": 65, "accuracy": 0.9, "pp": 10 },
+      { "id": "leafswipe", "name": "Leaf Swipe", "type": "grass", "category": "physical", "power": 40, "accuracy": 1, "pp": 25 },
+      { "id": "brace", "name": "Brace", "type": "normal", "category": "status", "power": 0, "accuracy": 1, "pp": 20, "effect": { "kind": "raise_def" } }
+    ],
+    "species": [
+      {
+        "id": "cinderpup",
+        "name": "Cinderpup",
+        "glyph": "🐕",
+        "types": ["fire"],
+        "baseStats": { "hp": 44, "atk": 52, "def": 43, "spd": 60 },
+        "learnset": [
+          { "level": 1, "moveId": "nuzzle" },
+          { "level": 1, "moveId": "emberbite" },
+          { "level": 6, "moveId": "brace" },
+          { "level": 12, "moveId": "ashenroar" }
+        ],
+        "evolvesTo": { "speciesId": "ashhound", "level": 14 },
+        "catchRate": 0.45,
+        "xpYield": 62
+      },
+      {
+        "id": "ashhound",
+        "name": "Ashhound",
+        "glyph": "🐺",
+        "types": ["fire"],
+        "baseStats": { "hp": 58, "atk": 66, "def": 58, "spd": 78 },
+        "learnset": [
+          { "level": 1, "moveId": "nuzzle" },
+          { "level": 1, "moveId": "emberbite" },
+          { "level": 12, "moveId": "ashenroar" }
+        ],
+        "catchRate": 0.2,
+        "xpYield": 140
+      },
+      {
+        "id": "mosskit",
+        "name": "Mosskit",
+        "glyph": "🐈",
+        "types": ["grass"],
+        "baseStats": { "hp": 48, "atk": 46, "def": 48, "spd": 44 },
+        "learnset": [
+          { "level": 1, "moveId": "nuzzle" },
+          { "level": 1, "moveId": "leafswipe" }
+        ],
+        "catchRate": 0.6,
+        "xpYield": 48
+      }
+    ],
+    "items": [
+      { "id": "warm-salve", "name": "Warm Salve", "kind": "heal", "amount": 20, "price": 10 },
+      { "id": "twig-snare", "name": "Twig Snare", "kind": "capture", "ballMod": 1, "price": 15 }
+    ]
+  },
+  "legend": {
+    "#": { "name": "tree", "glyph": "🌲", "walkable": false },
+    ".": { "name": "grass", "glyph": "🟩", "walkable": true },
+    ",": { "name": "road", "glyph": "🟨", "walkable": true },
+    "*": { "name": "tall grass", "glyph": "🌿", "walkable": true, "wild": true }
+  },
+  "maps": {
+    "hearthside-town": {
+      "rows": [
+        "########",
+        "#......#",
+        "#......,",
+        "#......#",
+        "########"
+      ],
+      "entities": [
+        {
+          "id": "town-hearth",
+          "name": "Town hearth",
+          "glyph": "🔥",
+          "x": 2,
+          "y": 1,
+          "interactions": [
+            {
+              "commands": [
+                { "type": "say", "text": "The hearth pops and settles. Your kindred stretch out in the warmth." },
+                { "type": "heal_party" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "elder-wren",
+          "name": "Elder Wren",
+          "glyph": "🧙",
+          "x": 6,
+          "y": 1,
+          "interactions": [
+            {
+              "requiresFlag": "trail_brazier_lit",
+              "commands": [
+                { "type": "say", "text": "You lit it? Listen — the whole trail is humming again." },
+                { "type": "win", "text": "Wren hangs the kettle back over the fire. Hearthside stays warm through the winter." }
+              ]
+            },
+            {
+              "forbidsFlag": "starter_received",
+              "commands": [
+                { "type": "say", "text": "The trail brazier went cold last night, and my knees are done with that walk. Take this little one and go relight it." },
+                { "type": "give_species", "speciesId": "cinderpup", "level": 5 },
+                { "type": "give_item", "itemId": "warm-salve", "qty": 2 },
+                { "type": "give_item", "itemId": "twig-snare", "qty": 2 },
+                { "type": "give_money", "amount": 20 },
+                { "type": "set_flag", "flag": "starter_received" },
+                { "type": "say", "text": "The brazier is east along Ember Trail, past the tall grass. One warm breath from a fire kindred and it will catch." }
+              ]
+            },
+            {
+              "commands": [
+                { "type": "say", "text": "Cold hands make slow work. The brazier is still waiting, east along the trail." }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        { "x": 7, "y": 2, "toMap": "ember-trail", "toX": 1, "toY": 2 }
+      ]
+    },
+    "ember-trail": {
+      "rows": [
+        "########",
+        "#.***..#",
+        ",.***..#",
+        "#......#",
+        "########"
+      ],
+      "entities": [
+        {
+          "id": "cold-brazier",
+          "name": "Waystone brazier",
+          "glyph": "🏮",
+          "x": 6,
+          "y": 1,
+          "interactions": [
+            {
+              "requiresFlag": "trail_brazier_lit",
+              "commands": [
+                { "type": "say", "text": "The brazier crackles, steady and bright." }
+              ]
+            },
+            {
+              "commands": [
+                { "type": "say", "text": "The old brazier is cold to the touch. Your kindred breathes on the coals — they catch." },
+                { "type": "set_flag", "flag": "trail_brazier_lit" }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        { "x": 0, "y": 2, "toMap": "hearthside-town", "toX": 6, "toY": 2 }
+      ],
+      "encounters": {
+        "rate": 0.2,
+        "table": [
+          { "speciesId": "mosskit", "minLevel": 2, "maxLevel": 4, "weight": 3 }
+        ]
+      }
+    }
+  },
+  "player": {
+    "glyph": "🙂",
+    "map": "hearthside-town",
+    "x": 1,
+    "y": 2,
+    "party": [],
+    "money": 15,
+    "inventory": [],
+    "respawn": { "map": "hearthside-town", "x": 1, "y": 2 }
+  }
+}

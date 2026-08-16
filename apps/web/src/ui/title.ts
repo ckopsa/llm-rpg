@@ -171,6 +171,15 @@ export class TitleScreen {
     if (this.visible && this.view === "games") this.render();
   }
 
+  /** Dev-only forge hook: drop cached listings so the shelf re-reads. */
+  refreshGames(): void {
+    this.listings = null;
+    if (this.visible && this.view === "games") {
+      this.render();
+      void this.loadListings();
+    }
+  }
+
   /** Show a gentle one-line notice under the menu (e.g. a bad save). */
   hint(text: string): void {
     this.setHint(text);

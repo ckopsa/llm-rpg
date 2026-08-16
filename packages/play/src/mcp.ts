@@ -31,10 +31,12 @@ server.tool(
 
 server.tool(
   "act",
-  "Take one action in the game. Overworld: north/south/east/west/interact. Battle: move1..move4, switch1..switch6, item1..item9, catch, run.",
+  "Take one action in the game. Overworld: north/south/east/west/interact. Pending dialogue choice: choose1..choose9. Battle: move1..move4, switch1..switch6, item1..item9, catch, run.",
   {
     action: z.enum([
       "north", "south", "east", "west", "interact",
+      "choose1", "choose2", "choose3", "choose4", "choose5",
+      "choose6", "choose7", "choose8", "choose9",
       "move1", "move2", "move3", "move4",
       "switch1", "switch2", "switch3", "switch4", "switch5", "switch6",
       "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9",

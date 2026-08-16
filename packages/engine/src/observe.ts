@@ -43,10 +43,12 @@ export function describe(sim: Sim): string {
   if (state.won) lines.push("Status: WON");
   lines.push(`Map: ${state.map}`);
   lines.push(`You are at (${state.playerX}, ${state.playerY}).`);
+  // Party lines are catalog-bound (a catalog-free narrative game has no
+  // party); money is always available.
   if (state.party.length > 0) {
     const summary = state.party
       .map((c) => {
-        const species = speciesById(game.catalog, c.speciesId);
+        const species = speciesById(game.catalog!, c.speciesId);
         return `${species.name} Lv${c.level} ${c.hp}/${c.maxHp} HP`;
       })
       .join(" · ");
@@ -79,18 +81,37 @@ export function describe(sim: Sim): string {
   }
 
   if (state.flags.length > 0) lines.push(`Flags: ${state.flags.join(", ")}`);
+  const varEntries = Object.entries(state.vars);
+  if (varEntries.length > 0) {
+    lines.push(
+      `Vars: ${varEntries.map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ")}`,
+    );
+  }
   if (state.lastEvents.length > 0) {
     lines.push("Last events:");
-    for (const ev of state.lastEvents) lines.push(`  ${ev}`);
+    // Multi-line events (passages) print in full, every line indented —
+    // never truncated into a single window line.
+    for (const ev of state.lastEvents) {
+      for (const line of ev.split("\n")) lines.push(`  ${line}`);
+    }
   }
-  lines.push("Actions: north | south | east | west | interact");
+  // A pending choice replaces the action list: only choose1..N are valid.
+  const pc = state.pendingChoice;
+  if (pc) {
+    lines.push(`Choice: ${pc.prompt}`);
+    pc.options.forEach((o, i) => lines.push(`  ${i + 1}) ${o.label}`));
+    lines.push(`Actions: choose1..choose${pc.options.length}`);
+  } else {
+    lines.push("Actions: north | south | east | west | interact");
+  }
   return lines.join("\n");
 }
 
 export function observe(sim: Sim): string {
   // A battle replaces the overworld view entirely: it is the whole screen.
   if (sim.battle) {
-    return describeBattle(sim.game.catalog, sim.battle, sim.state.inventory);
+    // A battle can only exist in a catalog game.
+    return describeBattle(sim.game.catalog!, sim.battle, sim.state.inventory);
   }
   return `${renderGrid(sim)}\n\n${describe(sim)}`;
 }

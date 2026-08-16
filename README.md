@@ -38,7 +38,7 @@ npm run validate -- games/demo/game.json
 
 ## Playtesting
 
-`npm run playtest` plays a game automatically and reports either a win with stats or "stuck here" with a diagnosis (last 20 events + the full final observation). Exit code 0 only on a win, so it slots straight into CI. `--transcript <file>` (either mode) writes the complete event log as JSONL: one `{step, action, events, map, battle}` object per action.
+`npm run playtest` plays a game automatically and reports either a win with stats or "stuck here" with a diagnosis (last 20 events + the full final observation). Exit code 0 only on a win, so it slots straight into CI. `--transcript <file>` (script/explore) writes the complete event log as JSONL: one `{step, action, events, map, battle}` object per action. `--json` (any mode) prints the report as a single JSON object — the only thing written to stdout; the human-readable report moves to stderr — so build tools can pipe it straight into a parser.
 
 **Script mode** replays a known action list (whitespace/comma-separated; `#` comments to end of line in script files):
 
@@ -57,7 +57,17 @@ npm run playtest -- --game games/emberwood/game.json --goal explore --max-steps 
 
 It won't beat a tuned game — its job is coverage smoke-testing. The report lists maps visited (and NOT reached), entities interacted, flags set, battles fought/won/lost/fled, and exactly where and why it stopped. This is the first thing to run on new content: unreachable maps and broken flag gates show up immediately. Runs are fully reproducible (`--seed`, default 1; all tie-breaks are stable ordering).
 
-`packages/engine/test/emberwood.test.ts` pins both loops in CI: Emberwood's README script must still win at turn 1242, and the explorer must fully cover (and win) the demo game.
+**Reachability mode** is the instant build-critic — a static BFS from the player start through walkable tiles and portals, with no simulation at all (no battles, no encounters, no RNG), so it finishes in milliseconds:
+
+```bash
+npm run playtest -- --game games/emberwood/game.json --goal reach
+```
+
+It runs two passes over the same graph: **optimistic** (entities with `passableWithFlag` are treated as already open, since their flag may become obtainable — anything unreachable here is a hard authoring bug) and **pessimistic** (blocking entities never open). The delta between them shows exactly which content sits behind flag gates — expected for badge gates, alarming for your starter town. The report covers per-map reachability under both passes, entities no reachable tile is adjacent to (`interact` can never target them), orphan portals (never enterable from the start, or with an invalid destination), and encounter zones with no reachable wild tile. Exit code 0 only when the optimistic pass is clean. Run it after every map edit; save `--goal explore` for when the wiring is right.
+
+**As a library:** `@llm-rpg/play` exports the same machinery for in-process callers (e.g. the MCP forge loop): `runScript(game, actions, opts)` → `ScriptReport`, `runExplore(game, opts)` → `ExploreReport`, and `analyzeReachability(game)` → `ReachabilityReport`. All three reports are plain JSON-serializable objects — exactly what `--json` prints.
+
+`packages/engine/test/emberwood.test.ts` pins both play loops in CI (Emberwood's README script must still win at turn 1242, and the explorer must fully cover and win the demo game); `packages/play/test/` pins the report shapes and the reachability analyzer against both shipped games.
 
 ## MCP server (AI plays via tool calls)
 
@@ -67,6 +77,18 @@ claude mcp add llm-rpg -- npm run mcp --prefix /path/to/llm-rpg
 
 Tools: `observe`, `act`, `reset`, `save_game {slot}`, `load_game {slot}`, `validate_game`.
 
+## Forge (AI builds games via tool calls)
+
+The Forge is the authoring-side MCP server: tools that create and edit `games/<dir>/game.json` incrementally, with every accepted edit atomically persisted (and undoable), advisory validation on every response, and the playtest harness one tool call away:
+
+```bash
+claude mcp add llm-rpg-forge -- npm run forge --prefix /path/to/llm-rpg
+```
+
+Tools: `forge_list_games`, `forge_new_game` (from `games/_templates/starter` — a minimal complete, winnable teaching game — or `blank`), `forge_open`, `forge_edit` / `forge_batch` (the engine's edit ops: maps, painting, entities, portals, encounters, catalog), `forge_undo`, `forge_map`, `forge_overview`, `forge_validate`, `forge_check` (instant reachability critic), `forge_playtest` (explore / script / reach).
+
+**[docs/forge.md](docs/forge.md)** is the authoring guide: the recommended workflow (edit → `forge_check` → explore playtest → fix), an op reference, schema conventions (flag gating, spatial shops), and pacing/tone heuristics.
+
 ## Game format in 30 seconds
 
 A game is a multi-map overworld (towns, routes, interiors) connected by portals, with a shared tile legend and an embedded creature catalog:
@@ -74,7 +96,7 @@ A game is a multi-map overworld (towns, routes, interiors) connected by portals,
 ```jsonc
 {
   "meta": { "id": "...", "title": "...", "goal": "what winning means" },
-  "catalog": {                                    // one document, one truth
+  "catalog": {                                    // one document, one truth (optional — omit it for a battle-free narrative game)
     "typeChart": { "types": ["fire", "..."], "effectiveness": { "fire": { "grass": 2 } } },
     "moves":   [{ "id": "flamejet", "type": "fire", "power": 40, "accuracy": 1, "pp": 25 }],
     "species": [{ "id": "emberling", "baseStats": { "hp": 44, "atk": 52, "def": 43, "spd": 65 },
@@ -124,7 +146,33 @@ A game is a multi-map overworld (towns, routes, interiors) connected by portals,
 }
 ```
 
-Interactions are checked in order; the first one whose `requiresFlag` is satisfied *and* whose `forbidsFlag` is not set runs (`forbidsFlag` makes one-time gifts — e.g. three starter pedestals that all set `starter_chosen`). Commands: `say`, `set_flag`, `win`, `give_species`, `give_item`, `give_money`, `heal_party`, `sell`. Entities can set `"passableWithFlag": "some_flag"` to stop blocking once a flag is set. `validateGame` cross-checks everything against the catalog (encounter species, item/species refs in commands, trainer parties, party members) with errors that name the fix.
+Interactions are checked in order; the first one whose `requiresFlag` is satisfied *and* whose `forbidsFlag` is not set *and* whose `when` (if any) evaluates true runs (`forbidsFlag` makes one-time gifts — e.g. three starter pedestals that all set `starter_chosen`). Commands: `say`, `set_flag`, `set_var`, `add_var`, `passage`, `choice`, `win`, `give_species`, `give_item`, `give_money`, `heal_party`, `sell`. Entities can set `"passableWithFlag": "some_flag"` to stop blocking once a flag is set. `validateGame` cross-checks everything against the catalog (encounter species, item/species refs in commands, trainer parties, party members) with errors that name the fix, and warns about flags/vars that are read but never written.
+
+**Vars and `when` conditions.** Alongside boolean flags, games have named variables: `{ "type": "set_var", "var": "trust", "value": 3 }` (numbers or strings) and `{ "type": "add_var", "var": "trust", "amount": 1 }` (numeric; a missing var starts at 0; adding to a text var is a validation error where statically knowable, a runtime event otherwise). Every command and every interaction takes an optional `when` — a unified condition object, evaluated by the exported `evalWhen(ctx, when)`:
+
+```jsonc
+{ "flag": "blessed" }                                  // flag is set
+{ "notFlag": "blessed" }                               // flag is not set
+{ "var": "trust", "op": "gte", "value": 2 }            // eq|ne|lt|lte|gt|gte
+{ "all": [ ... ] }  { "any": [ ... ] }  { "not": ... } // composition, nests freely
+```
+
+A command whose `when` is false is skipped silently; an interaction's `when` is ANDed with the `requiresFlag`/`forbidsFlag` sugar. Var comparisons against a missing var see `0` (number comparisons) or `""` (string comparisons); `"money"` is a built-in readable var (the player's money — writable only through `give_money`/`sell`). Vars live in `state.vars`, are snapshot-safe, and print in observations.
+
+**Passages** are long-form text (poetry, narration, scripture) that the plain `say` chatter box would mangle: `{ "type": "passage", "title": "…", "lines": ["…", "…"], "citation": "…" }` (title/citation optional, `lines` required). The passage lands in `state.lastPassages` (cleared each action, like `lastEvents`) for renderers that want a proper text pane, and as one formatted multi-line event (title, blank line, lines, `— citation`) so the CLI/MCP/text observers show it in full with zero changes.
+
+**Choices** put a real decision in a dialogue:
+
+```jsonc
+{ "type": "choice", "prompt": "What do you answer?", "options": [
+  { "label": "Hold fast", "commands": [{ "type": "set_flag", "flag": "held_fast" }] },
+  { "label": "Curse",     "when": { "notFlag": "vowed" }, "commands": [{ "type": "say", "text": "..." }] }
+] }
+```
+
+Presenting a choice **suspends** the rest of the current command list and shows the options whose `when` passes (an option with a failing gate is hidden; if none are open, an event explains it and the choice is skipped — validation warns when every option is gated). The sim then accepts only `choose1..chooseN` (alias `o1..oN`); everything else is rejected with a pointer at the options, and battles can't start. The chosen option's commands run first, then the suspended commands resume — so `say → choice → say-epilogue` reads the way you'd expect; a choice inside an option nests the same way. Choices are overworld-only (a validation error inside trainer `rewardCommands`), fully deterministic, and snapshot-safe mid-choice. The text observer lists the prompt and numbered options and swaps the actions line to `Actions: choose1..chooseN`.
+
+**Narrative games (no catalog).** `catalog` is optional: a game without one is a story-first game — no battles, party, items, or encounters. Validation then errors, naming the fix, on anything battle-bound: wild tiles, `encounters` zones, `trainer` blocks, `give_species`/`give_item`/`sell` commands, and a non-empty starting `party`/`inventory`. Money and every narrative command still work (`heal_party` becomes a gentle no-op event); observers simply omit party lines, and the playtest explorer runs the same coverage sweep without a battle policy.
 
 **Shops** are spatial, not menus: a `sell` command (`{ "type": "sell", "itemId": "embersalve", "price": 10 }`) on a shopkeeper or counter-tile entity sells the player 1x that item per interact — one entity or interaction per item. Insufficient money produces an event naming the shortfall.
 

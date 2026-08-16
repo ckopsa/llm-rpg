@@ -14,6 +14,7 @@
  *   ui/overworld.ts      overworld view: map build, movement queue, portals
  *   ui/battle.ts         battle screen: panels, battlers, menus
  *   ui/messages.ts       GBA-style sequential message box
+ *   ui/passage.ts        long-form passage pane ("scripture mode")
  *   ui/hud.ts            map/money chips + party strip
  */
 import { Sim, validateGame } from "@llm-rpg/engine";
@@ -31,9 +32,10 @@ import { Renderer } from "./render/renderer";
 import { loadSpriteMap } from "./render/spriteMap";
 import { hasAnySave, newestSlot, readSlot, writeSlot, type SlotId } from "./saves";
 import { BattleView } from "./ui/battle";
-import { updateHud, updateParty } from "./ui/hud";
+import { hasBattleContent, updateHud, updateParty } from "./ui/hud";
 import { MessageBox } from "./ui/messages";
 import { OverworldView, type WorldHolder } from "./ui/overworld";
+import { PassagePane, type Passage } from "./ui/passage";
 import { PausePanel } from "./ui/pause";
 import { TitleScreen } from "./ui/title";
 
@@ -82,7 +84,7 @@ async function main(): Promise<void> {
     showGameError(gameId, result.errors);
     return;
   }
-  const game = result.game!;
+  let game = result.game!; // `let`: the dev-only forge hot-swaps it in place
 
   document.title = game.meta.title;
   $("title").textContent = game.meta.title;
@@ -146,6 +148,23 @@ async function main(): Promise<void> {
   });
   const msg = new MessageBox($("msgbox"));
   msg.onShow = (text) => audio.sfxForEvent(text);
+
+  // Passage pane ("scripture mode"): long-form text reads here, not in the
+  // chatter box. Ordinary messages hold until the reading closes.
+  const passagePane = new PassagePane($("passage"));
+  msg.gate = () => passagePane.open;
+
+  /**
+   * Feature-detected drain of the engine's long-form passages. The engine
+   * half populates `sim.state.lastPassages` during act() (cleared at the
+   * start of each act, like lastEvents); until it lands this is a no-op.
+   * Consumed by splice so a passage is queued exactly once.
+   */
+  function pumpPassages(): void {
+    const passages = (world.sim.state as { lastPassages?: unknown }).lastPassages;
+    if (!Array.isArray(passages) || passages.length === 0) return;
+    passagePane.enqueue(passages.splice(0, passages.length) as Passage[]);
+  }
 
   let mode: "title" | "overworld" | "battle" = "title";
   let transitioning = false;
@@ -217,6 +236,9 @@ async function main(): Promise<void> {
 
   // ---- title / pause / save flow ----------------------------------------
 
+  // Indirection so the dev-only forge can swap in a fresh-from-disk lister.
+  let gamesLister = listGames;
+
   const titleEl = $("title-screen");
   const pauseEl = $("pause");
 
@@ -236,7 +258,7 @@ async function main(): Promise<void> {
     onChooseGame: (id) => {
       window.location.search = `?game=${encodeURIComponent(id)}`;
     },
-    listGames,
+    listGames: () => gamesLister(),
     ...menuSfx,
   });
 
@@ -272,11 +294,12 @@ async function main(): Promise<void> {
     pause.hide();
     msg.clear();
     msg.setIdleHide(true);
+    passagePane.clear();
     battle.leave();
     bannerEl.classList.add("hidden");
     wonStung = false;
     overworld.releaseKeys();
-    if (world.sim.state.battle) {
+    if (world.sim.state.battle && hasBattleContent(world.sim)) {
       // A save taken mid-battle (engine supports it) resumes into the fight.
       stage.classList.add("battle-mode");
       battleEl.classList.remove("hidden");
@@ -299,6 +322,7 @@ async function main(): Promise<void> {
     mode = "title";
     pause.hide();
     msg.clear();
+    passagePane.clear();
     battle.leave();
     battleEl.classList.add("hidden");
     stage.classList.remove("battle-mode");
@@ -315,6 +339,11 @@ async function main(): Promise<void> {
     if (ev.key === "m" || ev.key === "M") {
       ev.preventDefault();
       audio.toggleMute();
+      return;
+    }
+    if (passagePane.open) {
+      // A passage owns the stage: everything but mute waits until it closes.
+      if (passagePane.handleKey(ev)) ev.preventDefault();
       return;
     }
     if (mode === "title") {
@@ -371,7 +400,8 @@ async function main(): Promise<void> {
   }
 
   const loop = () => {
-    if (mode !== "title" && !transitioning) {
+    if (mode !== "title") pumpPassages();
+    if (mode !== "title" && !transitioning && !passagePane.open) {
       if (mode === "overworld") {
         if (!world.sim.state.won) {
           if (!pause.visible) overworld.tick();
@@ -394,6 +424,69 @@ async function main(): Promise<void> {
 
   // Debug/test handle (used by the CDP walkthrough; harmless in play).
   (window as unknown as { __world: WorldHolder }).__world = world;
+
+  // ---- forge live reload (dev only; this whole block tree-shakes out) ----
+  if (import.meta.hot) {
+    const { initForge } = await import("./forge");
+    initForge(import.meta.hot, {
+      gameId,
+      loaded,
+      getSim: () => world.sim,
+      getMode: () => mode,
+      applyGame: (g, sim, sprites) => {
+        game = g;
+        world.sim = sim;
+        spriteMap = sprites;
+        overworld.setSpriteMap(sprites);
+        battle.setSpriteMap(sprites);
+        document.title = g.meta.title;
+        $("title").textContent = g.meta.title;
+        $("goal").textContent = g.meta.goal;
+        if (mode === "title") {
+          titleScreen.show(g.meta.title, g.meta.goal, gameId, hasAnySave(g.meta.id));
+          return;
+        }
+        msg.clear();
+        passagePane.clear();
+        bannerEl.classList.add("hidden"); // the loop re-shows it if still won
+        wonStung = world.sim.state.won; // don't re-sting a preserved win
+        if (world.sim.state.battle && hasBattleContent(world.sim)) {
+          stage.classList.add("battle-mode");
+          battleEl.classList.remove("hidden");
+          battle.enter();
+          helpEl.textContent = BATTLE_HELP;
+          mode = "battle";
+        } else {
+          battle.leave();
+          battleEl.classList.add("hidden");
+          stage.classList.remove("battle-mode");
+          overworld.rebuild();
+          overworld.releaseKeys();
+          helpEl.textContent = OVERWORLD_HELP;
+          mode = "overworld";
+        }
+        refreshHud();
+      },
+      applySprites: (sprites) => {
+        spriteMap = sprites;
+        overworld.setSpriteMap(sprites); // battle repaints inside its setter
+        battle.setSpriteMap(sprites);
+        if (mode === "overworld") overworld.rebuild();
+      },
+      refreshTitleGames: () => titleScreen.refreshGames(),
+      setGamesLister: (fn) => {
+        gamesLister = fn;
+      },
+    });
+
+    // Passage-pane verification (?passagetest=1): queue sample passages on
+    // load so pagination/styling can be checked before any game has passage
+    // content. Dev-only — the dynamic import tree-shakes out of prod builds.
+    if (new URLSearchParams(window.location.search).get("passagetest") === "1") {
+      const { samplePassages } = await import("./passagetest");
+      passagePane.enqueue(samplePassages());
+    }
+  }
 
   renderer.start();
   requestAnimationFrame(loop);

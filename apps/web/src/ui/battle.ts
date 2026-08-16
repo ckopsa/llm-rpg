@@ -14,7 +14,7 @@ import {
   speciesById,
   xpForLevel,
 } from "@llm-rpg/engine";
-import type { BattleState, Combatant } from "@llm-rpg/engine";
+import type { BattleState, Catalog, Combatant } from "@llm-rpg/engine";
 import type { LoadedManifest } from "../render/manifest";
 import { drawSpriteFrame } from "../render/renderer";
 import type { SpriteMap } from "../render/spriteMap";
@@ -101,6 +101,12 @@ export class BattleView {
     return this.bs?.outcome ?? null;
   }
 
+  /** The catalog, asserted present: catalog-free games never enter battle
+   *  paths (guarded by hasBattleContent), so inside a battle it exists. */
+  private get catalog(): Catalog {
+    return this.world.sim.game.catalog!;
+  }
+
   private buildDom(): void {
     this.root.innerHTML = `
       <div class="combatant enemy">
@@ -174,6 +180,14 @@ export class BattleView {
   leave(): void {
     this.bs = null;
     this.msg.setIdleHide(true);
+  }
+
+  /** Dev-only forge hook: swap the sprite mapping and repaint battlers. */
+  setSpriteMap(map: SpriteMap): void {
+    this.spriteMap = map;
+    this.lastEnemySpecies = "";
+    this.lastAllySpecies = "";
+    if (this.bs) this.refresh();
   }
 
   /**
@@ -306,14 +320,14 @@ export class BattleView {
   private hasCaptureItem(): boolean {
     const sim = this.world.sim;
     return sim.state.inventory.some(
-      (e) => itemById(sim.game.catalog, e.itemId).kind === "capture",
+      (e) => itemById(this.catalog, e.itemId).kind === "capture",
     );
   }
 
   private options(): MenuOption[] {
     const s = this.bs!;
     const sim = this.world.sim;
-    const catalog = sim.game.catalog;
+    const catalog = this.catalog;
     const me = s.player.party[s.player.active];
 
     if (this.menuKind === "moves") {
@@ -396,7 +410,7 @@ export class BattleView {
 
   private menuTitleText(): string {
     const s = this.bs!;
-    const catalog = this.world.sim.game.catalog;
+    const catalog = this.catalog;
     const me = s.player.party[s.player.active];
     const name = speciesById(catalog, me.speciesId).name;
     switch (this.menuKind) {
@@ -441,7 +455,7 @@ export class BattleView {
   refresh(): void {
     const s = this.bs;
     if (!s) return;
-    const catalog = this.world.sim.game.catalog;
+    const catalog = this.catalog;
     const enemy = s.enemy.party[s.enemy.active];
     const ally = s.player.party[s.player.active];
 
@@ -495,7 +509,7 @@ export class BattleView {
     const sprite = spriteId ? this.loaded.manifest.sprites[spriteId] : undefined;
     if (!spriteId || !sprite) {
       // Unmapped species: big emoji glyph instead of a battler sprite.
-      const species = speciesById(this.world.sim.game.catalog, speciesId);
+      const species = speciesById(this.catalog, speciesId);
       canvas.classList.add("hidden");
       glyphEl.classList.remove("hidden");
       glyphEl.textContent = species.glyph;
