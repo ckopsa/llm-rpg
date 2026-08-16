@@ -124,3 +124,110 @@ describe("analyzeReachability catches broken fixtures", () => {
     ).toBe(true);
   });
 });
+
+describe("teleport edges and stated limitations (llm-rpg-ran)", () => {
+  /** Two islands with NO portal between them: the only way across is a
+   *  teleport_player in the ferryman's dialogue (optionally when-gated),
+   *  plus a court map reachable only through an enter trigger's teleport. */
+  function teleportFixture(opts: { gateCrossing: boolean }): Game {
+    const crossing: Record<string, unknown> = {
+      type: "teleport_player",
+      mapId: "island",
+      x: 1,
+      y: 1,
+    };
+    if (opts.gateCrossing) crossing.when = { flag: "fare_paid" };
+    const result = validateGame({
+      meta: { id: "tp", title: "TP", goal: "cross" },
+      legend: {
+        "#": { name: "wall", glyph: "#", walkable: false },
+        ".": { name: "floor", glyph: ".", walkable: true },
+      },
+      maps: {
+        shore: {
+          rows: ["#####", "#...#", "#####"],
+          entities: [
+            {
+              id: "ferryman", name: "Ferryman", glyph: "F", x: 3, y: 1,
+              interactions: [
+                {
+                  commands: [
+                    { type: "set_flag", flag: "fare_paid" },
+                    crossing,
+                  ],
+                },
+              ],
+            },
+          ],
+          triggers: [
+            {
+              id: "court-scene",
+              on: "enter",
+              commands: [
+                { type: "set_tile", mapId: "court", x: 1, y: 1, char: "." },
+                { type: "teleport_player", mapId: "court", x: 2, y: 1, when: { flag: "summoned" } },
+              ],
+            },
+          ],
+        },
+        island: {
+          rows: ["####", "#..#", "####"],
+          entities: [
+            {
+              id: "hermit", name: "Hermit", glyph: "H", x: 2, y: 1,
+              interactions: [
+                { commands: [{ type: "set_flag", flag: "summoned" }, { type: "win", text: "Across." }] },
+              ],
+            },
+          ],
+        },
+        court: { rows: ["####", "#..#", "####"], entities: [] },
+      },
+      player: { glyph: "@", map: "shore", x: 1, y: 1 },
+    });
+    expect(result.errors).toEqual([]);
+    return result.game!;
+  }
+
+  it("an ungated teleport makes its destination reachable in BOTH passes", () => {
+    const report = analyzeReachability(teleportFixture({ gateCrossing: false }));
+    const island = report.maps.find((m) => m.id === "island")!;
+    expect(island.optimistic).toBe(true);
+    expect(island.pessimistic).toBe(true);
+    expect(report.unreachableMaps).toEqual([]);
+    // The hermit behind the teleport is interactable.
+    expect(report.unreachableEntities).toEqual([]);
+  });
+
+  it("a when-gated teleport fires only in the optimistic pass (destination shows as flag-gated)", () => {
+    const report = analyzeReachability(teleportFixture({ gateCrossing: true }));
+    const island = report.maps.find((m) => m.id === "island")!;
+    expect(island.optimistic).toBe(true);
+    expect(island.pessimistic).toBe(false);
+    expect(report.flagGatedMaps).toContain("island");
+    expect(report.unreachableMaps).toEqual([]);
+  });
+
+  it("teleport edges chain to a fixpoint: a gated trigger teleport opens the court optimistically", () => {
+    const report = analyzeReachability(teleportFixture({ gateCrossing: false }));
+    const court = report.maps.find((m) => m.id === "court")!;
+    expect(court.optimistic).toBe(true); // via the enter trigger's gated teleport
+    expect(court.pessimistic).toBe(false); // gated: optimistic-pass only
+  });
+
+  it("reports the teleport list and the honest static-analysis limitations", () => {
+    const report = analyzeReachability(teleportFixture({ gateCrossing: true }));
+    expect(report.teleports).toHaveLength(2);
+    const ferry = report.teleports.find((t) => t.source.includes("ferryman"))!;
+    expect(ferry).toMatchObject({ toMap: "island", toX: 1, toY: 1, gated: true });
+    const court = report.teleports.find((t) => t.source.includes("court-scene"))!;
+    expect(court).toMatchObject({ toMap: "court", gated: true });
+    // set_tile is used, so the overlay limitation is stated.
+    expect(report.limitations.some((l) => l.includes("set_tile"))).toBe(true);
+    expect(report.limitations.some((l) => l.includes("teleport_player"))).toBe(true);
+    // A game with none of that reports no limitations.
+    const plain = analyzeReachability(loadGame("games/demo/game.json"));
+    expect(plain.teleports).toEqual([]);
+    expect(plain.limitations).toEqual([]);
+  });
+});

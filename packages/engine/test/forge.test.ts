@@ -7,6 +7,7 @@ import {
   addMove,
   addSpecies,
   addTile,
+  addTrigger,
   applyOps,
   createGame,
   createMap,
@@ -15,16 +16,21 @@ import {
   paintCells,
   paintRect,
   placeEntity,
+  removeCatalog,
   removeEntity,
   removeItem,
   removeMove,
   removeSpecies,
   removeTile,
+  removeTrigger,
   renderMapAscii,
   setDialogue,
   setEncounters,
+  setMeta,
   setPlayerStart,
+  setTriggers,
   setTypeChart,
+  setVariants,
   updateEntity,
   updateSpecies,
 } from "../src/index.js";
@@ -132,7 +138,7 @@ describe("createGame", () => {
     const doc = ok(result) as Record<string, unknown>;
     expect(Object.keys(doc)).toEqual(["meta", "catalog", "legend", "maps", "player"]);
     const legend = doc.legend as Record<string, { walkable: boolean; wild?: boolean }>;
-    expect(Object.keys(legend)).toEqual([".", "#", "~", "*"]);
+    expect(Object.keys(legend)).toEqual([".", "#", ",", "~", "*"]);
     expect(legend["*"].wild).toBe(true);
     expect(legend["#"].walkable).toBe(false);
     // A fresh draft is a valid draft but NOT yet a valid game — advisory only.
@@ -248,8 +254,8 @@ describe("paintRect / paintCells", () => {
 describe("addTile / removeTile", () => {
   it("adds a tile (defaults filled) and rejects duplicates and multi-char keys", () => {
     const doc = buildVillageDraft();
-    const added = ok(addTile(doc, { char: ",", tile: { name: "road", glyph: "🟨", walkable: true } })) as any;
-    expect(added.legend[","]).toEqual({ name: "road", glyph: "🟨", walkable: true, wild: false });
+    const added = ok(addTile(doc, { char: "=", tile: { name: "floor", glyph: "🟫", walkable: true } })) as any;
+    expect(added.legend["="]).toEqual({ name: "floor", glyph: "🟫", walkable: true, wild: false });
     rejected(addTile(doc, { char: ".", tile: { name: "x", glyph: "x", walkable: true } }), doc, 'already has "."');
     rejected(addTile(doc, { char: "ab", tile: { name: "x", glyph: "x", walkable: true } }), doc, "exactly one character");
   });
@@ -552,5 +558,203 @@ describe("renderMapAscii", () => {
     expect(renderMapAscii(doc, "nowhere")).toContain('unknown map "nowhere"');
     expect(renderMapAscii(doc, "nowhere")).toContain("village");
     expect(renderMapAscii(null, "x")).toContain("no maps to render");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Narrative ops (djt.8): setMeta, triggers, variants, removeCatalog
+// ---------------------------------------------------------------------------
+
+describe("setMeta", () => {
+  it("shallow-merges meta fields, keeping the rest", () => {
+    const doc = buildVillageDraft();
+    const edited = ok(setMeta(doc, { goal: "Reach the far meadow.", version: "0.2.0" })) as any;
+    expect(edited.meta).toEqual({
+      id: "test-isle",
+      title: "Test Isle",
+      version: "0.2.0",
+      goal: "Reach the far meadow.",
+    });
+    // Top-level key order survives.
+    expect(Object.keys(edited)).toEqual(["meta", "catalog", "legend", "maps", "player"]);
+  });
+
+  it("rejects an empty patch and unknown keys", () => {
+    const doc = buildVillageDraft();
+    rejected(setMeta(doc, {}), doc, "at least one of id, title, goal, version");
+    rejected(setMeta(doc, { subtitle: "x" } as never), doc, "setMeta");
+  });
+});
+
+describe("setTriggers / addTrigger / removeTrigger", () => {
+  const trigger = (id: string) => ({
+    id,
+    on: "enter" as const,
+    commands: [{ type: "say" as const, text: "The wind shifts." }],
+  });
+
+  it("setTriggers replaces the list, [] clears it, duplicate ids are rejected", () => {
+    const doc = buildVillageDraft();
+    const withTriggers = ok(
+      setTriggers(doc, { mapId: "village", triggers: [trigger("arrival"), trigger("omen")] }),
+    ) as any;
+    expect(withTriggers.maps.village.triggers.map((t: any) => t.id)).toEqual(["arrival", "omen"]);
+    expect(withTriggers.maps.village.triggers[0].once).toBe(true); // default filled
+    const cleared = ok(setTriggers(withTriggers, { mapId: "village", triggers: [] })) as any;
+    expect(cleared.maps.village.triggers).toBeUndefined();
+    rejected(
+      setTriggers(doc, { mapId: "village", triggers: [trigger("a"), trigger("a")] }),
+      doc,
+      'duplicate trigger id "a"',
+    );
+    rejected(setTriggers(doc, { mapId: "nowhere", triggers: [] }), doc, 'unknown map "nowhere"');
+  });
+
+  it("addTrigger appends and rejects a duplicate id on the same map", () => {
+    let doc = ok(addTrigger(buildVillageDraft(), { mapId: "village", trigger: trigger("arrival") }));
+    doc = ok(
+      addTrigger(doc, {
+        mapId: "village",
+        trigger: { ...trigger("step-omen"), on: "step", tiles: [{ x: 2, y: 3 }] },
+      }),
+    );
+    expect((doc as any).maps.village.triggers.map((t: any) => t.id)).toEqual([
+      "arrival",
+      "step-omen",
+    ]);
+    rejected(
+      addTrigger(doc, { mapId: "village", trigger: trigger("arrival") }),
+      doc,
+      'trigger id "arrival" already exists',
+    );
+  });
+
+  it("removeTrigger removes by id and names the known ids on a miss", () => {
+    const doc = ok(addTrigger(buildVillageDraft(), { mapId: "village", trigger: trigger("arrival") }));
+    const removed = ok(removeTrigger(doc, { mapId: "village", triggerId: "arrival" })) as any;
+    expect(removed.maps.village.triggers).toBeUndefined();
+    rejected(
+      removeTrigger(doc, { mapId: "village", triggerId: "nope" }),
+      doc,
+      'no trigger "nope"',
+      "arrival",
+    );
+  });
+
+  it("trigger bodies are advisory-validated: a bad command ref shows in validation, not opErrors", () => {
+    const doc = buildVillageDraft();
+    const result = setTriggers(doc, {
+      mapId: "village",
+      triggers: [
+        {
+          id: "gift",
+          on: "enter",
+          commands: [{ type: "give_species", speciesId: "no-such-species", level: 3 }],
+        },
+      ],
+    });
+    expect(result.ok).toBe(true); // the op is well-formed
+    expect(result.validation.ok).toBe(false);
+    expect(result.validation.errors.join("\n")).toContain("no-such-species");
+  });
+});
+
+describe("setVariants", () => {
+  it("replaces an entity's variants, [] clears them, duplicates and unknown entities reject", () => {
+    const doc = buildVillageDraft();
+    const withVariants = ok(
+      setVariants(doc, {
+        entityId: "elder",
+        variants: [
+          { id: "hooded", when: { flag: "night" }, glyph: "🥷", name: "Hooded Figure" },
+          { id: "plain" },
+        ],
+      }),
+    ) as any;
+    const elder = withVariants.maps.village.entities.find((e: any) => e.id === "elder");
+    expect(elder.variants.map((v: any) => v.id)).toEqual(["hooded", "plain"]);
+    const cleared = ok(setVariants(withVariants, { entityId: "elder", variants: [] })) as any;
+    expect(
+      cleared.maps.village.entities.find((e: any) => e.id === "elder").variants,
+    ).toBeUndefined();
+    rejected(
+      setVariants(doc, { entityId: "elder", variants: [{ id: "x" }, { id: "x" }] }),
+      doc,
+      'duplicate variant id "x"',
+    );
+    rejected(setVariants(doc, { entityId: "ghost", variants: [] }), doc, 'unknown entity "ghost"');
+  });
+});
+
+describe("removeCatalog and the catalog-free narrative pipeline", () => {
+  it("refuses while the catalog still has moves/species/items, naming the counts", () => {
+    const doc = buildVillageDraft();
+    rejected(removeCatalog(doc), doc, "still defines", "moves", "species", "items");
+  });
+
+  it("deletes an empty catalog; a second call explains the draft is already narrative", () => {
+    const doc = ok(createGame({ id: "story", title: "Story", goal: "Reach the end." }));
+    const bare = ok(removeCatalog(doc)) as any;
+    expect(bare.catalog).toBeUndefined();
+    rejected(removeCatalog(bare), bare, "no catalog");
+  });
+
+  it("builds a fully valid catalog-free narrative game with choice/passage/when/end dialogue and variants", () => {
+    let doc = ok(createGame({ id: "vignette", title: "Vignette", goal: "Hear the ferryman out." }));
+    doc = ok(removeCatalog(doc));
+    doc = ok(createMap(doc, { mapId: "shore", width: 6, height: 5, fill: "." }));
+    doc = ok(paintRect(doc, { mapId: "shore", x1: 0, y1: 0, x2: 5, y2: 0, char: "#" }));
+    // placeEntity accepts the narrative schema fields: variants + sprite.
+    doc = ok(
+      placeEntity(doc, {
+        mapId: "shore",
+        entity: {
+          id: "ferryman",
+          name: "Ferryman",
+          glyph: "🧍",
+          x: 3,
+          y: 2,
+          sprite: "ferryman",
+          variants: [{ id: "paid", when: { flag: "fare_paid" }, name: "Smiling Ferryman" }],
+          interactions: [],
+        },
+      }),
+    );
+    // setDialogue accepts choice / passage / when-gated commands / end.
+    doc = ok(
+      setDialogue(doc, {
+        entityId: "ferryman",
+        interactions: [
+          {
+            when: { flag: "fare_paid" },
+            commands: [{ type: "end", id: "crossing", text: "The boat slips from the shore." }],
+          },
+          {
+            commands: [
+              {
+                type: "passage",
+                title: "The Shore",
+                lines: ["Grey water, grey sky.", "The ferryman waits."],
+              },
+              {
+                type: "choice",
+                prompt: "Pay the fare?",
+                options: [
+                  { label: "Pay", commands: [{ type: "set_flag", flag: "fare_paid" }] },
+                  { label: "Walk away", commands: [{ type: "say", text: "Suit yourself." }] },
+                ],
+              },
+              { type: "say", text: "Well?", when: { notFlag: "fare_paid" } },
+            ],
+          },
+        ],
+      }),
+    );
+    const result = setPlayerStart(doc, { mapId: "shore", x: 1, y: 1 });
+    expect(result.opErrors).toEqual([]);
+    expect(result.validation.errors).toEqual([]);
+    expect(result.validation.warnings).toEqual([]);
+    expect(result.validation.ok).toBe(true);
+    expect(result.validation.endings).toEqual(["crossing"]);
   });
 });

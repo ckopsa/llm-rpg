@@ -31,6 +31,8 @@ export interface EntityInit {
   x: number;
   y: number;
   facing?: Direction;
+  /** Initial opacity (0..1, default 1) — cutscene spawns fade in from 0. */
+  alpha?: number;
 }
 
 interface Tween {
@@ -38,6 +40,13 @@ interface Tween {
   fromY: number;
   toX: number;
   toY: number;
+  start: number;
+  duration: number;
+}
+
+interface AlphaTween {
+  from: number;
+  to: number;
   start: number;
   duration: number;
 }
@@ -53,6 +62,34 @@ interface Entity {
   /** Clock time the current anim started (for frame phase). */
   animStart: number;
   tween: Tween | null;
+  /** Committed opacity; alphaTween interpolates toward it while set. */
+  alpha: number;
+  alphaTween: AlphaTween | null;
+}
+
+/** Camera focus override: an entity to track or a fixed tile. While set it
+ *  beats the follow target until releaseCameraFocus(). */
+interface CameraFocus {
+  entityId?: string;
+  x?: number;
+  y?: number;
+}
+
+/** In-flight camera pan: from a recorded center toward the current desired
+ *  center (which may itself be moving — e.g. a walking focus entity). */
+interface CameraPan {
+  fromX: number;
+  fromY: number;
+  start: number;
+  duration: number;
+}
+
+/** A transient white pulse over one tile (set_tile repaint feedback). */
+interface TileFlash {
+  x: number;
+  y: number;
+  start: number;
+  duration: number;
 }
 
 export interface RendererOptions {
@@ -148,6 +185,11 @@ export class Renderer {
   private map: MapData | null = null;
   private entities = new Map<string, Entity>();
   private cameraTargetId: string | null = null;
+  private cameraFocus: CameraFocus | null = null;
+  private cameraPan: CameraPan | null = null;
+  /** The camera center actually drawn last frame (source px) — pan origin. */
+  private lastCenter: { x: number; y: number } | null = null;
+  private tileFlashes: TileFlash[] = [];
 
   private rafId = 0;
   private startTime = 0;
@@ -187,8 +229,13 @@ export class Renderer {
     this.map = map;
   }
 
+  /** True when `spriteId` can be drawn (a manifest sprite or a glyph: id). */
+  hasSprite(spriteId: string): boolean {
+    return isGlyphSprite(spriteId) || Boolean(this.loaded.manifest.sprites[spriteId]);
+  }
+
   addEntity(init: EntityInit): void {
-    if (!isGlyphSprite(init.spriteId) && !this.loaded.manifest.sprites[init.spriteId]) {
+    if (!this.hasSprite(init.spriteId)) {
       throw new Error(`Entity "${init.id}": unknown sprite id "${init.spriteId}"`);
     }
     this.entities.set(init.id, {
@@ -200,11 +247,61 @@ export class Renderer {
       animBase: "idle",
       animStart: this.now(),
       tween: null,
+      alpha: init.alpha ?? 1,
+      alphaTween: null,
     });
   }
 
   removeEntity(id: string): void {
     this.entities.delete(id);
+  }
+
+  hasEntity(id: string): boolean {
+    return this.entities.has(id);
+  }
+
+  /** Drop every entity (rebuilds and cutscene scene swaps re-add them). */
+  clearEntities(): void {
+    this.entities.clear();
+  }
+
+  /** Swap an entity's sprite in place (variant changes). Unknown sprite ids
+   *  are ignored with a warning — the old appearance stays. */
+  setEntitySprite(id: string, spriteId: string): void {
+    const e = this.entities.get(id);
+    if (!e || e.spriteId === spriteId) return;
+    if (!this.hasSprite(spriteId)) {
+      console.warn(`setEntitySprite("${id}"): unknown sprite id "${spriteId}" — keeping "${e.spriteId}"`);
+      return;
+    }
+    e.spriteId = spriteId;
+  }
+
+  /** Teleport an entity: cancel any tween and set its tile outright. */
+  placeEntity(id: string, x: number, y: number): void {
+    const e = this.entities.get(id);
+    if (!e) return;
+    e.tween = null;
+    e.animBase = "idle";
+    e.x = x;
+    e.y = y;
+  }
+
+  /** Set an entity's opacity immediately (cancels any fade in flight). */
+  setEntityAlpha(id: string, alpha: number): void {
+    const e = this.entities.get(id);
+    if (!e) return;
+    e.alpha = alpha;
+    e.alphaTween = null;
+  }
+
+  /** Fade an entity's opacity to `to` over `ms` (spawn/remove cues). */
+  fadeEntity(id: string, to: number, ms: number): void {
+    const e = this.entities.get(id);
+    if (!e) return;
+    const from = this.currentAlpha(e, performance.now());
+    e.alpha = to;
+    e.alphaTween = { from, to, start: performance.now(), duration: Math.max(1, ms) };
   }
 
   getEntityPos(id: string): { x: number; y: number; facing: Direction } | null {
@@ -223,10 +320,11 @@ export class Renderer {
   }
 
   /**
-   * Start a smooth one-tile walk in `dir`. Returns false if the entity is
-   * already mid-tween (callers decide collision rules before calling).
+   * Start a smooth one-tile walk in `dir` (over `durationMs`, default the
+   * renderer's walkMs). Returns false if the entity is already mid-tween
+   * (callers decide collision rules before calling).
    */
-  walk(id: string, dir: Direction): boolean {
+  walk(id: string, dir: Direction, durationMs?: number): boolean {
     const e = this.entities.get(id);
     if (!e || e.tween) return false;
     const [dx, dy] = DIR_DELTAS[dir];
@@ -239,7 +337,7 @@ export class Renderer {
       toX: e.x + dx,
       toY: e.y + dy,
       start: performance.now(),
-      duration: this.walkMs,
+      duration: durationMs ?? this.walkMs,
     };
     e.x += dx;
     e.y += dy;
@@ -248,6 +346,62 @@ export class Renderer {
 
   followCamera(entityId: string): void {
     this.cameraTargetId = entityId;
+  }
+
+  /**
+   * Focus the camera on an entity (tracked while it moves) or a fixed tile,
+   * overriding the follow target until releaseCameraFocus(). `panMs` glides
+   * from the current view; 0 snaps.
+   */
+  focusCamera(target: CameraFocus, panMs = 0): void {
+    this.beginPan(panMs);
+    this.cameraFocus = { ...target };
+  }
+
+  /** Drop the focus override and return to the follow target. */
+  releaseCameraFocus(panMs = 0): void {
+    if (!this.cameraFocus) return;
+    this.beginPan(panMs);
+    this.cameraFocus = null;
+  }
+
+  /** True while a focus/release pan is still gliding. */
+  cameraPanning(): boolean {
+    return this.cameraPan !== null;
+  }
+
+  /** Jump any in-flight pan to its destination (cue skip). */
+  finishCameraPan(): void {
+    this.cameraPan = null;
+  }
+
+  private beginPan(panMs: number): void {
+    this.cameraPan =
+      panMs > 0 && this.lastCenter
+        ? {
+            fromX: this.lastCenter.x,
+            fromY: this.lastCenter.y,
+            start: performance.now(),
+            duration: panMs,
+          }
+        : null;
+  }
+
+  /**
+   * Repaint one tile's resolved sprites in place (set_tile cues). Layer 0 is
+   * the ground, layer 1 the overlay — matching the MapData the overworld
+   * builder produces.
+   */
+  setTile(x: number, y: number, ground: string | null, overlay: string | null): void {
+    const map = this.map;
+    if (!map || y < 0 || y >= map.height || x < 0 || x >= map.width) return;
+    if (map.layers[0]) map.layers[0][y][x] = ground;
+    if (map.layers[1]) map.layers[1][y][x] = overlay;
+  }
+
+  /** Pulse a soft white flash over one tile for `ms` (repaint feedback). */
+  flashTile(x: number, y: number, ms: number): void {
+    this.tileFlashes.push({ x, y, start: performance.now(), duration: Math.max(1, ms) });
   }
 
   start(): void {
@@ -297,28 +451,88 @@ export class Renderer {
     ctx.fillText(glyph, Math.round(dx + px / 2), Math.round(dy + px / 2 + px * 0.05));
   }
 
-  private cameraOrigin(nowMs: number): { x: number; y: number } {
-    // Camera position in source-pixel units (before display scaling).
+  /** Current draw-time opacity for an entity (fade tween interpolated). */
+  private currentAlpha(e: Entity, nowMs: number): number {
+    const tw = e.alphaTween;
+    if (!tw) return e.alpha;
+    const t = Math.min(1, (nowMs - tw.start) / tw.duration);
+    if (t >= 1) {
+      e.alphaTween = null;
+      return e.alpha;
+    }
+    return tw.from + (tw.to - tw.from) * t;
+  }
+
+  /** Clamp a desired camera center (source px) to the map's visible band. */
+  private clampCenter(cx: number, cy: number): { x: number; y: number } {
     const ts = this.tileSize;
     const mapW = (this.map?.width ?? this.viewW) * ts;
     const mapH = (this.map?.height ?? this.viewH) * ts;
     const viewW = this.viewW * ts;
     const viewH = this.viewH * ts;
+    const x =
+      mapW <= viewW
+        ? mapW / 2
+        : Math.max(viewW / 2, Math.min(mapW - viewW / 2, cx));
+    const y =
+      mapH <= viewH
+        ? mapH / 2
+        : Math.max(viewH / 2, Math.min(mapH - viewH / 2, cy));
+    return { x, y };
+  }
 
+  private cameraOrigin(nowMs: number): { x: number; y: number } {
+    // Camera position in source-pixel units (before display scaling).
+    const ts = this.tileSize;
+    const viewW = this.viewW * ts;
+    const viewH = this.viewH * ts;
+
+    // Desired center: focus override first, then the follow target.
     let cx = viewW / 2;
     let cy = viewH / 2;
-    const target = this.cameraTargetId ? this.entities.get(this.cameraTargetId) : null;
-    if (target) {
-      const p = this.interpPos(target, nowMs);
-      cx = (p.x + 0.5) * ts;
-      cy = (p.y + 0.5) * ts;
+    let targeted = false;
+    const focus = this.cameraFocus;
+    if (focus?.entityId) {
+      const e = this.entities.get(focus.entityId);
+      if (e) {
+        const p = this.interpPos(e, nowMs);
+        cx = (p.x + 0.5) * ts;
+        cy = (p.y + 0.5) * ts;
+        targeted = true;
+      }
     }
-    // Clamp to map edges; center if the map is smaller than the viewport.
-    const x =
-      mapW <= viewW ? (mapW - viewW) / 2 : Math.max(0, Math.min(mapW - viewW, cx - viewW / 2));
-    const y =
-      mapH <= viewH ? (mapH - viewH) / 2 : Math.max(0, Math.min(mapH - viewH, cy - viewH / 2));
-    return { x, y };
+    if (!targeted && focus && focus.x !== undefined && focus.y !== undefined) {
+      cx = (focus.x + 0.5) * ts;
+      cy = (focus.y + 0.5) * ts;
+      targeted = true;
+    }
+    if (!targeted) {
+      const target = this.cameraTargetId ? this.entities.get(this.cameraTargetId) : null;
+      if (target) {
+        const p = this.interpPos(target, nowMs);
+        cx = (p.x + 0.5) * ts;
+        cy = (p.y + 0.5) * ts;
+      }
+    }
+
+    // Clamp first, then glide: both pan endpoints are valid clamped centers,
+    // so the interpolated center never leaves the map band.
+    let center = this.clampCenter(cx, cy);
+    const pan = this.cameraPan;
+    if (pan) {
+      const t = Math.min(1, (nowMs - pan.start) / pan.duration);
+      if (t >= 1) {
+        this.cameraPan = null;
+      } else {
+        const k = t * t * (3 - 2 * t); // smoothstep ease
+        center = {
+          x: pan.fromX + (center.x - pan.fromX) * k,
+          y: pan.fromY + (center.y - pan.fromY) * k,
+        };
+      }
+    }
+    this.lastCenter = center;
+    return { x: center.x - viewW / 2, y: center.y - viewH / 2 };
   }
 
   private draw(): void {
@@ -377,8 +591,12 @@ export class Renderer {
       .map((e) => ({ e, p: this.interpPos(e, nowMs) }))
       .sort((a, b) => a.p.y - b.p.y);
     for (const { e, p } of drawList) {
+      const alpha = this.currentAlpha(e, nowMs);
+      if (alpha <= 0.01) continue;
+      ctx.globalAlpha = alpha;
       if (isGlyphSprite(e.spriteId)) {
         this.drawGlyph(e.spriteId, (p.x * ts - camX) * s, (p.y * ts - camY) * s);
+        ctx.globalAlpha = 1;
         continue;
       }
       const { anim, sheet } = pickAnim(this.loaded, e.spriteId, e.animBase, e.facing);
@@ -397,6 +615,24 @@ export class Renderer {
         tileW * s,
         tileH * s,
       );
+      ctx.globalAlpha = 1;
+    }
+
+    // Tile flashes (set_tile feedback): a soft white pulse fading out.
+    if (this.tileFlashes.length > 0) {
+      this.tileFlashes = this.tileFlashes.filter((f) => nowMs - f.start < f.duration);
+      for (const f of this.tileFlashes) {
+        const t = (nowMs - f.start) / f.duration;
+        ctx.globalAlpha = 0.65 * (1 - t);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(
+          Math.round((f.x * ts - camX) * s),
+          Math.round((f.y * ts - camY) * s),
+          ts * s,
+          ts * s,
+        );
+        ctx.globalAlpha = 1;
+      }
     }
   }
 }

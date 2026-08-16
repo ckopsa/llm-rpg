@@ -188,6 +188,18 @@ export class AudioEngine {
   }
 
   /**
+   * Resolve a free-form track id (play_music cues) to a known track:
+   * an exact track name plays as-is; anything else lands on the substring
+   * mapping (so "hearth-theme" finds "town"), then the default. A game can
+   * name tracks the web app has never heard of and still get music.
+   */
+  resolveTrack(name: string): string {
+    if (!this.data) return "route";
+    if (this.data.tracks[name]) return name;
+    return this.trackForMap(name);
+  }
+
+  /**
    * Request background music. Crossfades when the track changes; no-op when
    * it is already playing. `null` fades music out.
    */

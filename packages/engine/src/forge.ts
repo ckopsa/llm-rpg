@@ -2,10 +2,12 @@ import { z } from "zod";
 import {
   EncounterZoneSchema,
   EntitySchema,
+  EntityVariantSchema,
   InteractionSchema,
   InventoryEntrySchema,
   PartyMemberSchema,
   TileSchema,
+  TriggerSchema,
   validateGame,
   type ValidationResult,
 } from "./schema.js";
@@ -242,6 +244,7 @@ export function createGame(args: z.input<typeof CreateGameArgs>): ForgeResult {
     legend: {
       ".": { name: "grass", glyph: "🟩", walkable: true, wild: false },
       "#": { name: "tree", glyph: "🌲", walkable: false, wild: false },
+      ",": { name: "road", glyph: "🟨", walkable: true, wild: false },
       "~": { name: "water", glyph: "🟦", walkable: false, wild: false },
       "*": { name: "tall grass", glyph: "🌿", walkable: true, wild: true },
     },
@@ -249,6 +252,30 @@ export function createGame(args: z.input<typeof CreateGameArgs>): ForgeResult {
     player: { glyph: "🙂", map: "", x: 0, y: 0, party: [], money: 0, inventory: [] },
   };
   return acceptOp(doc);
+}
+
+const SetMetaArgs = z
+  .object({
+    id: z.string().min(1).optional(),
+    title: z.string().min(1).optional(),
+    goal: z.string().min(1).optional(),
+    version: z.string().min(1).optional(),
+  })
+  .strict();
+
+/** Shallow-merge meta fields (id/title/goal/version). Omitted fields keep
+ *  their values — the op for iterating on a goal line or bumping a version. */
+export function setMeta(doc: unknown, args: z.input<typeof SetMetaArgs>): ForgeResult {
+  const errors: string[] = [];
+  const a = parseWith(SetMetaArgs, args, "setMeta", errors);
+  const draft = cloneDraft(doc, errors);
+  if (!a || !draft) return rejectOp(doc, errors);
+  if (Object.keys(a).length === 0) {
+    errors.push("setMeta: provide at least one of id, title, goal, version");
+    return rejectOp(doc, errors);
+  }
+  draft.meta = { ...(isRec(draft.meta) ? draft.meta : {}), ...a };
+  return acceptOp(draft);
 }
 
 // ---------------------------------------------------------------------------
@@ -612,6 +639,143 @@ export function setDialogue(doc: unknown, args: z.input<typeof SetDialogueArgs>)
     return rejectOp(doc, errors);
   }
   found.entity.interactions = a.interactions;
+  return acceptOp(draft);
+}
+
+// ---------------------------------------------------------------------------
+// Triggers and variants (narrative layer)
+// ---------------------------------------------------------------------------
+
+function triggerList(def: Rec): Rec[] {
+  return Array.isArray(def.triggers) ? def.triggers.filter(isRec) : [];
+}
+
+function triggerIdList(def: Rec): string {
+  const ids = triggerList(def)
+    .filter((t) => typeof t.id === "string")
+    .map((t) => t.id);
+  return ids.length > 0 ? ids.join(", ") : "(none yet — addTrigger first)";
+}
+
+function checkTriggerIdsUnique(triggers: { id: string }[], label: string, errors: string[]): void {
+  const seen = new Set<string>();
+  triggers.forEach((t, i) => {
+    if (seen.has(t.id)) {
+      errors.push(
+        `${label}[${i}]: duplicate trigger id "${t.id}" — trigger ids must be unique per map`,
+      );
+    }
+    seen.add(t.id);
+  });
+}
+
+const SetTriggersArgs = z
+  .object({
+    mapId: z.string().min(1),
+    triggers: z.array(TriggerSchema.strict()),
+  })
+  .strict();
+
+/** Replace a map's whole triggers array (pass [] to clear it). Trigger
+ *  bodies (step tiles, when gates, command refs) are advisory-validated. */
+export function setTriggers(doc: unknown, args: z.input<typeof SetTriggersArgs>): ForgeResult {
+  const errors: string[] = [];
+  const a = parseWith(SetTriggersArgs, args, "setTriggers", errors);
+  const draft = cloneDraft(doc, errors);
+  if (!a || !draft) return rejectOp(doc, errors);
+  const maps = mapsOf(draft, errors);
+  const def = maps ? getMapDef(maps, a.mapId, errors) : undefined;
+  if (a.triggers) checkTriggerIdsUnique(a.triggers, "setTriggers.triggers", errors);
+  if (errors.length > 0 || !def) return rejectOp(doc, errors);
+  if (a.triggers.length === 0) delete def.triggers;
+  else def.triggers = a.triggers;
+  return acceptOp(draft);
+}
+
+const AddTriggerArgs = z
+  .object({ mapId: z.string().min(1), trigger: TriggerSchema.strict() })
+  .strict();
+
+/** Append one trigger to a map (id must be new on that map). */
+export function addTrigger(doc: unknown, args: z.input<typeof AddTriggerArgs>): ForgeResult {
+  const errors: string[] = [];
+  const a = parseWith(AddTriggerArgs, args, "addTrigger", errors);
+  const draft = cloneDraft(doc, errors);
+  if (!a || !draft) return rejectOp(doc, errors);
+  const maps = mapsOf(draft, errors);
+  const def = maps ? getMapDef(maps, a.mapId, errors) : undefined;
+  if (def && triggerList(def).some((t) => t.id === a.trigger.id)) {
+    errors.push(
+      `addTrigger: trigger id "${a.trigger.id}" already exists on map "${a.mapId}" — pick another id, or removeTrigger it first`,
+    );
+  }
+  if (errors.length > 0 || !def) return rejectOp(doc, errors);
+  if (!Array.isArray(def.triggers)) def.triggers = [];
+  (def.triggers as unknown[]).push(a.trigger);
+  return acceptOp(draft);
+}
+
+const RemoveTriggerArgs = z
+  .object({ mapId: z.string().min(1), triggerId: z.string().min(1) })
+  .strict();
+
+/** Remove one trigger from a map by id. */
+export function removeTrigger(doc: unknown, args: z.input<typeof RemoveTriggerArgs>): ForgeResult {
+  const errors: string[] = [];
+  const a = parseWith(RemoveTriggerArgs, args, "removeTrigger", errors);
+  const draft = cloneDraft(doc, errors);
+  if (!a || !draft) return rejectOp(doc, errors);
+  const maps = mapsOf(draft, errors);
+  const def = maps ? getMapDef(maps, a.mapId, errors) : undefined;
+  if (errors.length > 0 || !def) return rejectOp(doc, errors);
+  const triggers = Array.isArray(def.triggers) ? def.triggers : [];
+  const index = triggers.findIndex((t) => isRec(t) && t.id === a.triggerId);
+  if (index === -1) {
+    errors.push(
+      `removeTrigger: no trigger "${a.triggerId}" on map "${a.mapId}" — use one of: ${triggerIdList(def)}`,
+    );
+    return rejectOp(doc, errors);
+  }
+  triggers.splice(index, 1);
+  if (triggers.length === 0) delete def.triggers;
+  return acceptOp(draft);
+}
+
+const SetVariantsArgs = z
+  .object({
+    entityId: z.string().min(1),
+    variants: z.array(EntityVariantSchema.strict()),
+  })
+  .strict();
+
+/** Replace an entity's whole variants array (pass [] to clear it). Variant
+ *  ids must be unique per entity; set_variant references are advisory. */
+export function setVariants(doc: unknown, args: z.input<typeof SetVariantsArgs>): ForgeResult {
+  const errors: string[] = [];
+  const a = parseWith(SetVariantsArgs, args, "setVariants", errors);
+  const draft = cloneDraft(doc, errors);
+  if (!a || !draft) return rejectOp(doc, errors);
+  const maps = mapsOf(draft, errors);
+  if (!maps) return rejectOp(doc, errors);
+  const found = findEntity(maps, a.entityId);
+  if (!found) {
+    errors.push(
+      `setVariants: unknown entity "${a.entityId}" — use one of: ${entityIdList(maps)}`,
+    );
+    return rejectOp(doc, errors);
+  }
+  const seen = new Set<string>();
+  a.variants.forEach((v, i) => {
+    if (seen.has(v.id)) {
+      errors.push(
+        `setVariants.variants[${i}]: duplicate variant id "${v.id}" — variant ids must be unique per entity`,
+      );
+    }
+    seen.add(v.id);
+  });
+  if (errors.length > 0) return rejectOp(doc, errors);
+  if (a.variants.length === 0) delete found.entity.variants;
+  else found.entity.variants = a.variants;
   return acceptOp(draft);
 }
 
@@ -1099,6 +1263,43 @@ export function setTypeChart(doc: unknown, args: z.input<typeof SetTypeChartArgs
   return acceptOp(draft);
 }
 
+const RemoveCatalogArgs = z.object({}).strict();
+
+/**
+ * Delete the catalog entirely, turning the draft into a catalog-free
+ * NARRATIVE game (no battles, party, items, or encounters — validation names
+ * every conflict). Refuses while the catalog still defines moves, species,
+ * or items: remove those first so the deletion is deliberate. An empty
+ * catalog object is never valid — absence of the key is the narrative
+ * signal, and this op is the way to get there from a blank draft.
+ */
+export function removeCatalog(doc: unknown, args: z.input<typeof RemoveCatalogArgs> = {}): ForgeResult {
+  const errors: string[] = [];
+  parseWith(RemoveCatalogArgs, args ?? {}, "removeCatalog", errors);
+  const draft = cloneDraft(doc, errors);
+  if (!draft || errors.length > 0) return rejectOp(doc, errors);
+  if (!isRec(draft.catalog)) {
+    errors.push(
+      "removeCatalog: the draft has no catalog — it is already a narrative game",
+    );
+    return rejectOp(doc, errors);
+  }
+  const cat = draft.catalog;
+  const remaining: string[] = [];
+  for (const key of ["moves", "species", "items"] as const) {
+    const n = Array.isArray(cat[key]) ? cat[key].length : 0;
+    if (n > 0) remaining.push(`${n} ${key}`);
+  }
+  if (remaining.length > 0) {
+    errors.push(
+      `removeCatalog: the catalog still defines ${remaining.join(", ")} — remove them first (removeMove/removeSpecies/removeItem) so deleting the catalog is deliberate`,
+    );
+    return rejectOp(doc, errors);
+  }
+  delete draft.catalog;
+  return acceptOp(draft);
+}
+
 // ---------------------------------------------------------------------------
 // renderMapAscii — the feedback view an authoring LLM reads after each edit
 // ---------------------------------------------------------------------------
@@ -1202,6 +1403,7 @@ export interface ApplyOpsResult extends ForgeResult {
  *  table and a discovery surface for authoring tools. */
 export const FORGE_OPS: Readonly<Record<string, (doc: unknown, args: never) => ForgeResult>> = {
   createGame: (_doc, args) => createGame(args),
+  setMeta,
   createMap,
   paintRect,
   paintCells,
@@ -1211,6 +1413,10 @@ export const FORGE_OPS: Readonly<Record<string, (doc: unknown, args: never) => F
   updateEntity,
   removeEntity,
   setDialogue,
+  setTriggers,
+  addTrigger,
+  removeTrigger,
+  setVariants,
   linkPortal,
   setEncounters,
   setPlayerStart,
@@ -1224,6 +1430,7 @@ export const FORGE_OPS: Readonly<Record<string, (doc: unknown, args: never) => F
   updateItem,
   removeItem,
   setTypeChart,
+  removeCatalog,
 };
 
 /** Apply ops in order, stopping at the first rejection. The result reports

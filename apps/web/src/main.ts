@@ -16,6 +16,8 @@
  *   ui/messages.ts       GBA-style sequential message box
  *   ui/choice.ts         dialogue choice menu over sim.state.pendingChoice
  *   ui/passage.ts        long-form passage pane ("scripture mode")
+ *   ui/cutscene.ts       paced playback of sim.state.lastCues
+ *   ui/ending.ts         ending screens over sim.state.ending
  *   ui/hud.ts            map/money chips + party strip
  */
 import { parseAction, Sim, validateGame } from "@llm-rpg/engine";
@@ -30,10 +32,12 @@ import {
 } from "./games";
 import { loadManifest } from "./render/manifest";
 import { Renderer } from "./render/renderer";
-import { loadSpriteMap } from "./render/spriteMap";
+import { loadSpriteMap, type SpriteMap } from "./render/spriteMap";
 import { hasAnySave, newestSlot, readSlot, writeSlot, type SlotId } from "./saves";
 import { BattleView } from "./ui/battle";
 import { ChoiceMenu } from "./ui/choice";
+import { CutscenePlayer } from "./ui/cutscene";
+import { EndingScreen } from "./ui/ending";
 import { hasBattleContent, updateHud, updateParty } from "./ui/hud";
 import { MessageBox } from "./ui/messages";
 import { OverworldView, presentableEvents, type WorldHolder } from "./ui/overworld";
@@ -100,7 +104,7 @@ async function main(): Promise<void> {
   }
   // Missing/broken sprites.json degrades to all-emoji rendering.
   const spritesRaw = (await loadSpritesRaw(gameId)) ?? {};
-  let spriteMap;
+  let spriteMap: SpriteMap;
   try {
     spriteMap = loadSpriteMap(spritesRaw, loaded);
   } catch (err) {
@@ -112,19 +116,13 @@ async function main(): Promise<void> {
   const stage = $("stage");
   const canvas = $("game") as HTMLCanvasElement;
   const fadeEl = $("fade");
-  const bannerEl = $("banner");
+  const endingEl = $("ending");
   const battleEl = $("battle");
   const helpEl = $("help");
   const partyEl = $("party");
   const hudMapEl = $("hud-map");
   const hudMoneyEl = $("hud-money");
   const muteEl = $("mute");
-
-  bannerEl.innerHTML = `
-    <div class="banner-title">The road is yours.</div>
-    <div class="banner-body">The whole valley at your back, warm again.
-    The hearth will keep till you next set out.</div>
-    <div class="banner-hint">Press R to return to the title</div>`;
 
   // ---- audio ------------------------------------------------------------
   const audio = new AudioEngine(tracksData);
@@ -152,9 +150,10 @@ async function main(): Promise<void> {
   msg.onShow = (text) => audio.sfxForEvent(text);
 
   // Passage pane ("scripture mode"): long-form text reads here, not in the
-  // chatter box. Ordinary messages hold until the reading closes.
+  // chatter box. Ordinary messages hold until the reading closes — and until
+  // any cutscene finishes, so cue-accompanying chatter shows AFTER playback.
   const passagePane = new PassagePane($("passage"));
-  msg.gate = () => passagePane.open;
+  msg.gate = () => passagePane.open || cutscene.holding;
 
   /**
    * Feature-detected drain of the engine's long-form passages. The engine
@@ -170,7 +169,11 @@ async function main(): Promise<void> {
 
   let mode: "title" | "overworld" | "battle" = "title";
   let transitioning = false;
-  let wonStung = false;
+  /** One-time ending effects (sting/autosave) already ran for this ending. */
+  let endingHandled = false;
+  /** play_music cue override: sticks while the player stays on the map it
+   *  was set on; a map change hands music back to the normal mapping. */
+  let musicOverride: { track: string; map: string } | null = null;
 
   const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
   async function fade(during: () => void): Promise<void> {
@@ -198,9 +201,36 @@ async function main(): Promise<void> {
     onBattleStart: () => void enterBattle(),
     onPortal: () => void portalFade(),
     onStateChange: refreshHud,
+    // Collect cues synchronously after every act, BEFORE its chatter is
+    // pushed — msg.gate then holds the chatter until playback finishes.
+    // With no cues in flight, variant appearance syncs immediately.
+    onActed: () => {
+      cutscene.collect(world.sim);
+      if (!cutscene.holding) overworld.syncAppearance();
+    },
   });
+
+  // Cutscene player: paces lastCues (walks, pans, observed scenes, title
+  // cards, effects) while the rest of the stage gates on `holding`.
+  const cutscene = new CutscenePlayer(renderer, world, stage, {
+    spriteMap: () => spriteMap,
+    rebuild: () => overworld.rebuild(),
+    renderMapId: () => overworld.renderMapId,
+    playMusic: (track) => {
+      musicOverride = { track: audio.resolveTrack(track), map: world.sim.state.map };
+      updateMusic();
+    },
+  });
+
   const menuSfx = { blip: () => audio.sfx("blip"), confirm: () => audio.sfx("confirm") };
   const battle = new BattleView(battleEl, world, loaded, spriteMap, msg, menuSfx);
+
+  // Ending screen: every ending (victory included) lands here once the
+  // stage quiets; closing returns to the title.
+  const endingScreen = new EndingScreen(endingEl, {
+    onTitle: () => returnToTitle(),
+    confirm: menuSfx.confirm,
+  });
 
   // Choice menu: engine dialogue choices (sim.state.pendingChoice) as a
   // small menu above the message box. Confirming dispatches chooseN through
@@ -211,7 +241,9 @@ async function main(): Promise<void> {
       const action = parseAction(word);
       if (!action) return;
       const events = world.sim.act(action);
+      cutscene.collect(world.sim);
       msg.push(presentableEvents(world.sim, events));
+      if (!cutscene.holding) overworld.syncAppearance();
       refreshHud();
     },
     ...menuSfx,
@@ -262,7 +294,9 @@ async function main(): Promise<void> {
   const titleScreen = new TitleScreen(titleEl, {
     onNewGame: () => {
       world.sim = new Sim(game);
-      beginPlay([game.meta.goal]);
+      // A fresh sim may already carry the start map's enter-trigger output
+      // (cues + events) — beginPlay plays and shows them.
+      beginPlay([game.meta.goal], true);
     },
     onContinue: () => {
       const slot = newestSlot(game.meta.id);
@@ -305,16 +339,20 @@ async function main(): Promise<void> {
     return null;
   }
 
-  /** Enter gameplay with whatever sim `world.sim` now holds. */
-  function beginPlay(intro: string[]): void {
+  /** Enter gameplay with whatever sim `world.sim` now holds. `freshStart`
+   *  marks a brand-new sim: its start-map enter-trigger cues play and its
+   *  initial events show (saves would replay stale ones, so loads skip). */
+  function beginPlay(intro: string[], freshStart = false): void {
     titleScreen.hide();
     pause.hide();
     msg.clear();
     msg.setIdleHide(true);
     passagePane.clear();
+    cutscene.cancel();
+    endingScreen.hide();
     battle.leave();
-    bannerEl.classList.add("hidden");
-    wonStung = false;
+    endingHandled = world.sim.state.ending !== null;
+    musicOverride = null;
     overworld.releaseKeys();
     if (world.sim.state.battle && hasBattleContent(world.sim)) {
       // A save taken mid-battle (engine supports it) resumes into the fight.
@@ -331,20 +369,30 @@ async function main(): Promise<void> {
       mode = "overworld";
     }
     refreshHud();
+    if (freshStart) cutscene.collect(world.sim); // before any push: chatter gates
     msg.push(intro);
+    if (freshStart) {
+      msg.push(presentableEvents(world.sim, [...world.sim.state.lastEvents]));
+    }
   }
 
   function returnToTitle(): void {
-    if (mode !== "title") autosave(); // suspend-style save, mid-battle included
+    // Suspend-style save, mid-battle included — EXCEPT after a non-victory
+    // ending: the auto slot keeps its pre-ending save so Continue resumes
+    // before the end, not inside it.
+    const ending = world.sim.state.ending;
+    if (mode !== "title" && !(ending && ending.id !== "victory")) autosave();
     mode = "title";
     pause.hide();
     msg.clear();
     passagePane.clear();
+    cutscene.cancel();
+    endingScreen.hide();
     battle.leave();
     battleEl.classList.add("hidden");
     stage.classList.remove("battle-mode");
-    bannerEl.classList.add("hidden");
     overworld.releaseKeys();
+    musicOverride = null;
     audio.setMusic(null);
     titleScreen.show(game.meta.title, game.meta.goal, gameId, hasAnySave(game.meta.id));
   }
@@ -367,8 +415,18 @@ async function main(): Promise<void> {
       if (titleScreen.handleKey(ev)) ev.preventDefault();
       return;
     }
+    if (cutscene.holding) {
+      // A cutscene owns the stage: advance keys skip the current cue,
+      // everything else waits for the sequence to finish.
+      if (cutscene.handleKey(ev)) ev.preventDefault();
+      return;
+    }
     if (pause.visible) {
       if (pause.handleKey(ev)) ev.preventDefault();
+      return;
+    }
+    if (endingScreen.visible) {
+      if (endingScreen.handleKey(ev)) ev.preventDefault();
       return;
     }
     if (ev.key === "r" || ev.key === "R") {
@@ -397,7 +455,15 @@ async function main(): Promise<void> {
       pause.show();
       return;
     }
-    if (world.sim.state.won) return;
+    if (world.sim.state.ending) {
+      // The game has ended: only let remaining chatter be advanced while
+      // the ending screen waits its turn.
+      if (ev.key === "e" || ev.key === "E" || ev.key === " " || ev.key === "Enter") {
+        ev.preventDefault();
+        msg.advance();
+      }
+      return;
+    }
     if (overworld.handleKeyDown(ev)) {
       ev.preventDefault();
       return;
@@ -415,41 +481,59 @@ async function main(): Promise<void> {
   /** Keep the music matched to where we are; setMusic no-ops on repeats. */
   function updateMusic(): void {
     if (mode === "title") return; // returnToTitle already faded it out
-    if (world.sim.state.won) return; // victory sting owns the win moment
+    if (world.sim.state.ending) return; // the ending moment owns audio
     if (world.sim.state.battle || mode === "battle") {
       audio.setMusic(audio.battleTrack);
-    } else {
-      audio.setMusic(audio.trackForMap(world.sim.state.map));
+      return;
     }
+    // A play_music cue override holds until the player leaves that map.
+    if (musicOverride && musicOverride.map !== world.sim.state.map) musicOverride = null;
+    audio.setMusic(musicOverride?.track ?? audio.trackForMap(world.sim.state.map));
+  }
+
+  /** One-time ending effects + screen, once the stage has quieted. */
+  function presentEnding(ending: { id: string; text: string }): void {
+    if (!endingHandled) {
+      endingHandled = true;
+      audio.setMusic(null);
+      if (ending.id === "victory") {
+        audio.sting("victory");
+        // Non-victory endings deliberately do NOT autosave: the auto slot
+        // keeps its pre-ending save, so Continue resumes before the end.
+        autosave();
+      }
+    }
+    endingScreen.show(ending);
   }
 
   const loop = () => {
-    if (mode !== "title") pumpPassages();
+    // Cutscenes gate everything: passages, chatter, choices, movement, and
+    // the ending screen all queue behind playback.
+    if (mode !== "title" && !cutscene.holding) pumpPassages();
+    cutscene.tick(
+      mode === "overworld" && !transitioning && !passagePane.open && !pause.visible,
+    );
     // The choice menu opens only once the stage is quiet: overworld, no
-    // fade, no passage on top, no pause, chatter drained (same sequencing
-    // the battle menu uses). Any other frame state hides it.
+    // fade, no cutscene, no passage on top, no pause, chatter drained (same
+    // sequencing the battle menu uses). Any other frame state hides it.
     choiceMenu.tick(
       mode === "overworld" &&
         !transitioning &&
+        !cutscene.holding &&
         !passagePane.open &&
         !pause.visible &&
-        !world.sim.state.won &&
+        !world.sim.state.ending &&
         !msg.busy(),
     );
-    if (mode !== "title" && !transitioning && !passagePane.open) {
+    if (mode !== "title" && !transitioning && !passagePane.open && !cutscene.holding) {
       if (mode === "overworld") {
-        if (!world.sim.state.won) {
+        const ending = world.sim.state.ending;
+        if (!ending) {
           // A pending choice blocks walking (the engine would reject each
           // step anyway — this keeps the rejections out of the chatter).
           if (!pause.visible && !choiceMenu.active) overworld.tick();
         } else if (!msg.busy()) {
-          bannerEl.classList.remove("hidden");
-          if (!wonStung) {
-            wonStung = true;
-            audio.setMusic(null);
-            audio.sting("victory");
-            autosave();
-          }
+          presentEnding(ending);
         }
       } else if (battle.tick()) {
         void exitBattle();
@@ -459,8 +543,22 @@ async function main(): Promise<void> {
     requestAnimationFrame(loop);
   };
 
-  // Debug/test handle (used by the CDP walkthrough; harmless in play).
+  // Debug/test handles (used by the CDP walkthrough; harmless in play).
   (window as unknown as { __world: WorldHolder }).__world = world;
+  (window as unknown as { __ui: unknown }).__ui = {
+    get mode() {
+      return mode;
+    },
+    get cutsceneHolding() {
+      return cutscene.holding;
+    },
+    get endingVisible() {
+      return endingScreen.visible;
+    },
+    get msgBusy() {
+      return msg.busy();
+    },
+  };
 
   // ---- forge live reload (dev only; this whole block tree-shakes out) ----
   if (import.meta.hot) {
@@ -485,8 +583,10 @@ async function main(): Promise<void> {
         }
         msg.clear();
         passagePane.clear();
-        bannerEl.classList.add("hidden"); // the loop re-shows it if still won
-        wonStung = world.sim.state.won; // don't re-sting a preserved win
+        cutscene.cancel();
+        endingScreen.hide(); // the loop re-shows it if the game is still ended
+        endingHandled = world.sim.state.ending !== null; // don't re-sting/save
+        musicOverride = null;
         if (world.sim.state.battle && hasBattleContent(world.sim)) {
           stage.classList.add("battle-mode");
           battleEl.classList.remove("hidden");

@@ -94,3 +94,76 @@ describe("catalog-free playtest harness", () => {
     expect(report.wildZoneIssues).toEqual([]);
   });
 });
+
+describe("explorer narrative upgrades (djt.8 / 85g.14)", () => {
+  it("targets unfired step-trigger tiles and reaches a trigger-driven ending", () => {
+    // The ending sits on a step trigger at a dead-end tile no entity or map
+    // edge would ever route the explorer to.
+    const result = validateGame({
+      meta: { id: "trigger-walk", title: "Trigger Walk", goal: "stand on the mark" },
+      legend: {
+        "#": { name: "wall", glyph: "#", walkable: false },
+        ".": { name: "floor", glyph: ".", walkable: true },
+      },
+      maps: {
+        yard: {
+          rows: ["######", "#....#", "#....#", "######"],
+          entities: [],
+          triggers: [
+            {
+              id: "the-mark",
+              on: "step",
+              tiles: [{ x: 4, y: 2 }],
+              commands: [
+                { type: "passage", lines: ["The ground remembers you."] },
+                { type: "end", id: "remembered", text: "The yard falls silent." },
+              ],
+            },
+          ],
+        },
+      },
+      player: { glyph: "@", map: "yard", x: 1, y: 1 },
+    });
+    expect(result.errors).toEqual([]);
+    const report = runExplore(result.game!, { maxSteps: 50, seed: 1 });
+    expect(report.stopReason).toBe("ended");
+    expect(report.ending).toEqual({ id: "remembered", text: "The yard falls silent." });
+    expect(report.completed).toBe(true);
+    expect(report.win).toBe(false); // win stays win
+    expect(report.lastEvents.some((e) => e.includes("The ground remembers you."))).toBe(true);
+  });
+
+  it("an exhausted stop names the closed gate and its missing flag", () => {
+    const result = validateGame({
+      meta: { id: "gated", title: "Gated", goal: "get past the door" },
+      legend: {
+        "#": { name: "wall", glyph: "#", walkable: false },
+        ".": { name: "floor", glyph: ".", walkable: true },
+      },
+      maps: {
+        hall: {
+          // Corridor with a gatekeeper wall: everything east of x=3 is closed.
+          rows: ["#######", "#.....#", "#######"],
+          entities: [
+            {
+              id: "doorwarden", name: "Doorwarden", glyph: "D", x: 3, y: 1,
+              blocking: true, passableWithFlag: "writ_of_passage",
+              interactions: [{ commands: [{ type: "say", text: "No writ, no passage." }] }],
+            },
+            {
+              id: "scribe", name: "Scribe", glyph: "S", x: 5, y: 1,
+              interactions: [{ commands: [{ type: "win", text: "The writ is signed." }] }],
+            },
+          ],
+        },
+      },
+      player: { glyph: "@", map: "hall", x: 1, y: 1 },
+    });
+    expect(result.errors).toEqual([]); // (the unwritten flag is a warning, not an error)
+    const report = runExplore(result.game!, { maxSteps: 100, seed: 1 });
+    expect(report.win).toBe(false);
+    expect(report.stopReason).toBe("exhausted");
+    expect(report.stopDetail).toContain('gate "doorwarden" on hall still blocks');
+    expect(report.stopDetail).toContain('needs flag "writ_of_passage"');
+  });
+});

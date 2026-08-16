@@ -1,5 +1,6 @@
 import {
   Sim,
+  evalWhen,
   moveById,
   type Action,
   type Direction,
@@ -42,6 +43,94 @@ export interface BattleStats {
   fled: number;
 }
 
+/** One battle, start to finish, for post-run diagnosis: who was fought,
+ *  where, how long it took, how it ended, and the party's state afterwards.
+ *  A battle still open when the run stops keeps `result: "ongoing"`. */
+export interface BattleDetail {
+  kind: "wild" | "trainer";
+  /** Trainer entity id, or "wild <speciesId>". */
+  opponent: string;
+  enemyParty: { speciesId: string; level: number }[];
+  /** Map the battle started on. */
+  map: string;
+  startStep: number;
+  endStep: number;
+  /** Battle actions issued while the battle ran. */
+  actions: number;
+  result: "won" | "lost" | "fled" | "captured" | "ongoing";
+  /** Player party right after the battle resolved (levels, HP). */
+  partyAfter: { speciesId: string; level: number; hp: number; maxHp: number }[];
+}
+
+/**
+ * Shared battle bookkeeping for the script runner and the explorer: call
+ * `record` after every sim.act with the pre-act battle state and the events.
+ * Returns the result word when a battle just resolved (undefined otherwise).
+ * `stats` and `details` are live — read them when the run ends.
+ */
+export function createBattleTracker(sim: Sim): {
+  stats: BattleStats;
+  details: BattleDetail[];
+  record: (step: number, wasInBattle: boolean, events: string[]) => BattleDetail["result"] | undefined;
+} {
+  const stats: BattleStats = { fought: 0, won: 0, lost: 0, fled: 0 };
+  const details: BattleDetail[] = [];
+  let current: BattleDetail | null = null;
+  const record = (
+    step: number,
+    wasInBattle: boolean,
+    events: string[],
+  ): BattleDetail["result"] | undefined => {
+    const battle = sim.state.battle;
+    if (!wasInBattle && battle) {
+      stats.fought += 1;
+      current = {
+        kind: battle.mode === "trainer" ? "trainer" : "wild",
+        opponent: sim.state.battleTrainer ?? `wild ${battle.enemy.party[0].speciesId}`,
+        enemyParty: battle.enemy.party.map((c) => ({ speciesId: c.speciesId, level: c.level })),
+        map: sim.state.map,
+        startStep: step,
+        endStep: step,
+        actions: 0,
+        result: "ongoing",
+        partyAfter: [],
+      };
+      details.push(current);
+      return undefined;
+    }
+    if (wasInBattle && current) {
+      current.actions += 1;
+      current.endStep = step;
+    }
+    if (wasInBattle && !battle) {
+      let result: BattleDetail["result"] = "captured";
+      if (events.includes("You won the battle!")) {
+        result = "won";
+        stats.won += 1;
+      } else if (events.includes("You got away safely!")) {
+        result = "fled";
+        stats.fled += 1;
+      } else if (events.some((ev) => ev.includes("You lost the battle!"))) {
+        result = "lost";
+        stats.lost += 1;
+      }
+      if (current) {
+        current.result = result;
+        current.partyAfter = sim.state.party.map((c) => ({
+          speciesId: c.speciesId,
+          level: c.level,
+          hp: c.hp,
+          maxHp: c.maxHp,
+        }));
+        current = null;
+      }
+      return result;
+    }
+    return undefined;
+  };
+  return { stats, details, record };
+}
+
 export interface ExplorerReport {
   won: boolean;
   /** The ending reached, or null (won stays: true iff id === "victory"). */
@@ -60,6 +149,8 @@ export interface ExplorerReport {
   interactionCount: number;
   flags: string[];
   battles: BattleStats;
+  /** Per-battle diagnosis records, in the order the battles started. */
+  battleDetails: BattleDetail[];
   finalMap: string;
   finalX: number;
   finalY: number;
@@ -167,7 +258,7 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
   const interactedEntities = new Set<string>();
   const trainerLosses = new Map<string, number>();
   const choiceSeen = new Map<string, number>(); // identical-presentation counts
-  const battles: BattleStats = { fought: 0, won: 0, lost: 0, fled: 0 };
+  const tracker = createBattleTracker(sim);
 
   // Pre-split rows once (mirrors the sim's grids, which are private).
   const grids = new Map<string, string[][]>();
@@ -218,10 +309,64 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
   };
 
   /**
+   * Step-trigger tiles worth walking onto: `once` triggers (repeatable ones
+   * are not coverage goals) that haven't fired and whose `when` currently
+   * passes. Key "map:x:y" -> trigger id. Narrative games advance the story
+   * through these, so the explorer targets them like interactions.
+   */
+  const pendingTriggerTiles = (): Map<string, string> => {
+    const out = new Map<string, string>();
+    const ctx = { flags: sim.state.flags, vars: sim.state.vars, money: sim.state.money };
+    for (const [mapId, def] of Object.entries(game.maps)) {
+      for (const t of def.triggers ?? []) {
+        if (t.on !== "step" || !t.tiles || !t.once) continue;
+        if (sim.state.firedTriggers.includes(`${mapId}:${t.id}`)) continue;
+        if (t.when && !evalWhen(ctx, t.when)) continue;
+        for (const tile of t.tiles) out.set(`${mapId}:${tile.x}:${tile.y}`, t.id);
+      }
+    }
+    return out;
+  };
+
+  /**
+   * Why "exhausted" is probably not "done": undefeated trainers the explorer
+   * gave up on (their defeatFlag stays unearned) and closed passableWithFlag
+   * gates. Named so a report reader sees the actual blocker, not just
+   * "no reachable pending targets".
+   */
+  const gateDiagnosis = (): string => {
+    const parts: string[] = [];
+    for (const [mapId, def] of Object.entries(game.maps)) {
+      for (const e of def.entities) {
+        if (
+          e.trainer &&
+          !sim.state.flags.includes(e.trainer.defeatFlag) &&
+          (trainerLosses.get(e.id) ?? 0) >= TRAINER_LOSS_CAP
+        ) {
+          parts.push(
+            `lost to trainer "${e.id}" on ${mapId} ${trainerLosses.get(e.id)}x and gave up — its defeatFlag "${e.trainer.defeatFlag}" stays unearned`,
+          );
+        }
+      }
+    }
+    for (const [mapId, def] of Object.entries(game.maps)) {
+      for (const e of def.entities) {
+        if (e.blocking && e.passableWithFlag && !sim.state.flags.includes(e.passableWithFlag)) {
+          parts.push(
+            `gate "${e.id}" on ${mapId} still blocks — needs flag "${e.passableWithFlag}"`,
+          );
+        }
+      }
+    }
+    return parts.length > 0 ? `; likely blockers: ${parts.join("; ")}` : "";
+  };
+
+  /**
    * Pick the next overworld action. Interact if a pending entity is the
    * interact target right here; otherwise BFS (across portals) to the nearest
-   * goal, preferring undiscovered maps over pending interactions so coverage
-   * of the world graph comes first. Returns null when nothing is left.
+   * goal, preferring undiscovered maps over pending interactions and unfired
+   * step-trigger tiles so coverage of the world graph comes first. Returns
+   * null when nothing is left.
    */
   const plan = (): Plan | null => {
     const state = sim.state;
@@ -235,6 +380,7 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
 
     const avoid = dangerTiles();
     const noGrass = grassBlocked();
+    const triggerTiles = pendingTriggerTiles();
     interface Node {
       map: string;
       x: number;
@@ -286,6 +432,11 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
               action: { type: "move", dir: firstDir },
               target: `interact: ${adj.name} (${adj.id}) on ${nm}`,
             };
+          } else if (triggerTiles.has(key)) {
+            interactionGoal = {
+              action: { type: "move", dir: firstDir },
+              target: `step trigger: ${triggerTiles.get(key)} on ${nm} (${nx}, ${ny})`,
+            };
           }
         }
         queue.push({ map: nm, x: nx, y: ny, firstDir });
@@ -332,7 +483,8 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
       if (!next) {
         stopReason = "exhausted";
         stopDetail =
-          "no reachable pending targets left (every reachable entity interacted with in the current flag-state, no undiscovered reachable maps)";
+          "no reachable pending targets left (every reachable entity interacted with in the current flag-state, no undiscovered reachable maps, no unfired reachable step triggers)" +
+          gateDiagnosis();
         break;
       }
       action = next.action;
@@ -368,16 +520,9 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
       target,
     });
 
-    if (!before.inBattle && sim.state.battle) battles.fought += 1;
-    if (before.inBattle && !sim.state.battle) {
-      if (events.includes("You won the battle!")) battles.won += 1;
-      else if (events.includes("You got away safely!")) battles.fled += 1;
-      else if (events.some((ev) => ev.includes("You lost the battle!"))) {
-        battles.lost += 1;
-        if (before.trainer) {
-          trainerLosses.set(before.trainer, (trainerLosses.get(before.trainer) ?? 0) + 1);
-        }
-      }
+    const battleResult = tracker.record(steps, before.inBattle, events);
+    if (battleResult === "lost" && before.trainer) {
+      trainerLosses.set(before.trainer, (trainerLosses.get(before.trainer) ?? 0) + 1);
     }
 
     // Stall guard: a planned move that changed nothing, repeatedly, means the
@@ -425,7 +570,8 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
     entitiesTotal,
     interactionCount: interacted.size,
     flags: [...sim.state.flags],
-    battles,
+    battles: tracker.stats,
+    battleDetails: tracker.details,
     finalMap: sim.state.map,
     finalX: sim.state.playerX,
     finalY: sim.state.playerY,

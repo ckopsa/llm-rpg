@@ -322,3 +322,168 @@ describe("forge MCP server end-to-end (real stdio transport)", () => {
     expect(textOf(stillAlive)).toContain("e2e");
   });
 });
+
+describe("forge MCP: narrative authoring loop + honest rejection reporting", () => {
+  let gamesDir: string;
+  let client: Client;
+
+  const textOf = (r: unknown): string =>
+    ((r as { content: { type: string; text: string }[] }).content[0] ?? { text: "" }).text;
+
+  beforeAll(async () => {
+    gamesDir = mkdtempSync(join(tmpdir(), "forge-mcp-narrative-"));
+    client = new Client({ name: "forge-narrative-test", version: "0.0.0" });
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ["--import", "tsx", join(PLAY_DIR, "src/forge-mcp.ts"), gamesDir],
+      cwd: PLAY_DIR,
+      stderr: "pipe",
+    });
+    await client.connect(transport);
+  }, 60_000);
+
+  afterAll(async () => {
+    await client?.close();
+    rmSync(gamesDir, { recursive: true, force: true });
+  });
+
+  it("forge_edit exposes the narrative ops in its enum (FORGE_OPS-derived)", async () => {
+    const tools = (await client.listTools()).tools;
+    const edit = tools.find((t) => t.name === "forge_edit")!;
+    const schema = JSON.stringify(edit.inputSchema);
+    for (const op of ["setMeta", "setTriggers", "addTrigger", "removeTrigger", "setVariants", "removeCatalog"]) {
+      expect(schema).toContain(op);
+    }
+  });
+
+  it("authors a catalog-free vignette end to end: blank -> removeCatalog -> map/NPC/choice/trigger/end -> check -> explore reaches the ending", async () => {
+    const created = await client.callTool({
+      name: "forge_new_game",
+      arguments: {
+        dirName: "vignette",
+        id: "the-crossing",
+        title: "The Crossing",
+        goal: "Persuade the ferryman to take you across.",
+        template: "blank",
+      },
+    });
+    expect(textOf(created)).toContain("active game");
+
+    const decataloged = await client.callTool({
+      name: "forge_edit",
+      arguments: { op: "removeCatalog", args: {} },
+    });
+    expect(textOf(decataloged)).toContain("applied removeCatalog");
+
+    const built = await client.callTool({
+      name: "forge_batch",
+      arguments: {
+        ops: [
+          { op: "createMap", args: { mapId: "shore", width: 7, height: 5, fill: "." } },
+          { op: "paintRect", args: { mapId: "shore", x1: 0, y1: 0, x2: 6, y2: 0, char: "#" } },
+          { op: "paintRect", args: { mapId: "shore", x1: 0, y1: 4, x2: 6, y2: 4, char: "#" } },
+          { op: "paintRect", args: { mapId: "shore", x1: 0, y1: 0, x2: 0, y2: 4, char: "#" } },
+          { op: "paintRect", args: { mapId: "shore", x1: 6, y1: 0, x2: 6, y2: 4, char: "#" } },
+          {
+            op: "placeEntity",
+            args: {
+              mapId: "shore",
+              entity: { id: "ferryman", name: "Ferryman", glyph: "F", x: 3, y: 2, interactions: [] },
+            },
+          },
+          {
+            op: "setDialogue",
+            args: {
+              entityId: "ferryman",
+              interactions: [
+                {
+                  when: { flag: "fare_promised" },
+                  commands: [
+                    { type: "end", id: "crossing", text: "The boat slips from the shore." },
+                  ],
+                },
+                {
+                  commands: [
+                    { type: "say", text: "Crossing costs a coin of promise." },
+                    {
+                      type: "choice",
+                      prompt: "Promise the fare?",
+                      options: [
+                        { label: "Promise it", commands: [{ type: "set_flag", flag: "fare_promised" }] },
+                        { label: "Refuse", commands: [{ type: "say", text: "Then the far bank keeps." }] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          {
+            op: "addTrigger",
+            args: {
+              mapId: "shore",
+              trigger: {
+                id: "waterline",
+                on: "step",
+                tiles: [{ x: 2, y: 1 }],
+                commands: [
+                  { type: "passage", title: "The Shore", lines: ["Grey water, grey sky.", "The ferryman waits."] },
+                ],
+              },
+            },
+          },
+          { op: "setPlayerStart", args: { mapId: "shore", x: 1, y: 1 } },
+        ],
+      },
+    });
+    expect(textOf(built)).toContain("applied all");
+    expect(textOf(built)).toContain("validation: OK");
+
+    const overview = await client.callTool({ name: "forge_overview", arguments: {} });
+    expect(textOf(overview)).toContain("catalog-free NARRATIVE game");
+    expect(textOf(overview)).toContain("1 trigger(s)");
+    expect(textOf(overview)).toContain("endings: crossing");
+
+    const check = await client.callTool({ name: "forge_check", arguments: {} });
+    const checkReport = JSON.parse(textOf(check));
+    expect(checkReport.verdict).toBe("pass");
+
+    const played = await client.callTool({
+      name: "forge_playtest",
+      arguments: { mode: "explore", tail: 40 },
+    });
+    const report = JSON.parse(textOf(played));
+    expect(report.stopReason).toBe("ended");
+    expect(report.ending).toEqual({ id: "crossing", text: "The boat slips from the shore." });
+    expect(report.completed).toBe(true);
+    expect(report.win).toBe(false);
+    expect(report.flags).toContain("fare_promised");
+    // The step trigger fired: its passage is in the (widened) event tail.
+    expect(report.lastEvents.some((e: string) => e.includes("Grey water, grey sky."))).toBe(true);
+  }, 60_000);
+
+  it("a rejected batch reports the CURRENT on-disk state, never the discarded draft (85g.11)", async () => {
+    const gameFile = join(gamesDir, "vignette", GAME_FILE);
+    const before = readFileSync(gameFile, "utf8");
+    const rejectedBatch = await client.callTool({
+      name: "forge_batch",
+      arguments: {
+        ops: [
+          { op: "createMap", args: { mapId: "harbor", width: 6, height: 4, fill: "." } },
+          { op: "paintRect", args: { mapId: "harbor", x1: 0, y1: 0, x2: 99, y2: 99, char: "#" } },
+        ],
+      },
+    });
+    const text = textOf(rejectedBatch);
+    expect(text).toContain("NOTHING was written");
+    expect(text).toContain("unchanged");
+    expect(text).toContain("CURRENT on-disk file");
+    // The discarded draft's harbor map must NOT be rendered as if it exists.
+    expect(text).not.toContain("harbor — 6x4");
+    expect(text).toContain('unknown map "harbor"');
+    expect(readFileSync(gameFile, "utf8")).toBe(before);
+    // And the map really does not exist for follow-up tools.
+    const mapLook = await client.callTool({ name: "forge_map", arguments: { mapId: "harbor" } });
+    expect(textOf(mapLook)).toContain('unknown map "harbor"');
+  }, 60_000);
+});

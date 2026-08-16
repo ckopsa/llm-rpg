@@ -1,4 +1,4 @@
-import type { Entity, Game } from "@llm-rpg/engine";
+import type { Command, Entity, Game, Interaction, Trigger } from "@llm-rpg/engine";
 
 /**
  * Static reachability analyzer — the fast build-critic. Pure BFS from the
@@ -14,6 +14,18 @@ import type { Entity, Game } from "@llm-rpg/engine";
  *  - PESSIMISTIC: blocking entities never open (flags are never earned).
  *    The delta between the passes shows exactly which content sits behind
  *    flag gates — expected for badge gates, alarming for your starter town.
+ *
+ * `teleport_player` commands are treated as EDGES: when a teleport's host
+ * (the entity whose dialogue carries it, or the map trigger) is reachable in
+ * a pass, its destination becomes reachable too, iterated to a fixpoint.
+ * The optimistic pass fires every teleport; the pessimistic pass only
+ * ungated ones (no `when`/`requiresFlag` anywhere on the command's chain).
+ *
+ * STATED LIMITATION (reported in `limitations`, not silently wrong): the
+ * analysis is static. Runtime world overlays — `spawn_entity` blockers,
+ * `set_tile` repaints that open or close paths, `remove_entity`/`move_entity`
+ * — are NOT simulated. A game that relies on them should be verified with
+ * the explore playtest, which runs the real sim.
  */
 
 export interface MapReachability {
@@ -47,6 +59,20 @@ export interface WildZoneIssue {
   reason: string;
 }
 
+/** One `teleport_player` command found in the game, used as a BFS edge. */
+export interface TeleportEdge {
+  /** Where the command lives, e.g. "entity ferryman on shore" or
+   *  "trigger court-scene on court". */
+  source: string;
+  toMap: string;
+  toX: number;
+  toY: number;
+  /** True when a `when`/`requiresFlag` gate sits anywhere on the command's
+   *  chain (command, interaction, trigger, choice option) — gated teleports
+   *  fire only in the optimistic pass. */
+  gated: boolean;
+}
+
 export interface ReachabilityReport {
   start: { map: string; x: number; y: number };
   /** Every map, in definition order, with per-pass reachability. */
@@ -66,6 +92,13 @@ export interface ReachabilityReport {
   orphanPortals: PortalIssue[];
   /** Encounter zones that can never fire: no reachable wild tile. */
   wildZoneIssues: WildZoneIssue[];
+  /** Every teleport_player command, with its host site and gating. Each is
+   *  a reachability edge when its host is reachable. */
+  teleports: TeleportEdge[];
+  /** Honest boundaries of the static analysis for THIS game: named dynamic
+   *  features (set_tile, spawn_entity, ...) it does not simulate. Empty when
+   *  the game uses none of them. */
+  limitations: string[];
   verdict: "pass" | "fail";
   summary: string;
 }
@@ -77,6 +110,84 @@ const DIRS: readonly [number, number][] = [
   [-1, 0],
 ];
 
+/** Where a teleport command lives — what must be reachable for it to fire. */
+type TeleportHost =
+  | { kind: "entity"; map: string; x: number; y: number }
+  | { kind: "trigger"; map: string; on: "enter" | "step"; tiles?: { x: number; y: number }[] };
+
+interface InternalTeleport extends TeleportEdge {
+  host: TeleportHost;
+}
+
+/** Dynamic-overlay command types the static analysis cannot simulate. */
+const DYNAMIC_COMMANDS = ["set_tile", "spawn_entity", "remove_entity", "move_entity"] as const;
+
+interface CommandScan {
+  teleports: InternalTeleport[];
+  /** Which DYNAMIC_COMMANDS the game actually uses. */
+  dynamicUsed: Set<string>;
+}
+
+/** Walk every command list (interactions, rewardCommands, triggers, nested
+ *  choice options and spawn_entity payload dialogue) once: harvest
+ *  teleport_player edges with their host + gating, and note dynamic-overlay
+ *  commands for the limitations report. */
+function scanCommands(game: Game): CommandScan {
+  const teleports: InternalTeleport[] = [];
+  const dynamicUsed = new Set<string>();
+
+  const walk = (commands: Command[], gated: boolean, host: TeleportHost, source: string): void => {
+    for (const cmd of commands) {
+      const g = gated || cmd.when !== undefined;
+      if ((DYNAMIC_COMMANDS as readonly string[]).includes(cmd.type)) dynamicUsed.add(cmd.type);
+      if (cmd.type === "teleport_player") {
+        teleports.push({ source, toMap: cmd.mapId, toX: cmd.x, toY: cmd.y, gated: g, host });
+      }
+      if (cmd.type === "choice") {
+        for (const o of cmd.options) walk(o.commands, g || o.when !== undefined, host, source);
+      }
+      if (cmd.type === "spawn_entity") {
+        // A spawned entity's dialogue needs the spawn to have run first:
+        // keep the spawn site as host and treat it as gated (conservative
+        // for the pessimistic pass).
+        walkEntity(
+          cmd.entity as Entity,
+          true,
+          host,
+          `${source} (spawned ${cmd.entity.id})`,
+        );
+      }
+    }
+  };
+
+  const walkEntity = (e: Entity, gated: boolean, host: TeleportHost, source: string): void => {
+    for (const i of e.interactions as Interaction[]) {
+      const g = gated || i.when !== undefined || i.requiresFlag !== undefined;
+      walk(i.commands, g, host, source);
+    }
+    if (e.trainer?.rewardCommands) {
+      // Reward commands need a battle won first — gated, conservatively.
+      walk(e.trainer.rewardCommands, true, host, source);
+    }
+  };
+
+  for (const [mapId, def] of Object.entries(game.maps)) {
+    for (const e of def.entities) {
+      walkEntity(e, false, { kind: "entity", map: mapId, x: e.x, y: e.y }, `entity ${e.id} on ${mapId}`);
+    }
+    for (const t of (def.triggers ?? []) as Trigger[]) {
+      const host: TeleportHost = {
+        kind: "trigger",
+        map: mapId,
+        on: t.on,
+        ...(t.tiles !== undefined ? { tiles: t.tiles } : {}),
+      };
+      walk(t.commands, t.when !== undefined, host, `trigger ${t.id} on ${mapId}`);
+    }
+  }
+  return { teleports, dynamicUsed };
+}
+
 interface Pass {
   /** Reachable tile coordinates per map ("x,y" keys). */
   reach: Map<string, Set<string>>;
@@ -86,8 +197,10 @@ interface Pass {
 
 /** One BFS pass. Portal source tiles are traversed as edges (the player
  *  never stands on them), so the DESTINATION tile is what gets marked
- *  reachable — mirroring Sim.doMove's transfer. */
-function reachableTiles(game: Game, optimistic: boolean): Pass {
+ *  reachable — mirroring Sim.doMove's transfer. Teleport edges whose host
+ *  becomes reachable seed further BFS rounds, to a fixpoint; the pessimistic
+ *  pass uses only ungated teleports. */
+function reachableTiles(game: Game, optimistic: boolean, teleports: InternalTeleport[]): Pass {
   const grids = new Map<string, string[][]>();
   for (const [id, def] of Object.entries(game.maps)) {
     grids.set(id, def.rows.map((r) => [...r]));
@@ -108,40 +221,72 @@ function reachableTiles(game: Game, optimistic: boolean): Pass {
   reach.get(start.map)!.add(`${start.x},${start.y}`);
   const queue: [string, number, number][] = [[start.map, start.x, start.y]];
   let head = 0;
-  while (head < queue.length) {
-    const [mapId, x, y] = queue[head++];
-    const def = game.maps[mapId];
-    const rows = grids.get(mapId)!;
-    for (const [dx, dy] of DIRS) {
-      let nm = mapId;
-      let nx = x + dx;
-      let ny = y + dy;
-      if (ny < 0 || ny >= rows.length || nx < 0 || nx >= rows[0].length) continue;
-      const tile = game.legend[rows[ny][nx]];
-      if (!tile?.walkable) continue;
-      const ent = def.entities.find((e) => e.x === nx && e.y === ny);
-      if (ent && blocked(ent)) continue;
-      const portal = def.portals.find((p) => p.x === nx && p.y === ny);
-      if (portal) {
-        traversedPortals.add(`${mapId}:${portal.x},${portal.y}`);
-        const destRows = grids.get(portal.toMap);
-        if (
-          !destRows ||
-          portal.toY >= destRows.length ||
-          portal.toX >= destRows[0].length
-        ) {
-          continue; // broken destination — reported as an orphan portal
+  const drain = (): void => {
+    while (head < queue.length) {
+      const [mapId, x, y] = queue[head++];
+      const def = game.maps[mapId];
+      const rows = grids.get(mapId)!;
+      for (const [dx, dy] of DIRS) {
+        let nm = mapId;
+        let nx = x + dx;
+        let ny = y + dy;
+        if (ny < 0 || ny >= rows.length || nx < 0 || nx >= rows[0].length) continue;
+        const tile = game.legend[rows[ny][nx]];
+        if (!tile?.walkable) continue;
+        const ent = def.entities.find((e) => e.x === nx && e.y === ny);
+        if (ent && blocked(ent)) continue;
+        const portal = def.portals.find((p) => p.x === nx && p.y === ny);
+        if (portal) {
+          traversedPortals.add(`${mapId}:${portal.x},${portal.y}`);
+          const destRows = grids.get(portal.toMap);
+          if (
+            !destRows ||
+            portal.toY >= destRows.length ||
+            portal.toX >= destRows[0].length
+          ) {
+            continue; // broken destination — reported as an orphan portal
+          }
+          nm = portal.toMap;
+          nx = portal.toX;
+          ny = portal.toY;
         }
-        nm = portal.toMap;
-        nx = portal.toX;
-        ny = portal.toY;
+        const key = `${nx},${ny}`;
+        const set = reach.get(nm)!;
+        if (set.has(key)) continue;
+        set.add(key);
+        queue.push([nm, nx, ny]);
       }
-      const key = `${nx},${ny}`;
-      const set = reach.get(nm)!;
-      if (set.has(key)) continue;
-      set.add(key);
-      queue.push([nm, nx, ny]);
     }
+  };
+  drain();
+
+  /** Whether a teleport's host site is reachable under the current pass. */
+  const hostActive = (h: TeleportHost): boolean => {
+    const set = reach.get(h.map);
+    if (!set || set.size === 0) return false;
+    if (h.kind === "entity") {
+      return DIRS.some(([dx, dy]) => set.has(`${h.x + dx},${h.y + dy}`));
+    }
+    if (h.on === "enter") return true;
+    return (h.tiles ?? []).some((t) => set.has(`${t.x},${t.y}`));
+  };
+
+  const usable = teleports.filter((t) => optimistic || !t.gated);
+  let progressed = true;
+  while (progressed) {
+    progressed = false;
+    for (const t of usable) {
+      const destRows = grids.get(t.toMap);
+      if (!destRows || t.toY >= destRows.length || t.toX >= destRows[0].length) continue;
+      const set = reach.get(t.toMap)!;
+      const key = `${t.toX},${t.toY}`;
+      if (set.has(key)) continue;
+      if (!hostActive(t.host)) continue;
+      set.add(key);
+      queue.push([t.toMap, t.toX, t.toY]);
+      progressed = true;
+    }
+    if (progressed) drain();
   }
   return { reach, traversedPortals };
 }
@@ -152,8 +297,9 @@ function interactable(reach: Map<string, Set<string>>, mapId: string, e: Entity)
 }
 
 export function analyzeReachability(game: Game): ReachabilityReport {
-  const optimisticPass = reachableTiles(game, true);
-  const pessimisticPass = reachableTiles(game, false);
+  const scan = scanCommands(game);
+  const optimisticPass = reachableTiles(game, true, scan.teleports);
+  const pessimisticPass = reachableTiles(game, false, scan.teleports);
   const optimistic = optimisticPass.reach;
   const pessimistic = pessimisticPass.reach;
 
@@ -238,6 +384,25 @@ export function analyzeReachability(game: Game): ReachabilityReport {
     }
   }
 
+  const teleports: TeleportEdge[] = scan.teleports.map(({ source, toMap, toX, toY, gated }) => ({
+    source,
+    toMap,
+    toX,
+    toY,
+    gated,
+  }));
+  const limitations: string[] = [];
+  if (scan.dynamicUsed.size > 0) {
+    limitations.push(
+      `this game uses ${[...scan.dynamicUsed].sort().join(", ")} — the analysis is static and does NOT simulate runtime world overlays (repainted tiles, spawned/moved/removed entities), so a cutscene that opens or walls off a path is not modeled here; verify with the explore playtest, which runs the real sim`,
+    );
+  }
+  if (teleports.length > 0) {
+    limitations.push(
+      "teleport_player commands are modeled as edges: a destination counts as reachable when the teleport's host entity/trigger is reachable; when-gated teleports fire only in the optimistic pass",
+    );
+  }
+
   const problems =
     unreachableMaps.length +
     unreachableEntities.length +
@@ -263,6 +428,8 @@ export function analyzeReachability(game: Game): ReachabilityReport {
     flagGatedEntities,
     orphanPortals,
     wildZoneIssues,
+    teleports,
+    limitations,
     verdict,
     summary,
   };

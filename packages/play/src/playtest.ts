@@ -55,13 +55,14 @@ interface Args {
   goal?: string;
   maxSteps: number;
   seed: number;
+  tail: number;
   transcript?: string;
   strict: boolean;
   json: boolean;
 }
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { maxSteps: 1000, seed: 1, strict: false, json: false };
+  const args: Args = { maxSteps: 1000, seed: 1, tail: 20, strict: false, json: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--game") args.game = argv[++i];
@@ -70,6 +71,7 @@ function parseArgs(argv: string[]): Args {
     else if (a === "--goal") args.goal = argv[++i];
     else if (a === "--max-steps") args.maxSteps = Number(argv[++i]);
     else if (a === "--seed") args.seed = Number(argv[++i]);
+    else if (a === "--tail") args.tail = Number(argv[++i]);
     else if (a === "--transcript") args.transcript = argv[++i];
     else if (a === "--strict") args.strict = true;
     else if (a === "--json") args.json = true;
@@ -84,7 +86,7 @@ const USAGE = `Usage:
   playtest --game <game.json> --actions "n n interact" replay inline actions
   playtest --game <game.json> --goal explore           built-in coverage autoplayer
   playtest --game <game.json> --goal reach             static reachability analysis
-Options: --max-steps N (default 1000) --seed N (default 1) --transcript <file.jsonl> --strict --json`;
+Options: --max-steps N (default 1000) --seed N (default 1) --tail N (events kept, default 20) --transcript <file.jsonl> --strict --json`;
 
 function fail(msg: string): never {
   console.error(msg);
@@ -103,7 +105,15 @@ if (modes.length !== 1) {
 if (!Number.isInteger(args.maxSteps) || args.maxSteps < 1) {
   fail("--max-steps must be a positive integer.");
 }
+if (!Number.isInteger(args.tail) || args.tail < 1) {
+  fail("--tail must be a positive integer.");
+}
 if (!Number.isFinite(args.seed)) fail("--seed must be a number.");
+
+/** A catalog-free narrative game "wins" by reaching ANY ending; catalog
+ *  games keep the strict win bar. */
+const succeeded = (r: { win: boolean; completed: boolean }): boolean =>
+  game.catalog === undefined ? r.completed : r.win;
 
 /** Human-readable lines: stdout normally, stderr in --json mode (stdout is
  *  reserved for the report object there). */
@@ -132,13 +142,14 @@ if (args.goal === "reach") {
   const report = runExplore(game, {
     maxSteps: args.maxSteps,
     seed: args.seed,
+    tail: args.tail,
     onStep: (e) => transcript.push(e),
   });
   printExplorerReport(report);
-  if (!report.win) printFailureDetail(report);
+  if (!succeeded(report)) printFailureDetail(report);
   if (args.transcript) writeTranscript(args.transcript, transcript);
   emitJson(report);
-  ok = report.win;
+  ok = succeeded(report);
 } else {
   const source =
     args.script !== undefined
@@ -155,13 +166,14 @@ if (args.goal === "reach") {
   const report = runScript(game, words, {
     seed: args.seed,
     strict: args.strict,
+    tail: args.tail,
     onStep: (e) => transcript.push(e),
   });
   printScriptReport(report);
-  if (!report.win) printFailureDetail(report);
+  if (!succeeded(report)) printFailureDetail(report);
   if (args.transcript) writeTranscript(args.transcript, transcript);
   emitJson(report);
-  ok = report.win;
+  ok = succeeded(report);
 }
 
 process.exit(ok ? 0 : 1);
@@ -180,18 +192,36 @@ function writeTranscript(path: string, entries: TranscriptEntry[]): void {
 }
 
 function printFailureDetail(r: ScriptReport | ExploreReport): void {
-  out("\nLast 20 events:");
+  out(`\nLast ${args.tail} events:`);
   for (const line of r.lastEvents) out(`  ${line}`);
   out("\nFinal observation:");
   out(r.finalObservation);
 }
 
+function printBattleDetails(r: ScriptReport | ExploreReport): void {
+  if (r.battleDetails.length === 0) return;
+  out("Battle log:");
+  for (const b of r.battleDetails) {
+    const enemies = b.enemyParty.map((m) => `${m.speciesId} Lv${m.level}`).join(", ");
+    const after =
+      b.partyAfter.length > 0
+        ? ` — party after: ${b.partyAfter.map((p) => `${p.speciesId} Lv${p.level} ${p.hp}/${p.maxHp}`).join(" · ")}`
+        : "";
+    const opponent = b.kind === "trainer" ? `trainer ${b.opponent}` : b.opponent;
+    out(
+      `  steps ${b.startStep}-${b.endStep} on ${b.map}: ${opponent} (${enemies}) — ${b.result.toUpperCase()} in ${b.actions} action(s)${after}`,
+    );
+  }
+}
+
 function printScriptReport(r: ScriptReport): void {
   const result = r.win
     ? "WIN"
-    : r.stopReason === "stopped"
-      ? `STOPPED — ${r.stopDetail}`
-      : `NOT WON — ${r.stopDetail}`;
+    : r.stopReason === "ended"
+      ? `ENDED — ${r.stopDetail}`
+      : r.stopReason === "stopped"
+        ? `STOPPED — ${r.stopDetail}`
+        : `NOT WON — ${r.stopDetail}`;
   out(`Result: ${result}`);
   out(`Steps executed: ${r.steps} of ${r.totalActions}`);
   out(`Turns: ${r.turns}`);
@@ -200,6 +230,7 @@ function printScriptReport(r: ScriptReport): void {
   );
   out(`Party: ${partyLine(r.party)}`);
   out(`Flags: ${r.flags.join(", ") || "(none)"}`);
+  printBattleDetails(r);
   if (r.rejections.length > 0) {
     out(`Rejected steps: ${r.rejections.length} (harmless no-ops unless the run failed)`);
     for (const rej of r.rejections.slice(0, 10)) {
@@ -210,7 +241,15 @@ function printScriptReport(r: ScriptReport): void {
 }
 
 function printExplorerReport(r: ExploreReport): void {
-  out(`Result: ${r.win ? "WIN" : `INCOMPLETE — ${r.stopReason}: ${r.stopDetail}`}`);
+  out(
+    `Result: ${
+      r.win
+        ? "WIN"
+        : r.stopReason === "ended"
+          ? `ENDED — ${r.stopDetail}`
+          : `INCOMPLETE — ${r.stopReason}: ${r.stopDetail}`
+    }`,
+  );
   out(`Steps: ${r.steps} (turns: ${r.turns})`);
   out(
     `Maps visited (${r.mapsVisited.length}/${r.mapsVisited.length + r.mapsUnvisited.length}): ${r.mapsVisited.join(", ")}`,
@@ -225,6 +264,7 @@ function printExplorerReport(r: ExploreReport): void {
   out(
     `Battles: ${r.battles.fought} fought — ${r.battles.won} won, ${r.battles.lost} lost, ${r.battles.fled} fled`,
   );
+  printBattleDetails(r);
   out(`Final: map=${r.finalMap}, pos=(${r.finalX}, ${r.finalY}), money=${r.money}`);
   out(`Party: ${partyLine(r.party)}`);
 }
@@ -269,4 +309,11 @@ function printReachabilityReport(r: ReachabilityReport): void {
     out(`Wild zone issues (${r.wildZoneIssues.length}):`);
     for (const w of r.wildZoneIssues) out(`  ${w.map}: ${w.reason}`);
   }
+  if (r.teleports.length > 0) {
+    out(`Teleport edges (${r.teleports.length}):`);
+    for (const t of r.teleports) {
+      out(`  ${t.source} -> ${t.toMap} (${t.toX}, ${t.toY})${t.gated ? " [gated]" : ""}`);
+    }
+  }
+  for (const l of r.limitations) out(`Limitation: ${l}`);
 }

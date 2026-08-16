@@ -74,6 +74,7 @@
     "#": { "name": "tree", "glyph": "🌲", "walkable": false },
     ".": { "name": "grass", "glyph": "🟩", "walkable": true },
     ",": { "name": "road", "glyph": "🟨", "walkable": true },
+    "~": { "name": "water", "glyph": "🟦", "walkable": false },
     "*": { "name": "tall grass", "glyph": "🌿", "walkable": true, "wild": true }
   },
   "maps": {

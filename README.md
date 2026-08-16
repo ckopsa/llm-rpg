@@ -47,9 +47,9 @@ npm run playtest -- --game games/emberwood/game.json --script my-run.txt
 npm run playtest -- --game games/demo/game.json --actions "n n e interact"
 ```
 
-The report covers win/loss, turns, steps executed, final map/position/party/money, and every rejected action (blocked moves, battle/overworld mode mismatches, invalid battle choices). Rejections are recorded but don't stop the run by default — verified scripts legitimately contain harmless no-ops such as wall bumps that fish for wild encounters; pass `--strict` to stop at the first rejection instead. Unknown action words always stop the run.
+The report covers win/loss, turns, steps executed, final map/position/party/money, a per-battle `battleDetails` list (opponent, enemy party, start/end step, result, and the party's levels/HP right after — how you diagnose exactly which fight was lost and to whom), and every rejected action (blocked moves, battle/overworld mode mismatches, invalid battle choices). `--tail N` widens the kept event window (default 20). Rejections are recorded but don't stop the run by default — verified scripts legitimately contain harmless no-ops such as wall bumps that fish for wild encounters; pass `--strict` to stop at the first rejection instead. Unknown action words always stop the run. For a catalog-free narrative game, reaching **any** ending counts as success (`completed: true`, exit code 0); catalog games keep the strict `win` bar.
 
-**Goal mode** needs no script — a deterministic built-in explorer BFS-pathfinds over walkable tiles (through portals) to interact with every reachable entity once per flag-state, step into every reachable map, and fight battles greedily (highest-power usable move, switch on faint, catch nothing, run from wild battles near a wipe):
+**Goal mode** needs no script — a deterministic built-in explorer BFS-pathfinds over walkable tiles (through portals) to interact with every reachable entity once per flag-state, step into every reachable map, walk onto every unfired step-trigger tile, and fight battles greedily (highest-power usable move, switch on faint, catch nothing, run from wild battles near a wipe). When it stops `exhausted`, the stopDetail names the likely blockers it knows about — trainers it gave up on (their `defeatFlag` unearned) and still-closed `passableWithFlag` gates:
 
 ```bash
 npm run playtest -- --game games/emberwood/game.json --goal explore --max-steps 2000
@@ -63,7 +63,7 @@ It won't beat a tuned game — its job is coverage smoke-testing. The report lis
 npm run playtest -- --game games/emberwood/game.json --goal reach
 ```
 
-It runs two passes over the same graph: **optimistic** (entities with `passableWithFlag` are treated as already open, since their flag may become obtainable — anything unreachable here is a hard authoring bug) and **pessimistic** (blocking entities never open). The delta between them shows exactly which content sits behind flag gates — expected for badge gates, alarming for your starter town. The report covers per-map reachability under both passes, entities no reachable tile is adjacent to (`interact` can never target them), orphan portals (never enterable from the start, or with an invalid destination), and encounter zones with no reachable wild tile. Exit code 0 only when the optimistic pass is clean. Run it after every map edit; save `--goal explore` for when the wiring is right.
+It runs two passes over the same graph: **optimistic** (entities with `passableWithFlag` are treated as already open, since their flag may become obtainable — anything unreachable here is a hard authoring bug) and **pessimistic** (blocking entities never open). The delta between them shows exactly which content sits behind flag gates — expected for badge gates, alarming for your starter town. `teleport_player` commands count as edges: a destination is reachable once the teleport's host entity/trigger is (gated teleports fire in the optimistic pass only); the report lists every edge in `teleports`. The report covers per-map reachability under both passes, entities no reachable tile is adjacent to (`interact` can never target them), orphan portals (never enterable from the start, or with an invalid destination), encounter zones with no reachable wild tile, and a `limitations` list stating what the static pass cannot see (runtime `set_tile`/`spawn_entity`/`remove_entity`/`move_entity` overlays are not simulated — the explore playtest is the dynamic check). Exit code 0 only when the optimistic pass is clean. Run it after every map edit; save `--goal explore` for when the wiring is right.
 
 **As a library:** `@llm-rpg/play` exports the same machinery for in-process callers (e.g. the MCP forge loop): `runScript(game, actions, opts)` → `ScriptReport`, `runExplore(game, opts)` → `ExploreReport`, and `analyzeReachability(game)` → `ReachabilityReport`. All three reports are plain JSON-serializable objects — exactly what `--json` prints.
 
@@ -85,7 +85,7 @@ The Forge is the authoring-side MCP server: tools that create and edit `games/<d
 claude mcp add llm-rpg-forge -- npm run forge --prefix /path/to/llm-rpg
 ```
 
-Tools: `forge_list_games`, `forge_new_game` (from `games/_templates/starter` — a minimal complete, winnable teaching game — or `blank`), `forge_open`, `forge_edit` / `forge_batch` (the engine's edit ops: maps, painting, entities, portals, encounters, catalog), `forge_undo`, `forge_map`, `forge_overview`, `forge_validate`, `forge_check` (instant reachability critic), `forge_playtest` (explore / script / reach).
+Tools: `forge_list_games`, `forge_new_game` (from `games/_templates/starter` — a minimal complete, winnable teaching game — or `blank`), `forge_open`, `forge_edit` / `forge_batch` (the engine's edit ops: meta, maps, painting, entities, dialogue, triggers, variants, portals, encounters, catalog — `removeCatalog` turns a blank draft into a catalog-free narrative game), `forge_undo`, `forge_map`, `forge_overview`, `forge_validate`, `forge_check` (instant reachability critic, teleport-aware), `forge_playtest` (explore / script / reach).
 
 **[docs/forge.md](docs/forge.md)** is the authoring guide: the recommended workflow (edit → `forge_check` → explore playtest → fix), an op reference, schema conventions (flag gating, spatial shops), and pacing/tone heuristics.
 
@@ -98,8 +98,9 @@ A game is a multi-map overworld (towns, routes, interiors) connected by portals,
   "meta": { "id": "...", "title": "...", "goal": "what winning means" },
   "catalog": {                                    // one document, one truth (optional — omit it for a battle-free narrative game)
     "typeChart": { "types": ["fire", "..."], "effectiveness": { "fire": { "grass": 2 } } },
-    "moves":   [{ "id": "flamejet", "type": "fire", "power": 40, "accuracy": 1, "pp": 25 }],
-    "species": [{ "id": "emberling", "baseStats": { "hp": 44, "atk": 52, "def": 43, "spd": 65 },
+    "moves":   [{ "id": "flamejet", "name": "Flamejet", "type": "fire", "power": 40, "accuracy": 1, "pp": 25 }],
+    "species": [{ "id": "emberling", "name": "Emberling", "glyph": "🦎", "types": ["fire"],
+                  "baseStats": { "hp": 44, "atk": 52, "def": 43, "spd": 65 },
                   "learnset": [{ "level": 1, "moveId": "flamejet" }],
                   "evolvesTo": { "speciesId": "pyrewyrm", "level": 16 },
                   "catchRate": 0.45, "xpYield": 62 }],

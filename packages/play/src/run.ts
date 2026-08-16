@@ -7,7 +7,9 @@ import {
   type Game,
 } from "@llm-rpg/engine";
 import {
+  createBattleTracker,
   runExplorer,
+  type BattleDetail,
   type BattleStats,
   type ExplorerOptions,
   type TranscriptEntry,
@@ -44,6 +46,10 @@ export interface BaseReport {
   /** The ending reached, or null. `win` keeps its meaning: true iff
    *  ending.id === "victory". */
   ending: Ending | null;
+  /** The run reached SOME ending (win included). For catalog-free narrative
+   *  games — where every ending is a completed story — this is the go/no-go
+   *  signal; for catalog games `win` stays the bar. */
+  completed: boolean;
   /** Actions issued. */
   steps: number;
   /** Sim turns consumed (rejected mode-mismatch actions don't advance turns). */
@@ -61,8 +67,12 @@ export interface BaseReport {
   /** Unique entity ids interacted with at least once. */
   entitiesInteracted: string[];
   battles: BattleStats;
+  /** Per-battle diagnosis records (opponent, steps, result, party HP after),
+   *  in the order the battles started. */
+  battleDetails: BattleDetail[];
   rejections: Rejection[];
-  /** Up to the last 20 events, formatted "step N (action): event". */
+  /** Up to the last `tail` events (default 20), formatted
+   *  "step N (action): event". */
   lastEvents: string[];
   /** The full observation text at the end of the run. */
   finalObservation: string;
@@ -91,11 +101,15 @@ export interface RunScriptOptions {
   seed?: number;
   /** Stop at the first rejected action instead of recording and continuing. */
   strict?: boolean;
+  /** How many trailing events `lastEvents` keeps. Default 20. */
+  tail?: number;
   /** Called once per action with the transcript entry (for JSONL logs). */
   onStep?: (entry: TranscriptEntry) => void;
 }
 
 export interface RunExploreOptions extends ExplorerOptions {
+  /** How many trailing events `lastEvents` keeps. Default 20. */
+  tail?: number;
   /** Called once per action with the transcript entry (for JSONL logs). */
   onStep?: (entry: TranscriptEntry) => void;
 }
@@ -196,7 +210,7 @@ export function runScript(
   const rejections: Rejection[] = [];
   const visitedMaps = new Set<string>([sim.state.map]);
   const interactedEntities = new Set<string>();
-  const battles: BattleStats = { fought: 0, won: 0, lost: 0, fled: 0 };
+  const tracker = createBattleTracker(sim);
   let executed = 0;
   let stopped: string | undefined;
 
@@ -224,12 +238,7 @@ export function runScript(
     transcript.push(entry);
     opts.onStep?.(entry);
 
-    if (!wasInBattle && sim.state.battle) battles.fought += 1;
-    if (wasInBattle && !sim.state.battle) {
-      if (events.includes("You won the battle!")) battles.won += 1;
-      else if (events.includes("You got away safely!")) battles.fled += 1;
-      else if (events.some((ev) => ev.includes("You lost the battle!"))) battles.lost += 1;
-    }
+    tracker.record(executed, wasInBattle, events);
 
     const rejected = rejectionIn(events);
     if (rejected) {
@@ -249,6 +258,7 @@ export function runScript(
     game: gameMeta(game),
     win,
     ending,
+    completed: win || ending !== null,
     steps: executed,
     totalActions: words.length,
     turns: sim.state.turn,
@@ -267,9 +277,10 @@ export function runScript(
     flags: [...sim.state.flags],
     mapsVisited: Object.keys(game.maps).filter((id) => visitedMaps.has(id)),
     entitiesInteracted: [...interactedEntities],
-    battles,
+    battles: tracker.stats,
+    battleDetails: tracker.details,
     rejections,
-    lastEvents: tailEvents(transcript, 20),
+    lastEvents: tailEvents(transcript, opts.tail ?? 20),
     finalObservation: observe(sim),
   };
 }
@@ -296,6 +307,7 @@ export function runExplore(game: Game, opts: RunExploreOptions = {}): ExploreRep
     game: gameMeta(game),
     win: report.won,
     ending: report.ending,
+    completed: report.won || report.ending !== null,
     steps: report.steps,
     turns: report.turns,
     stopReason: report.stopReason,
@@ -313,8 +325,9 @@ export function runExplore(game: Game, opts: RunExploreOptions = {}): ExploreRep
     entitiesTotal: report.entitiesTotal,
     interactionCount: report.interactionCount,
     battles: report.battles,
+    battleDetails: report.battleDetails,
     rejections,
-    lastEvents: tailEvents(transcript, 20),
+    lastEvents: tailEvents(transcript, opts.tail ?? 20),
     finalObservation: observe(sim),
   };
 }

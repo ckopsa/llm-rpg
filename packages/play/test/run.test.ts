@@ -94,3 +94,64 @@ describe("runExplore", () => {
     expect(JSON.parse(JSON.stringify(report))).toEqual(report);
   });
 });
+
+describe("battle details and the event tail (85g.13)", () => {
+  const game = loadGame("games/demo/game.json");
+  // The README's pinned winning replay for the demo — wild battle included.
+  const words =
+    "east east east east east east north north north north interact " +
+    "south south south south east east east east east east east " +
+    "move1 move1 move1 west west west west west interact";
+
+  it("script reports carry a per-battle battleDetails list", () => {
+    const report = runScript(game, words, { seed: 1 });
+    expect(report.battleDetails.length).toBe(report.battles.fought);
+    expect(report.battleDetails.length).toBeGreaterThan(0);
+    const b = report.battleDetails[0];
+    expect(b.kind).toBe("wild");
+    expect(b.opponent).toMatch(/^wild /);
+    expect(b.enemyParty.length).toBeGreaterThan(0);
+    expect(b.enemyParty[0]).toHaveProperty("speciesId");
+    expect(b.enemyParty[0]).toHaveProperty("level");
+    expect(["won", "lost", "fled", "captured"]).toContain(b.result);
+    expect(b.actions).toBeGreaterThan(0);
+    expect(b.endStep).toBeGreaterThanOrEqual(b.startStep);
+    // The party's post-battle state is captured for diagnosis.
+    expect(b.partyAfter.length).toBeGreaterThan(0);
+    expect(b.partyAfter[0]).toHaveProperty("hp");
+    expect(b.partyAfter[0]).toHaveProperty("maxHp");
+    expect(b.partyAfter[0]).toHaveProperty("level");
+    // Consistency with the summary stats.
+    const won = report.battleDetails.filter((d) => d.result === "won").length;
+    expect(won).toBe(report.battles.won);
+  });
+
+  it("explore reports carry the same battleDetails shape", () => {
+    // The emberwood explorer fights for real (pinned winnable in CI configs
+    // that run it); here just pin the shape contract on the demo run.
+    const report = runExplore(game, { maxSteps: 400, seed: 1 });
+    expect(report.battleDetails.length).toBe(report.battles.fought);
+    for (const b of report.battleDetails) {
+      expect(b.map).toBeTruthy();
+      expect(b.result).not.toBe("ongoing"); // the demo run resolves its battles
+    }
+  });
+
+  it("tail controls how many trailing events lastEvents keeps (default 20)", () => {
+    const dflt = runScript(game, words, { seed: 1 });
+    expect(dflt.lastEvents.length).toBeLessThanOrEqual(20);
+    const five = runScript(game, words, { seed: 1, tail: 5 });
+    expect(five.lastEvents.length).toBe(5);
+    expect(dflt.lastEvents.slice(-5)).toEqual(five.lastEvents);
+    const wide = runExplore(game, { maxSteps: 400, seed: 1, tail: 100 });
+    expect(wide.lastEvents.length).toBeGreaterThan(20);
+    expect(wide.lastEvents.length).toBeLessThanOrEqual(100);
+  });
+
+  it("completed mirrors win for a victory (and stays false without one)", () => {
+    const won = runScript(game, words, { seed: 1 });
+    expect(won.completed).toBe(true);
+    const not = runScript(game, ["east"], { seed: 1 });
+    expect(not.completed).toBe(false);
+  });
+});

@@ -4,7 +4,7 @@
  * arrows glide). The Sim stays authoritative — the renderer only ever
  * mirrors positions the engine already accepted.
  */
-import type { Sim } from "@llm-rpg/engine";
+import type { Entity, Sim } from "@llm-rpg/engine";
 import type { Renderer, Direction, MapData, TileGrid } from "../render/renderer";
 import type { SpriteMap } from "../render/spriteMap";
 import { hasBattleContent } from "./hud";
@@ -21,6 +21,78 @@ export interface OverworldHooks {
   onPortal(): void;
   /** Any state change worth refreshing the HUD/party strip for. */
   onStateChange(): void;
+  /** Fired synchronously right after every sim.act() this view dispatches,
+   *  BEFORE its events reach the message box — the cutscene player collects
+   *  `lastCues` here so chatter gates behind playback. */
+  onActed?(): void;
+}
+
+/**
+ * Build renderer MapData for any map of the game: base rows with the sim's
+ * `tileOverrides` applied (set_tile repaints), resolved through the sprite
+ * map. Shared by the overworld rebuild and the cutscene player's observed
+ * scenes. `skipOverrides` omits specific overridden tiles — the cutscene
+ * player uses it so a tile whose set_tile cue hasn't played yet still shows
+ * its pre-repaint art.
+ */
+export function buildMapData(
+  sim: Sim,
+  mapId: string,
+  spriteMap: SpriteMap,
+  skipOverrides?: { x: number; y: number }[],
+): MapData {
+  const def = sim.game.maps[mapId];
+  const legend = sim.game.legend;
+  const rows = def.rows.map((r) => [...r]);
+  const height = rows.length;
+  const width = rows[0].length;
+
+  const overrides = sim.state.tileOverrides?.[mapId] ?? [];
+  for (const t of overrides) {
+    if (skipOverrides?.some((s) => s.x === t.x && s.y === t.y)) continue;
+    if (t.y >= 0 && t.y < height && t.x >= 0 && t.x < width) rows[t.y][t.x] = t.char;
+  }
+
+  const ground: TileGrid = [];
+  const overlay: TileGrid = [];
+  for (let y = 0; y < height; y++) {
+    const g: (string | null)[] = [];
+    const o: (string | null)[] = [];
+    for (let x = 0; x < width; x++) {
+      const tile = legend[rows[y][x]];
+      const resolved = spriteMap.tileSprites(tile.name, tile.glyph);
+      g.push(resolved.ground);
+      o.push(resolved.overlay);
+    }
+    ground.push(g);
+    overlay.push(o);
+  }
+  return { layers: [ground, overlay], width, height };
+}
+
+const warnedSprites = new Set<string>();
+
+/**
+ * Sprite id for an (effective) entity: its own `sprite` field first — this
+ * is how variant sprites land, the engine resolves the active variant into
+ * the entities it returns — then the game's sprites.json mapping, then the
+ * emoji glyph. An unknown `sprite` id warns once and falls through.
+ */
+export function entitySpriteFor(
+  e: Entity,
+  spriteMap: SpriteMap,
+  hasSprite: (id: string) => boolean,
+): string {
+  if (e.sprite) {
+    if (hasSprite(e.sprite)) return e.sprite;
+    if (!warnedSprites.has(e.sprite)) {
+      warnedSprites.add(e.sprite);
+      console.warn(
+        `Entity "${e.id}": sprite id "${e.sprite}" is not in the manifest — falling back`,
+      );
+    }
+  }
+  return spriteMap.entitySprite(e.id, e.glyph);
 }
 
 const KEY_DIRS: Record<string, Direction> = {
@@ -36,8 +108,12 @@ const KEY_DIRS: Record<string, Direction> = {
 
 const filterMoves = (events: string[]) =>
   events.filter(
-    // Steps are visible on the canvas, and the win line has its own banner.
-    (e) => !e.startsWith("You move ") && e !== "*** YOU WIN ***",
+    // Steps are visible on the canvas, and the win/ending marker lines have
+    // their own screen (ui/ending.ts).
+    (e) =>
+      !e.startsWith("You move ") &&
+      e !== "*** YOU WIN ***" &&
+      !/^\*\*\* THE END — .+ \*\*\*$/.test(e),
   );
 
 /**
@@ -103,8 +179,9 @@ export class OverworldView {
   private hooks: OverworldHooks;
 
   private held: Direction[] = [];
-  private npcIds: string[] = [];
   private playerFacing: Direction = "south";
+  /** Map id the renderer is currently built for (rebuild sets it). */
+  private renderMap = "";
   /** Blocks input while a battle intro or map fade is in flight. */
   private suspended = false;
   private lastBlocked = "";
@@ -124,45 +201,31 @@ export class OverworldView {
     this.hooks = hooks;
   }
 
-  /** (Re)sync map + entities from the sim. Call on start, portals, resets. */
+  /** Map id the renderer currently shows (the cutscene player's baseline). */
+  get renderMapId(): string {
+    return this.renderMap;
+  }
+
+  /**
+   * (Re)sync map + entities from the sim. Call on start, portals, resets,
+   * and after cutscene playback. Uses EFFECTIVE state throughout: tile
+   * overrides, moved/spawned/removed entities, and variant appearance.
+   */
   rebuild(): void {
     const sim = this.world.sim;
-    const def = sim.currentMap;
-    const legend = sim.game.legend;
-    const rows = def.rows.map((r) => [...r]);
-    const height = rows.length;
-    const width = rows[0].length;
+    this.renderMap = sim.state.map;
+    this.renderer.setMap(buildMapData(sim, sim.state.map, this.spriteMap));
 
-    const ground: TileGrid = [];
-    const overlay: TileGrid = [];
-    for (let y = 0; y < height; y++) {
-      const g: (string | null)[] = [];
-      const o: (string | null)[] = [];
-      for (let x = 0; x < width; x++) {
-        const tile = legend[rows[y][x]];
-        const resolved = this.spriteMap.tileSprites(tile.name, tile.glyph);
-        g.push(resolved.ground);
-        o.push(resolved.overlay);
-      }
-      ground.push(g);
-      overlay.push(o);
-    }
-    const map: MapData = { layers: [ground, overlay], width, height };
-    this.renderer.setMap(map);
-
-    this.renderer.removeEntity("player");
-    for (const id of this.npcIds) this.renderer.removeEntity(id);
-    this.npcIds = [];
-    for (const e of def.entities) {
-      const id = `npc:${e.id}`;
+    this.renderer.clearEntities();
+    const hasSprite = (id: string) => this.renderer.hasSprite(id);
+    for (const e of sim.entitiesOn(sim.state.map)) {
       this.renderer.addEntity({
-        id,
-        spriteId: this.spriteMap.entitySprite(e.id, e.glyph),
+        id: `npc:${e.id}`,
+        spriteId: entitySpriteFor(e, this.spriteMap, hasSprite),
         x: e.x,
         y: e.y,
         facing: "south",
       });
-      this.npcIds.push(id);
     }
     this.renderer.addEntity({
       id: "player",
@@ -173,6 +236,23 @@ export class OverworldView {
     });
     this.renderer.followCamera("player");
     this.suspended = false;
+  }
+
+  /**
+   * Light appearance resync: swap already-placed entities' sprites to their
+   * current effective (variant) appearance. Called after acts that don't
+   * warrant a full rebuild — a set_flag flipping a when-driven variant shows
+   * up immediately, without resetting tweens or the camera.
+   */
+  syncAppearance(): void {
+    const sim = this.world.sim;
+    const hasSprite = (id: string) => this.renderer.hasSprite(id);
+    for (const e of sim.entitiesOn(sim.state.map)) {
+      const id = `npc:${e.id}`;
+      if (this.renderer.hasEntity(id)) {
+        this.renderer.setEntitySprite(id, entitySpriteFor(e, this.spriteMap, hasSprite));
+      }
+    }
   }
 
   suspend(): void {
@@ -207,6 +287,7 @@ export class OverworldView {
     if (this.suspended || this.renderer.isMoving("player")) return;
     const sim = this.world.sim;
     const events = sim.act({ type: "interact" });
+    this.hooks.onActed?.();
     this.msg.push(presentableEvents(sim, events));
     if (sim.state.battle && hasBattleContent(sim)) {
       // Trainers battle when spoken to.
@@ -227,7 +308,9 @@ export class OverworldView {
     const prevMap = sim.state.map;
     const prevX = sim.state.playerX;
     const prevY = sim.state.playerY;
-    const events = presentableEvents(sim, sim.act({ type: "move", dir }));
+    const rawEvents = sim.act({ type: "move", dir });
+    this.hooks.onActed?.();
+    const events = presentableEvents(sim, rawEvents);
     this.playerFacing = dir;
 
     if (sim.state.map !== prevMap) {

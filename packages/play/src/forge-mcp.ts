@@ -183,7 +183,7 @@ server.tool(
 
 server.tool(
   "forge_new_game",
-  'Create games/<dirName>/game.json (plus sprites.json) from a template and make it the active game. Templates: "starter" (default — a minimal complete, winnable teaching game: 2 maps, 3 species, a flag-gated quest; edit it into your game) or "blank" (a bare draft with meta, starter legend tiles, empty catalog, and NO maps — build everything with forge_edit). Never overwrites an existing directory. The template\'s meta is replaced with your id/title/goal.',
+  'Create games/<dirName>/game.json (plus sprites.json) from a template and make it the active game. Templates: "starter" (default — a minimal complete, winnable teaching game: 2 maps, 3 species, a flag-gated quest; edit it into your game) or "blank" (a bare draft with meta, starter legend tiles, empty catalog, and NO maps — build everything with forge_edit). For a story-first game with no battles, start from "blank" and make removeCatalog your first edit — the draft becomes a catalog-free narrative game (see docs/forge.md, "Authoring narrative games"). Never overwrites an existing directory. The template\'s meta is replaced with your id/title/goal.',
   {
     dirName: z
       .string()
@@ -254,7 +254,7 @@ const EDIT_CONTRACT =
 
 server.tool(
   "forge_edit",
-  `Apply ONE edit operation to the active game and persist it (read file -> apply -> atomic write; history is kept for forge_undo). ${EDIT_CONTRACT} Ops: createGame {id,title,goal} (replaces the whole doc!), createMap {mapId,width,height,fill}, paintRect {mapId,x1,y1,x2,y2,char}, paintCells {mapId,cells:[{x,y,char}]}, addTile {char,tile}, removeTile {char}, placeEntity {mapId,entity}, updateEntity {entityId,patch}, removeEntity {entityId}, setDialogue {entityId,interactions}, linkPortal {from:{mapId,x,y},to:{mapId,x,y},bidirectional?}, setEncounters {mapId,zone|null}, setPlayerStart {mapId,x,y,...}, addSpecies {species}, updateSpecies {speciesId,patch}, removeSpecies {speciesId}, addMove/updateMove/removeMove, addItem/updateItem/removeItem, setTypeChart {types,effectiveness}. The response includes an ASCII render of the touched map.`,
+  `Apply ONE edit operation to the active game and persist it (read file -> apply -> atomic write; history is kept for forge_undo). ${EDIT_CONTRACT} Ops: createGame {id,title,goal} (replaces the whole doc!), setMeta {id?,title?,goal?,version?}, createMap {mapId,width,height,fill}, paintRect {mapId,x1,y1,x2,y2,char}, paintCells {mapId,cells:[{x,y,char}]}, addTile {char,tile}, removeTile {char}, placeEntity {mapId,entity} (entity may carry interactions, a trainer block, sprite, variants), updateEntity {entityId,patch}, removeEntity {entityId}, setDialogue {entityId,interactions} (commands include say/set_flag/set_var/add_var/passage/choice/win/end and the cutscene set, every command with an optional "when" gate), setTriggers {mapId,triggers} (replace; [] clears), addTrigger {mapId,trigger}, removeTrigger {mapId,triggerId}, setVariants {entityId,variants} (replace; [] clears), linkPortal {from:{mapId,x,y},to:{mapId,x,y},bidirectional?}, setEncounters {mapId,zone|null}, setPlayerStart {mapId,x,y,...}, addSpecies {species}, updateSpecies {speciesId,patch}, removeSpecies {speciesId}, addMove/updateMove/removeMove, addItem/updateItem/removeItem, setTypeChart {types,effectiveness}, removeCatalog {} (delete an EMPTY catalog to make the game a catalog-free narrative game — the story-first first edit). See docs/forge.md for field shapes and the narrative-authoring chapter. The response includes an ASCII render of the touched map.`,
   {
     op: z.enum(OP_NAMES).describe("Operation name from the FORGE_OPS registry"),
     args: z
@@ -286,7 +286,12 @@ function runOps(ops: ForgeOpCall[]): string {
   const a = requireActive();
   const before = readDoc(join(a.dir, GAME_FILE));
   const { result, wrote } = applyToFile(a.dir, ops);
-  const touched = ops.map((call) => touchedMap(wrote ? result.doc : before, call));
+  // Everything reported below must describe the PERSISTED document: the
+  // result doc on a write, the untouched on-disk doc on a rejection. A
+  // rejected batch's partially-applied draft is discarded and must never be
+  // rendered or validated in the response (it reads as a half-landed edit).
+  const reported = wrote ? result.doc : before;
+  const touched = ops.map((call) => touchedMap(reported, call));
   const lines: string[] = [];
   if (result.ok) {
     lines.push(
@@ -294,6 +299,7 @@ function runOps(ops: ForgeOpCall[]): string {
         ? `applied ${ops[0].op} — written to ${GAME_FILE} (forge_undo reverts it)`
         : `applied all ${ops.length} ops — written to ${GAME_FILE} as one undo step`,
     );
+    lines.push(advisoryBlock(result.validation));
   } else {
     lines.push(
       ops.length === 1
@@ -301,9 +307,12 @@ function runOps(ops: ForgeOpCall[]): string {
         : `ops[${result.failedIndex}] was REJECTED — the batch is all-or-nothing, so NOTHING was written; fix that op and resend the batch`,
     );
     lines.push(...result.opErrors.map((e) => `  - ${e}`));
+    lines.push(
+      `${GAME_FILE} is unchanged — the state below is the CURRENT on-disk file, not the rejected draft:`,
+    );
+    lines.push(advisoryBlock(validateGame(before)));
   }
-  lines.push(advisoryBlock(result.validation));
-  const renders = mapRenders(result.doc, touched);
+  const renders = mapRenders(reported, touched);
   if (renders) lines.push("", renders);
   return lines.join("\n");
 }
@@ -335,7 +344,7 @@ server.tool(
 
 server.tool(
   "forge_overview",
-  "Bird's-eye view of the active game: meta, catalog counts (types/moves/species/items), one line per map (size, entities, portals, encounter zone), and the current validation status. The map to start any editing session from.",
+  "Bird's-eye view of the active game: meta, catalog counts (types/moves/species/items — or a catalog-free narrative-game note), one line per map (size, entities, portals, triggers, encounter zone), narrative totals (triggers, entities with variants, ending ids), and the current validation status. The map to start any editing session from.",
   {},
   async () =>
     guard(() => {
@@ -347,18 +356,25 @@ server.tool(
         `${a.dirName}: "${String(meta.title ?? "?")}" (id: ${String(meta.id ?? "?")}, v${String(meta.version ?? "?")})`,
       );
       lines.push(`goal: ${String(meta.goal ?? "(none)")}`);
-      const cat = isRecord(doc) && isRecord(doc.catalog) ? doc.catalog : {};
       const count = (v: unknown) => (Array.isArray(v) ? v.length : 0);
-      const types = isRecord(cat.typeChart) && Array.isArray(cat.typeChart.types)
-        ? cat.typeChart.types.length
-        : 0;
-      lines.push(
-        `catalog: ${types} types, ${count(cat.moves)} moves, ${count(cat.species)} species, ${count(cat.items)} items`,
-      );
+      const hasCatalog = isRecord(doc) && isRecord(doc.catalog);
+      if (hasCatalog) {
+        const cat = doc.catalog as Record<string, unknown>;
+        const types = isRecord(cat.typeChart) && Array.isArray(cat.typeChart.types)
+          ? cat.typeChart.types.length
+          : 0;
+        lines.push(
+          `catalog: ${types} types, ${count(cat.moves)} moves, ${count(cat.species)} species, ${count(cat.items)} items`,
+        );
+      } else {
+        lines.push("catalog: none — this is a catalog-free NARRATIVE game (no battles/party/items/encounters)");
+      }
       const legend = isRecord(doc) && isRecord(doc.legend) ? Object.keys(doc.legend) : [];
       lines.push(`legend: ${legend.join(" ") || "(empty)"}`);
       const maps = isRecord(doc) && isRecord(doc.maps) ? doc.maps : {};
       const mapIds = Object.keys(maps);
+      let triggerTotal = 0;
+      let variantEntities = 0;
       lines.push(`maps (${mapIds.length}):`);
       for (const [id, defU] of Object.entries(maps)) {
         if (!isRecord(defU)) continue;
@@ -367,16 +383,33 @@ server.tool(
         const enc = isRecord(defU.encounters)
           ? `encounters rate ${String(defU.encounters.rate)} (${count(defU.encounters.table)} species)`
           : "no encounters";
+        const triggers = count(defU.triggers);
+        triggerTotal += triggers;
+        if (Array.isArray(defU.entities)) {
+          variantEntities += defU.entities.filter(
+            (e) => isRecord(e) && Array.isArray(e.variants) && e.variants.length > 0,
+          ).length;
+        }
         lines.push(
-          `  ${id}: ${w}x${rows.length}, ${count(defU.entities)} entities, ${count(defU.portals)} portals, ${enc}`,
+          `  ${id}: ${w}x${rows.length}, ${count(defU.entities)} entities, ${count(defU.portals)} portals, ${triggers} trigger(s), ${enc}`,
         );
       }
       const player = isRecord(doc) && isRecord(doc.player) ? doc.player : {};
       lines.push(
         `player start: ${String(player.map ?? "?")} (${String(player.x ?? "?")}, ${String(player.y ?? "?")}), party ${count(player.party)}, money ${String(player.money ?? 0)}`,
       );
+      const v = validateGame(doc);
+      lines.push(
+        `narrative: ${triggerTotal} trigger(s), ${variantEntities} entit(y/ies) with variants, endings: ${
+          v.endings && v.endings.length > 0
+            ? v.endings.join(", ")
+            : v.ok
+              ? "(none — add a win or end command)"
+              : "(unknown until the game validates)"
+        }`,
+      );
       lines.push(`undo steps available: ${historyCount(a.dir)}`);
-      lines.push(advisoryBlock(validateGame(doc)));
+      lines.push(advisoryBlock(v));
       return lines.join("\n");
     }),
 );
@@ -400,7 +433,7 @@ server.tool(
 
 server.tool(
   "forge_check",
-  "Fast static critic (milliseconds — run after EVERY map/portal/blocking-entity edit): BFS reachability from the player start in two passes — optimistic (flag-gated blockers treated as open; anything unreachable here is a hard bug) and pessimistic (flags never earned; the delta shows what sits behind flag gates). Reports unreachable maps/entities, orphan portals, and encounter zones that can never fire. Requires the game to validate — fix forge_validate errors first.",
+  "Fast static critic (milliseconds — run after EVERY map/portal/blocking-entity/trigger edit): BFS reachability from the player start in two passes — optimistic (flag-gated blockers treated as open; anything unreachable here is a hard bug) and pessimistic (flags never earned; the delta shows what sits behind flag gates). teleport_player commands count as edges when their host entity/trigger is reachable (gated ones optimistic-pass only). Reports unreachable maps/entities, orphan portals, encounter zones that can never fire, the teleport edge list, and `limitations` — the honest boundary: runtime overlays (set_tile walls, spawned blockers) are NOT simulated; the explore playtest is the dynamic check. Requires the game to validate — fix forge_validate errors first.",
   {},
   async () =>
     guard(() => {
@@ -411,7 +444,7 @@ server.tool(
 
 server.tool(
   "forge_playtest",
-  'Play the active game automatically and return the JSON report. Modes: "explore" — deterministic coverage explorer that pathfinds to every reachable map/entity and fights greedily; the go/no-go check before calling content done (win expected on a finished game; the report shows maps NOT reached, flags set, battles, and exactly where it stopped). "script" — replay an exact action list (whitespace/comma-separated words: north south east west interact move1..4 switch1..6 item1..9 catch run; # comments) to pin a golden path; rejections are recorded, not fatal. "reach" — same static analysis as forge_check. Deterministic: same seed, same result. Requires the game to validate.',
+  'Play the active game automatically and return the JSON report. Modes: "explore" — deterministic coverage explorer that pathfinds to every reachable map/entity, walks onto unfired step-trigger tiles, and fights greedily; the go/no-go check before calling content done. Success signal: `win` for catalog games; for catalog-free NARRATIVE games any reached ending counts — read `completed` (true when `ending` is non-null; stopReason "ended"). The report shows maps NOT reached, flags set, battles (summary plus a per-battle `battleDetails` list: opponent, enemy party, steps, result, party HP after — how you diagnose a lost fight), the last `tail` events, and exactly where it stopped (an "exhausted" stop names the likely blocking trainer/gate when known). "script" — replay an exact action list (whitespace/comma-separated words: north south east west interact choose1..9 move1..4 switch1..6 item1..9 catch run; # comments) to pin a golden path; rejections are recorded, not fatal. "reach" — same static analysis as forge_check. Deterministic: same seed, same result. Requires the game to validate.',
   {
     mode: z.enum(["explore", "script", "reach"]),
     actions: z
@@ -425,8 +458,14 @@ server.tool(
       .optional()
       .describe("explore mode step budget (default 1500)"),
     seed: z.number().int().optional().describe("Sim seed (default 1)"),
+    tail: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe("How many trailing events lastEvents keeps (default 20)"),
   },
-  async ({ mode, actions, maxSteps, seed }) =>
+  async ({ mode, actions, maxSteps, seed, tail }) =>
     guard(() => {
       const game = activeGame();
       if (mode === "reach") {
@@ -438,9 +477,13 @@ server.tool(
             'script mode needs actions — e.g. { mode: "script", actions: "east east north interact" }',
           );
         }
-        return JSON.stringify(runScript(game, actions, { seed }), null, 2);
+        return JSON.stringify(runScript(game, actions, { seed, tail }), null, 2);
       }
-      return JSON.stringify(runExplore(game, { maxSteps: maxSteps ?? 1500, seed }), null, 2);
+      return JSON.stringify(
+        runExplore(game, { maxSteps: maxSteps ?? 1500, seed, tail }),
+        null,
+        2,
+      );
     }),
 );
 
