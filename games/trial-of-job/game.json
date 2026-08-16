@@ -135,6 +135,10 @@
                   "type": "add_var",
                   "var": "day",
                   "amount": 1
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Take care of two more things on the farm."
                 }
               ]
             },
@@ -173,6 +177,10 @@
                   "type": "add_var",
                   "var": "day",
                   "amount": 1
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Take care of two more things on the farm."
                 }
               ]
             },
@@ -1041,6 +1049,10 @@
             {
               "type": "say",
               "text": "When the day has run you will find yourself at the altar in the morning, the way you always do. Offer for the children there."
+            },
+            {
+              "type": "set_objective",
+              "text": "Take care of two things on the farm. Then pray at the stone."
             }
           ]
         },
@@ -1146,6 +1158,10 @@
                 "Job hears none of this.",
                 "The morning in Uz is bright and ordinary, and the road east is dusty."
               ]
+            },
+            {
+              "type": "set_objective",
+              "text": "Walk down to the road and go east."
             }
           ]
         },
@@ -1484,6 +1500,10 @@
             {
               "type": "say",
               "text": "There is dust on everything. The courtyard is at your feet."
+            },
+            {
+              "type": "set_objective",
+              "text": "Go to the dust in the yard."
             }
           ]
         },
@@ -1608,6 +1628,15 @@
                 "var": "pulse",
                 "op": "gte",
                 "value": 4
+              }
+            },
+            {
+              "type": "set_objective",
+              "text": "Pray at the stone.",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
               }
             }
           ]
@@ -1892,6 +1921,15 @@
                 "op": "eq",
                 "value": 2
               }
+            },
+            {
+              "type": "set_objective",
+              "text": "Pray at the stone.",
+              "when": {
+                "var": "spent",
+                "op": "eq",
+                "value": 2
+              }
             }
           ]
         }
@@ -2023,6 +2061,10 @@
                             "She sits down in the ash beside you for a while, and then she goes back inside the ruin.",
                             "The road east of the heap is empty. It will not stay empty."
                           ]
+                        },
+                        {
+                          "type": "set_objective",
+                          "text": "Walk east across the ashes."
                         }
                       ]
                     },
@@ -2222,6 +2264,10 @@
                     "The three of them lift their heads.",
                     "Seven days they kept still for you. Now it has begun."
                   ]
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Answer your three friends. Say what is true."
                 }
               ]
             },
@@ -2845,6 +2891,10 @@
                     "The three of them stop answering. They have run out of ways to say the same thing.",
                     "Behind them, a young man who has been quiet for two rounds gets to his feet."
                   ]
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Go and talk to the young man waiting behind them."
                 }
               ]
             },
@@ -3134,6 +3184,10 @@
             {
               "type": "say",
               "text": "Your wife has come out to find you."
+            },
+            {
+              "type": "set_objective",
+              "text": "Go and talk to your wife."
             }
           ]
         },
@@ -3188,6 +3242,10 @@
             {
               "type": "say",
               "text": "There is a place in the ashes beside them. Sit — as many days as it takes."
+            },
+            {
+              "type": "set_objective",
+              "text": "Sit down in the ashes."
             }
           ]
         }
@@ -3284,6 +3342,10 @@
             {
               "type": "say",
               "text": "A waystone stands in the storm ahead. There is nothing to fight here — only things to be shown."
+            },
+            {
+              "type": "set_objective",
+              "text": "Walk to the stone in the storm."
             }
           ]
         }
@@ -3360,6 +3422,10 @@
             {
               "type": "say",
               "text": "Water to the north as far as the storm allows you to see, and it stops at a line you cannot find."
+            },
+            {
+              "type": "set_objective",
+              "text": "Walk to the stone in the storm."
             }
           ]
         }
@@ -3434,6 +3500,10 @@
             {
               "type": "say",
               "text": "Cold. The ground under your feet is white and it creaks, and the air smells like iron."
+            },
+            {
+              "type": "set_objective",
+              "text": "Walk to the stone in the storm."
             }
           ]
         }
@@ -3578,6 +3648,10 @@
             {
               "type": "say",
               "text": "Open country, and animals in it that have never once needed you."
+            },
+            {
+              "type": "set_objective",
+              "text": "Walk to the stone in the storm."
             }
           ]
         }
@@ -3839,6 +3913,10 @@
             {
               "type": "say",
               "text": "Two shapes at the edge of the storm, too large to look at all at once. Neither of them turns around."
+            },
+            {
+              "type": "set_objective",
+              "text": "Walk to the stone in the storm."
             }
           ]
         }
@@ -3897,6 +3975,42 @@
                     "op": "gte",
                     "value": 3
                   }
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Walk down into the yard.",
+                  "when": {
+                    "all": [
+                      {
+                        "flag": "prayed_eliphaz"
+                      },
+                      {
+                        "flag": "prayed_bildad"
+                      },
+                      {
+                        "flag": "prayed_zophar"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Pray for your other friends too.",
+                  "when": {
+                    "not": {
+                      "all": [
+                        {
+                          "flag": "prayed_eliphaz"
+                        },
+                        {
+                          "flag": "prayed_bildad"
+                        },
+                        {
+                          "flag": "prayed_zophar"
+                        }
+                      ]
+                    }
+                  }
                 }
               ]
             },
@@ -3948,6 +4062,42 @@
                     "var": "prayers",
                     "op": "gte",
                     "value": 3
+                  }
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Walk down into the yard.",
+                  "when": {
+                    "all": [
+                      {
+                        "flag": "prayed_eliphaz"
+                      },
+                      {
+                        "flag": "prayed_bildad"
+                      },
+                      {
+                        "flag": "prayed_zophar"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Pray for your other friends too.",
+                  "when": {
+                    "not": {
+                      "all": [
+                        {
+                          "flag": "prayed_eliphaz"
+                        },
+                        {
+                          "flag": "prayed_bildad"
+                        },
+                        {
+                          "flag": "prayed_zophar"
+                        }
+                      ]
+                    }
                   }
                 }
               ]
@@ -4001,6 +4151,42 @@
                     "var": "prayers",
                     "op": "gte",
                     "value": 3
+                  }
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Walk down into the yard.",
+                  "when": {
+                    "all": [
+                      {
+                        "flag": "prayed_eliphaz"
+                      },
+                      {
+                        "flag": "prayed_bildad"
+                      },
+                      {
+                        "flag": "prayed_zophar"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "set_objective",
+                  "text": "Pray for your other friends too.",
+                  "when": {
+                    "not": {
+                      "all": [
+                        {
+                          "flag": "prayed_eliphaz"
+                        },
+                        {
+                          "flag": "prayed_bildad"
+                        },
+                        {
+                          "flag": "prayed_zophar"
+                        }
+                      ]
+                    }
                   }
                 }
               ]
@@ -4088,6 +4274,10 @@
             {
               "type": "say",
               "text": "The pardon is not yours to withhold, and it is not automatic either. Go to each of them and pray."
+            },
+            {
+              "type": "set_objective",
+              "text": "Pray for each of your three friends."
             }
           ]
         },
@@ -4288,6 +4478,10 @@
             {
               "type": "say",
               "text": "The gate of the yard stands open at the east. Go and stand in it when you are ready."
+            },
+            {
+              "type": "set_objective",
+              "text": "Go and stand in the gate."
             }
           ]
         }

@@ -186,3 +186,62 @@ describe("language overlays", () => {
     expect(sim.state.pendingChoice?.prompt).toBe("What do you say?");
   });
 });
+
+/**
+ * llm-rpg objectives: the standing "what am I meant to do now?" line. It is
+ * player-facing text, so a translated script must be able to replace it, and
+ * it must survive a save — losing it is exactly the moment a player gets stuck.
+ */
+describe("set_objective", () => {
+  const withObjective = (): unknown => {
+    const raw = fixture() as {
+      maps: { room: { triggers: { commands: unknown[] }[] } };
+    };
+    raw.maps.room.triggers[0].commands.push({
+      type: "set_objective",
+      text: "Seek ye the elder of the room.",
+    });
+    return raw;
+  };
+
+  it("persists in state and is not cleared by later actions", () => {
+    const sim = new Sim(load(withObjective()));
+    expect(sim.state.objective).toBe("Seek ye the elder of the room.");
+    expect(sim.state.lastEvents.join(" ")).toContain("Objective: Seek ye the elder");
+    sim.act({ type: "move", dir: "east" });
+    expect(sim.state.objective).toBe("Seek ye the elder of the room."); // still there
+  });
+
+  it("survives a snapshot round-trip, and old snapshots default to null", () => {
+    const game = load(withObjective());
+    const sim = new Sim(game);
+    const restored = Sim.fromSnapshot(game, JSON.parse(JSON.stringify(sim.snapshot())));
+    expect(restored.state.objective).toBe("Seek ye the elder of the room.");
+
+    const old = JSON.parse(JSON.stringify(sim.snapshot())) as Record<string, unknown>;
+    delete old.objective;
+    expect(Sim.fromSnapshot(game, old as never).state.objective).toBeNull();
+  });
+
+  it("is translatable like any other player-facing string", () => {
+    const { game: out } = applyLanguage(load(withObjective()), {
+      name: "simple",
+      strings: { "Seek ye the elder of the room.": "Go talk to the old lady." },
+    });
+    const sim = new Sim(validateGame(JSON.parse(JSON.stringify(out))).game!);
+    expect(sim.state.objective).toBe("Go talk to the old lady.");
+  });
+
+  it('clears on empty text, and re-stating the same objective stays quiet', () => {
+    const raw = fixture() as { maps: { room: { triggers: { commands: unknown[] }[] } } };
+    raw.maps.room.triggers[0].commands.push(
+      { type: "set_objective", text: "Do the thing." },
+      { type: "set_objective", text: "Do the thing." }, // repeat: no second event
+      { type: "set_objective", text: "" }, // clear
+    );
+    const sim = new Sim(load(raw));
+    expect(sim.state.objective).toBeNull();
+    const announcements = sim.state.lastEvents.filter((e) => e.startsWith("Objective:"));
+    expect(announcements).toHaveLength(1);
+  });
+});

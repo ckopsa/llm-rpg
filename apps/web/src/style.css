@@ -890,3 +890,45 @@ body {
   border-radius: 50%;
   font-size: 1.15rem;
 }
+
+
+/* ---- objective bar ------------------------------------------------------- */
+/* The standing "what now?". Lives inside the stage so it scales with it, and
+ * sits under the HUD chips rather than over the play area. */
+#objective {
+  position: absolute;
+  left: 8px;
+  top: 40px;
+  right: 96px;                 /* clear of the mute / read-aloud chips */
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  background: rgba(12, 16, 26, 0.82);
+  border: 1px solid #2a3345;
+  border-left: 3px solid #c98a3d;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #e6dcc8;
+}
+#objective.hidden { display: none; }
+#objective-text { flex: 1; }
+
+#objective-say {
+  flex: none;
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.2rem 0.3rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid #3a465e;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#objective-say:hover { border-color: #c98a3d; }
+
+/* A battle owns the whole stage — the overworld objective would only clutter it. */
+.battle-mode #objective { display: none; }

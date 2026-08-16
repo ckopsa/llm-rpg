@@ -297,6 +297,13 @@ export const CommandSchema = z.discriminatedUnion("type", [
     text: z.string().min(1),
     subtitle: z.string().min(1).optional(),
   }),
+  /** Set the standing "what am I meant to do now?" line, or clear it with
+   *  `text: ""`. Unlike `say`/`passage` this PERSISTS in `state.objective`
+   *  until something replaces it, so a player who walked away, saved, or just
+   *  lost the thread can always find out where they were going. */
+  command("set_objective", {
+    text: z.string(),
+  }),
   /** Force an entity's variant (`variantId`) or return it to when-evaluation
    *  (`clear: true`) — exactly one of the two (checked by validateGame). */
   command("set_variant", {

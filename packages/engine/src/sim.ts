@@ -183,6 +183,9 @@ export interface SimState {
   /** Forced entity variants (set_variant): entityId -> variantId. A forced
    *  variant beats when-evaluation until cleared. */
   variantOverrides: Record<string, string>;
+  /** The standing objective ("what am I meant to do now?"), or null. Set by
+   *  `set_objective`; persists across turns and saves, unlike chatter. */
+  objective: string | null;
 }
 
 /** Plain-JSON snapshot of a sim: state plus RNG state and the original seed.
@@ -257,6 +260,7 @@ export class Sim {
       spawnedEntities: [],
       tileOverrides: {},
       firedTriggers: [],
+      objective: null,
       lastCues: [],
       ending: null,
       variantOverrides: {},
@@ -290,6 +294,7 @@ export class Sim {
     sim.state.spawnedEntities ??= [];
     sim.state.tileOverrides ??= {};
     sim.state.firedTriggers ??= [];
+    sim.state.objective ??= null; // tolerate pre-objective snapshots
     sim.state.lastCues ??= [];
     sim.state.ending ??= null;
     sim.state.variantOverrides ??= {};
@@ -1194,6 +1199,16 @@ export class Sim {
           cmd.subtitle !== undefined ? `— ${cmd.text} —\n${cmd.subtitle}` : `— ${cmd.text} —`,
         );
         break;
+      case "set_objective": {
+        const next = cmd.text.trim() === "" ? null : cmd.text;
+        // Only announce a real change: re-stating the same objective on every
+        // visit to a trigger would be nagging, not helping.
+        if (next !== this.state.objective) {
+          this.state.objective = next;
+          if (next !== null) events.push(`Objective: ${next}`);
+        }
+        break;
+      }
       case "move_entity": {
         const loc = this.locate(cmd.entityId);
         if (!loc) {

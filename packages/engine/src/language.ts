@@ -124,6 +124,11 @@ export function applyLanguage(game: Game, overlay: LanguageOverlay): LanguageRes
           if (cmd.title !== undefined) cmd.title = one(cmd.title);
           if (cmd.citation !== undefined) cmd.citation = one(cmd.citation);
           break;
+        case "set_objective":
+          // The standing objective is player-facing text like any other, and
+          // is exactly what a struggling reader most needs in their words.
+          cmd.text = one(cmd.text) ?? cmd.text;
+          break;
         case "show_title":
           cmd.text = one(cmd.text)!;
           if (cmd.subtitle !== undefined) cmd.subtitle = one(cmd.subtitle);

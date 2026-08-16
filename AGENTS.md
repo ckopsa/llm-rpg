@@ -17,6 +17,8 @@ Language overlays (`language.ts`): one game, many scripts. `games/<id>/lang.<cod
 
 Input (apps/web `src/ui/controls.ts`): touch d-pad + gamepad both synthesize the same KeyboardEvents as the keyboard and dispatch on `window`, feeding main.ts's single modal cascade. Synthetic events must set `code` AND `key` (movement matches `ev.code`), and directions need a ~120ms minimum hold or a tap never steps. The 768x576 stage is scaled by one transform (`--stage-scale`) so it fits phones; `#stage-fit` reserves the scaled box.
 
+`set_objective {text}` sets the standing "what do I do now?" line in `state.objective` (persists across turns and saves, `""` clears, repeats stay quiet). The observer prints it under `Goal:`; the web renderer shows it as a bar in the stage with an H / speaker button that re-reads it aloud, and speaks a changed objective once the stage quiets. It is translatable like any other string.
+
 See CLAUDE.md for full conventions.
 
 ## Issue Tracking

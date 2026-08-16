@@ -45,6 +45,7 @@ export function describe(sim: Sim): string {
   const lines: string[] = [];
   lines.push(`${game.meta.title} — turn ${state.turn}`);
   lines.push(`Goal: ${game.meta.goal}`);
+  if (state.objective) lines.push(`Objective: ${state.objective}`);
   if (state.won) lines.push("Status: WON");
   else if (state.ending) lines.push(`Status: ENDED — ${state.ending.id}`);
   lines.push(`Map: ${state.map}`);

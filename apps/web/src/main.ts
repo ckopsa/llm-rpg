@@ -42,7 +42,7 @@ import { BattleView } from "./ui/battle";
 import { ChoiceMenu } from "./ui/choice";
 import { CutscenePlayer } from "./ui/cutscene";
 import { EndingScreen } from "./ui/ending";
-import { hasBattleContent, updateHud, updateParty } from "./ui/hud";
+import { hasBattleContent, updateHud, updateParty, updateObjective } from "./ui/hud";
 import { MessageBox } from "./ui/messages";
 import { OverworldView, presentableEvents, type WorldHolder } from "./ui/overworld";
 import { PassagePane, type Passage } from "./ui/passage";
@@ -51,7 +51,7 @@ import { Controls } from "./ui/controls";
 import { TitleScreen } from "./ui/title";
 
 const OVERWORLD_HELP =
-  "Move: Arrows / WASD / d-pad · Interact: E / Space / Enter / A · Pause & save: P · Mute: M · Read aloud: V · Title: R";
+  "Move: Arrows / WASD / d-pad · Interact: E / Space / Enter / A · Pause & save: P · Mute: M · Read aloud: V · What now: H · Title: R";
 const BATTLE_HELP =
   "Battle: Arrows + Enter · Esc back · direct keys 1-4 moves, 5-9 items, Shift+1-6 switch, C catch, X run";
 
@@ -171,6 +171,8 @@ async function main(): Promise<void> {
   const partyEl = $("party");
   const hudMapEl = $("hud-map");
   const hudMoneyEl = $("hud-money");
+  const objectiveEl = $("objective");
+  const objectiveTextEl = $("objective-text");
   const muteEl = $("mute");
   const narrateEl = $("narrate");
 
@@ -323,7 +325,26 @@ async function main(): Promise<void> {
   function refreshHud(): void {
     updateHud(world.sim, hudMapEl, hudMoneyEl);
     updateParty(world.sim, partyEl);
+    // A NEW objective is worth saying out loud once; an unchanged one is not.
+    const changed = updateObjective(world.sim, objectiveEl, objectiveTextEl);
+    if (changed) pendingObjectiveSpeech = changed;
   }
+
+  /** Set when the objective changes; spoken once the stage quiets so it does
+   *  not talk over the line that just explained why it changed. */
+  let pendingObjectiveSpeech: string | null = null;
+
+  /** Read the standing objective aloud — the "I'm lost, what now?" button. */
+  function sayObjective(): void {
+    const text = objectiveTextEl.textContent?.trim();
+    if (text) narrator.say(text);
+    else narrator.say(game.meta.goal);
+  }
+  $("objective-say").addEventListener("click", (ev) => {
+    ev.preventDefault();
+    audio.sfx("blip");
+    sayObjective();
+  });
 
   function autosave(): void {
     const res = writeSlot(game.meta.id, "auto", world.sim);
@@ -589,6 +610,11 @@ async function main(): Promise<void> {
       audio.toggleMute();
       return;
     }
+    if (ev.key === "h" || ev.key === "H") {
+      ev.preventDefault();
+      sayObjective();
+      return;
+    }
     if (ev.key === "v" || ev.key === "V") {
       ev.preventDefault();
       if (!narrator.available) return;
@@ -708,6 +734,17 @@ async function main(): Promise<void> {
     // synthetic KeyboardEvents the on-screen buttons send, so every input
     // device goes through one routing cascade.
     controls.tick();
+    if (
+      pendingObjectiveSpeech !== null &&
+      !cutscene.holding &&
+      !passagePane.open &&
+      !msg.busy() &&
+      !choiceMenu.active
+    ) {
+      const text = pendingObjectiveSpeech;
+      pendingObjectiveSpeech = null;
+      narrator.say(text);
+    }
     // Cutscenes gate everything: passages, chatter, choices, movement, and
     // the ending screen all queue behind playback.
     if (mode !== "title" && !cutscene.holding) pumpPassages();

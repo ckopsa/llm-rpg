@@ -31,6 +31,25 @@ export function updateHud(sim: Sim, mapEl: HTMLElement, moneyEl: HTMLElement): v
 }
 
 /**
+ * The standing objective. Unlike chatter this stays on screen, because the
+ * common failure is not missing the instruction — it is losing it three
+ * minutes later. Returns the text when it CHANGED, so the caller can speak it
+ * (feature-detected: pre-objective engines simply never show the bar).
+ */
+export function updateObjective(sim: Sim, bar: HTMLElement, textEl: HTMLElement): string | null {
+  const objective = (sim.state as { objective?: unknown }).objective;
+  const text = typeof objective === "string" && objective.trim() !== "" ? objective : null;
+  bar.classList.toggle("hidden", text === null);
+  if (text === null) {
+    textEl.textContent = "";
+    return null;
+  }
+  const changed = textEl.textContent !== text;
+  if (changed) textEl.textContent = text;
+  return changed ? text : null;
+}
+
+/**
  * True when the loaded game has battle content: a catalog with at least one
  * species. A catalog-free narrative game must never enter battle paths, so
  * every battle affordance checks this first. Optional-chained on purpose —
