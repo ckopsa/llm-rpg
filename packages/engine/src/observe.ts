@@ -9,6 +9,12 @@ import { describeBattle } from "./battleObserve.js";
  */
 
 export function renderGrid(sim: Sim): string {
+  // Effective entities: overlays (moved/spawned/removed) and variant glyphs.
+  const glyphs = new Map<string, string>();
+  for (const e of sim.entitiesOn(sim.state.map)) {
+    const key = `${e.x},${e.y}`;
+    if (!glyphs.has(key)) glyphs.set(key, e.glyph);
+  }
   const lines: string[] = [];
   for (let y = 0; y < sim.height; y++) {
     let line = "";
@@ -17,9 +23,8 @@ export function renderGrid(sim: Sim): string {
         line += sim.game.player.glyph;
         continue;
       }
-      const entity = sim.entityAt(x, y);
       // Portals render as their underlying tile — they look like open ground.
-      line += entity ? entity.glyph : sim.tileAt(x, y).glyph;
+      line += glyphs.get(`${x},${y}`) ?? sim.tileAt(x, y).glyph;
     }
     lines.push(line);
   }
@@ -41,6 +46,7 @@ export function describe(sim: Sim): string {
   lines.push(`${game.meta.title} — turn ${state.turn}`);
   lines.push(`Goal: ${game.meta.goal}`);
   if (state.won) lines.push("Status: WON");
+  else if (state.ending) lines.push(`Status: ENDED — ${state.ending.id}`);
   lines.push(`Map: ${state.map}`);
   lines.push(`You are at (${state.playerX}, ${state.playerY}).`);
   // Party lines are catalog-bound (a catalog-free narrative game has no
@@ -56,7 +62,8 @@ export function describe(sim: Sim): string {
   }
   lines.push(`Money: ${state.money}`);
 
-  const nearby = sim.currentMap.entities
+  const nearby = sim
+    .entitiesOn(state.map)
     .map((e) => ({ e, dx: e.x - state.playerX, dy: e.y - state.playerY }))
     .filter(({ dx, dy }) => Math.abs(dx) + Math.abs(dy) <= 6)
     .sort((a, b) => Math.abs(a.dx) + Math.abs(a.dy) - (Math.abs(b.dx) + Math.abs(b.dy)));

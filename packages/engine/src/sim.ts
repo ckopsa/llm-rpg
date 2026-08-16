@@ -49,6 +49,71 @@ export interface PendingChoiceOption {
   commands: Command[];
 }
 
+/** World-overlay record for one PLACED entity: position/map overrides from
+ *  move_entity (and future cross-map moves), `removed` from remove_entity.
+ *  Spawned entities live in `spawnedEntities` and are mutated directly. */
+export interface EntityOverride {
+  x?: number;
+  y?: number;
+  mapId?: string;
+  removed?: true;
+}
+
+/** A runtime-spawned entity and the map it lives on. */
+export interface SpawnedEntityRecord {
+  mapId: string;
+  entity: Entity;
+}
+
+/** One repainted tile (from set_tile); `char` indexes the legend. */
+export interface TileOverride {
+  x: number;
+  y: number;
+  char: string;
+}
+
+/** How the game ended. `won` is true iff `id === "victory"` (the `win`
+ *  command is sugar for `end { id: "victory" }`). */
+export interface Ending {
+  id: string;
+  text: string;
+}
+
+/**
+ * One renderer-directed cutscene record. Cues land in `state.lastCues`
+ * (cleared each act, like lastEvents) so a renderer can pace the sequence;
+ * sim state itself is already in the final post-sequence configuration.
+ * Every cue-emitting command also pushes a text event, so text observers
+ * narrate sequences with zero extra work.
+ */
+export type Cue =
+  | {
+      kind: "move_entity";
+      entityId: string;
+      mapId: string;
+      from: { x: number; y: number };
+      to: { x: number; y: number };
+      /** The steps actually walked (may be shorter than the commanded path). */
+      steps: Direction[];
+      /** Direction of the step that was blocked, if any. */
+      blocked?: Direction;
+    }
+  | { kind: "spawn_entity"; entityId: string; mapId: string; x: number; y: number; glyph: string }
+  | { kind: "remove_entity"; entityId: string; mapId: string; x: number; y: number }
+  | { kind: "set_tile"; mapId: string; x: number; y: number; char: string }
+  | { kind: "wait"; beats: number }
+  | {
+      kind: "camera_focus";
+      entityId?: string;
+      mapId?: string;
+      x?: number;
+      y?: number;
+      release?: true;
+    }
+  | { kind: "play_music"; track: string }
+  | { kind: "screen_effect"; effect: "shake" | "flash" | "fade" }
+  | { kind: "show_title"; text: string; subtitle?: string };
+
 /**
  * A `choice` command awaiting resolution. While non-null, the sim accepts
  * ONLY `{ type: "choose", index }`. Only the options whose `when` passed at
@@ -58,12 +123,16 @@ export interface PendingChoiceOption {
  * first. Everything is plain JSON — snapshot/restore works mid-choice.
  */
 export interface PendingChoice {
-  /** Entity id whose interaction produced the choice (say lines and further
-   *  choices attribute to it; ids are unique game-wide). */
+  /** Source id whose command list produced the choice: an entity id, or a
+   *  "trigger:mapId:id" token for trigger-sourced choices (narrator voice). */
   sourceId: string;
   prompt: string;
   options: PendingChoiceOption[];
   continuations: Command[][];
+  /** Source ids aligned with `continuations` — a suspended frame keeps its
+   *  own speaker (e.g. a trigger queued behind an NPC's dialogue). Absent in
+   *  older snapshots: every continuation falls back to `sourceId`. */
+  continuationSources?: string[];
 }
 
 export interface SimState {
@@ -95,6 +164,25 @@ export interface SimState {
   /** Passages produced by the most recent action (cleared at the start of
    *  each act(), exactly like lastEvents). */
   lastPassages: Passage[];
+  /** Per-entity world overrides (moved/removed placed entities). All sim
+   *  reads — entityAt, walkability, line of sight, interact, observers —
+   *  consult these. */
+  entityOverrides: Record<string, EntityOverride>;
+  /** Entities added at runtime by spawn_entity. */
+  spawnedEntities: SpawnedEntityRecord[];
+  /** Repainted tiles per map (from set_tile). */
+  tileOverrides: Record<string, TileOverride[]>;
+  /** "mapId:id" keys of `once` triggers that already fired. */
+  firedTriggers: string[];
+  /** Renderer-directed cutscene records from the most recent action
+   *  (cleared each act, like lastEvents/lastPassages). */
+  lastCues: Cue[];
+  /** How the game ended, or null while it is still going. Any ending stops
+   *  the sim the way `won` does; `won` is true iff ending.id === "victory". */
+  ending: Ending | null;
+  /** Forced entity variants (set_variant): entityId -> variantId. A forced
+   *  variant beats when-evaluation until cleared. */
+  variantOverrides: Record<string, string>;
 }
 
 /** Plain-JSON snapshot of a sim: state plus RNG state and the original seed.
@@ -102,6 +190,13 @@ export interface SimState {
 export interface SimSnapshot extends SimState {
   rng: RngState;
   seed: number;
+}
+
+/** One executable frame: a command list plus who its lines attribute to
+ *  (an entity id, or a "trigger:mapId:id" narrator token). */
+interface Frame {
+  sourceId: string;
+  commands: Command[];
 }
 
 const DELTAS: Record<Direction, [number, number]> = {
@@ -124,6 +219,9 @@ export class Sim {
   private grids: Record<string, string[][]>;
   private rng: Rng;
   private battleObj: Battle | null = null;
+  /** The live frame stack while execFrames runs — lets a trigger fired
+   *  mid-command-list queue its commands after everything pending. */
+  private activeFrames: Frame[] | null = null;
 
   constructor(game: Game, seed = 1) {
     this.game = game;
@@ -155,7 +253,21 @@ export class Sim {
       pendingChoice: null,
       lastEvents: [],
       lastPassages: [],
+      entityOverrides: {},
+      spawnedEntities: [],
+      tileOverrides: {},
+      firedTriggers: [],
+      lastCues: [],
+      ending: null,
+      variantOverrides: {},
     };
+    // Game start counts as arriving on the start map: its `enter` triggers
+    // fire now, their events readable in lastEvents before the first act().
+    // (fromSnapshot replaces the state wholesale afterwards, so restoring a
+    // save never re-fires them.)
+    const events: string[] = [];
+    this.fireTriggers("enter", this.state.map, events);
+    this.state.lastEvents = events;
   }
 
   /**
@@ -173,6 +285,14 @@ export class Sim {
     sim.state.vars ??= {}; // tolerate pre-vars snapshots
     sim.state.lastPassages ??= []; // tolerate pre-passage snapshots
     sim.state.pendingChoice ??= null; // tolerate pre-choice snapshots
+    // Tolerate pre-overlay/trigger/ending/variant snapshots.
+    sim.state.entityOverrides ??= {};
+    sim.state.spawnedEntities ??= [];
+    sim.state.tileOverrides ??= {};
+    sim.state.firedTriggers ??= [];
+    sim.state.lastCues ??= [];
+    sim.state.ending ??= null;
+    sim.state.variantOverrides ??= {};
     sim.rng = Rng.fromState(rng);
     if (sim.state.battle) {
       // The overworld party and the battle's player party are the same array
@@ -225,13 +345,106 @@ export class Sim {
     };
   }
 
-  tileAt(x: number, y: number) {
-    return this.game.legend[this.grid[y][x]];
+  /** Effective tile char at (x, y) on a map: set_tile overrides first,
+   *  then the static grid. */
+  private tileCharAt(mapId: string, x: number, y: number): string {
+    const ov = this.state.tileOverrides[mapId]?.find((t) => t.x === x && t.y === y);
+    return ov ? ov.char : this.grids[mapId][y][x];
   }
 
-  /** Entity at (x, y) on the current map. */
+  tileAt(x: number, y: number) {
+    return this.game.legend[this.tileCharAt(this.state.map, x, y)];
+  }
+
+  /** Where an entity effectively is right now (overrides applied), or
+   *  undefined if unknown/removed. `spawned` is set for runtime spawns. */
+  private locate(
+    entityId: string,
+  ):
+    | { base: Entity; mapId: string; x: number; y: number; spawned?: SpawnedEntityRecord }
+    | undefined {
+    for (const [homeId, def] of Object.entries(this.game.maps)) {
+      for (const e of def.entities) {
+        if (e.id !== entityId) continue;
+        const o = this.state.entityOverrides[e.id];
+        if (o?.removed) return undefined;
+        return { base: e, mapId: o?.mapId ?? homeId, x: o?.x ?? e.x, y: o?.y ?? e.y };
+      }
+    }
+    const spawned = this.state.spawnedEntities.find((r) => r.entity.id === entityId);
+    if (spawned) {
+      return {
+        base: spawned.entity,
+        mapId: spawned.mapId,
+        x: spawned.entity.x,
+        y: spawned.entity.y,
+        spawned,
+      };
+    }
+    return undefined;
+  }
+
+  /** Effective glyph/name/sprite for an entity: forced variant first
+   *  (set_variant), then the first variant whose `when` passes, then base. */
+  private appearance(e: Entity): { name: string; glyph: string; sprite?: string } {
+    const variants = e.variants;
+    if (variants && variants.length > 0) {
+      const forcedId = this.state.variantOverrides[e.id];
+      const v =
+        (forcedId !== undefined ? variants.find((x) => x.id === forcedId) : undefined) ??
+        variants.find((x) => !x.when || evalWhen(this.whenCtx(), x.when));
+      if (v) {
+        return {
+          name: v.name ?? e.name,
+          glyph: v.glyph ?? e.glyph,
+          ...(v.sprite ?? e.sprite ? { sprite: v.sprite ?? e.sprite } : {}),
+        };
+      }
+    }
+    return { name: e.name, glyph: e.glyph, ...(e.sprite ? { sprite: e.sprite } : {}) };
+  }
+
+  /** Build the effective view of an entity (position + variant appearance).
+   *  Returns the base object untouched when nothing applies. */
+  private effectiveEntity(base: Entity, x: number, y: number): Entity {
+    const a = this.appearance(base);
+    if (x === base.x && y === base.y && a.name === base.name && a.glyph === base.glyph && a.sprite === base.sprite) {
+      return base;
+    }
+    return {
+      ...base,
+      x,
+      y,
+      name: a.name,
+      glyph: a.glyph,
+      ...(a.sprite !== undefined ? { sprite: a.sprite } : {}),
+    };
+  }
+
+  /**
+   * Every entity effectively on `mapId` right now: placed entities (minus
+   * removed, with position/map overrides and variant appearance applied),
+   * then runtime spawns. All sim reads and observers go through this.
+   */
+  entitiesOn(mapId: string): Entity[] {
+    const out: Entity[] = [];
+    for (const [homeId, def] of Object.entries(this.game.maps)) {
+      for (const e of def.entities) {
+        const o = this.state.entityOverrides[e.id];
+        if (o?.removed) continue;
+        if ((o?.mapId ?? homeId) !== mapId) continue;
+        out.push(this.effectiveEntity(e, o?.x ?? e.x, o?.y ?? e.y));
+      }
+    }
+    for (const r of this.state.spawnedEntities) {
+      if (r.mapId === mapId) out.push(this.effectiveEntity(r.entity, r.entity.x, r.entity.y));
+    }
+    return out;
+  }
+
+  /** Entity at (x, y) on the current map (overlays applied). */
   entityAt(x: number, y: number): Entity | undefined {
-    return this.currentMap.entities.find((e) => e.x === x && e.y === y);
+    return this.entitiesOn(this.state.map).find((e) => e.x === x && e.y === y);
   }
 
   /** Portal at (x, y) on the current map. */
@@ -280,8 +493,14 @@ export class Sim {
   act(action: Action): string[] {
     const events: string[] = [];
     this.state.lastPassages = [];
+    this.state.lastCues = [];
     if (this.state.won) {
       events.push("The game is already won. Reset to play again.");
+      this.state.lastEvents = events;
+      return events;
+    }
+    if (this.state.ending) {
+      events.push("The game has ended. Reset to play again.");
       this.state.lastEvents = events;
       return events;
     }
@@ -391,22 +610,83 @@ export class Sim {
     // Trainer line-of-sight: checked after the move fully settles (portal
     // transfers included), unless a wild battle already started.
     if (!this.state.battle) this.checkTrainerSight(events);
+
+    // Triggers fire only if no battle engaged this move (a `once` trigger on
+    // a tile that also starts a battle stays unfired for a later visit).
+    // `enter` fires on portal arrival; `step` fires for the landing tile —
+    // unless an enter trigger already relocated the player away from it.
+    if (!this.state.battle) {
+      const landedMap = this.state.map;
+      const landedX = this.state.playerX;
+      const landedY = this.state.playerY;
+      if (portal) this.fireTriggers("enter", landedMap, events);
+      if (
+        this.state.map === landedMap &&
+        this.state.playerX === landedX &&
+        this.state.playerY === landedY
+      ) {
+        this.fireTriggers("step", landedMap, events, { x: landedX, y: landedY });
+      }
+    }
   }
 
-  /** Entity lookup across every map (ids are unique game-wide). */
-  private entityById(id: string): Entity | undefined {
-    for (const def of Object.values(this.game.maps)) {
-      const found = def.entities.find((e) => e.id === id);
-      if (found) return found;
+  /**
+   * Fire a map's matching triggers. Gates: `once` (skipped if already in
+   * firedTriggers), `when` (skipped WITHOUT marking fired, so it can fire
+   * later). Firing triggers are marked first, then their command lists run
+   * through the execFrames pipeline in definition order. A trigger firing
+   * while commands are already pending — mid-command-list (teleport_player)
+   * or mid-choice — queues its commands after ALL currently pending work.
+   */
+  private fireTriggers(
+    on: "enter" | "step",
+    mapId: string,
+    events: string[],
+    tile?: { x: number; y: number },
+  ): void {
+    if (this.state.won || this.state.ending) return;
+    const def = this.game.maps[mapId];
+    if (!def) return;
+    const fired: { sourceId: string; commands: Command[] }[] = [];
+    for (const t of def.triggers ?? []) {
+      if (t.on !== on) continue;
+      if (on === "step" && !(t.tiles ?? []).some((p) => p.x === tile!.x && p.y === tile!.y)) {
+        continue;
+      }
+      const key = `${mapId}:${t.id}`;
+      if (t.once && this.state.firedTriggers.includes(key)) continue;
+      if (t.when && !evalWhen(this.whenCtx(), t.when)) continue;
+      if (t.once) this.state.firedTriggers.push(key);
+      fired.push({ sourceId: `trigger:${key}`, commands: [...t.commands] });
     }
-    return undefined;
+    if (fired.length === 0) return;
+    // execFrames runs the LAST frame first, so reverse to keep definition
+    // order; queued-after frames go to the FRONT (outermost = runs last).
+    const frames: Frame[] = fired.reverse();
+    if (this.activeFrames) {
+      this.activeFrames.unshift(...frames);
+    } else if (this.state.pendingChoice) {
+      const pc = this.state.pendingChoice;
+      pc.continuationSources ??= pc.continuations.map(() => pc.sourceId);
+      pc.continuations.unshift(...frames.map((f) => f.commands));
+      pc.continuationSources.unshift(...frames.map((f) => f.sourceId));
+    } else {
+      this.execFrames(frames, events);
+    }
+  }
+
+  /** Effective entity lookup across every map (ids are unique game-wide).
+   *  Overlays and variants applied; removed entities return undefined. */
+  private entityById(id: string): Entity | undefined {
+    const loc = this.locate(id);
+    return loc ? this.effectiveEntity(loc.base, loc.x, loc.y) : undefined;
   }
 
   /** An undefeated trainer battles on sight down a clear straight line. */
   private checkTrainerSight(events: string[]): void {
     if (!this.game.catalog) return; // narrative game: battles never engage
     const { playerX: px, playerY: py } = this.state;
-    for (const e of this.currentMap.entities) {
+    for (const e of this.entitiesOn(this.state.map)) {
       const t = e.trainer;
       if (!t?.lineOfSight || this.state.flags.includes(t.defeatFlag)) continue;
       const [dx, dy] = DELTAS[t.lineOfSight.dir];
@@ -636,7 +916,7 @@ export class Sim {
 
   private doInteract(events: string[]): void {
     const { playerX: px, playerY: py } = this.state;
-    const adjacent = this.currentMap.entities.find(
+    const adjacent = this.entitiesOn(this.state.map).find(
       (e) => Math.abs(e.x - px) + Math.abs(e.y - py) === 1,
     );
     if (!adjacent) {
@@ -662,7 +942,7 @@ export class Sim {
       events.push(`${adjacent.name} has nothing to say.`);
       return;
     }
-    this.execFrames(adjacent.id, [[...interaction.commands]], events);
+    this.execFrames([{ sourceId: adjacent.id, commands: [...interaction.commands] }], events);
   }
 
   /** Resolve a pending choice: clear it, run the chosen option's commands,
@@ -679,11 +959,15 @@ export class Sim {
     const option = pending.options[index];
     this.state.pendingChoice = null;
     events.push(`You choose: ${option.label}`);
-    const frames = [
-      ...pending.continuations.map((c) => [...c]),
-      [...option.commands],
+    const frames: Frame[] = [
+      ...pending.continuations.map((c, i) => ({
+        // Older snapshots lack continuationSources: fall back to sourceId.
+        sourceId: pending.continuationSources?.[i] ?? pending.sourceId,
+        commands: [...c],
+      })),
+      { sourceId: pending.sourceId, commands: [...option.commands] },
     ];
-    this.execFrames(pending.sourceId, frames, events);
+    this.execFrames(frames, events);
   }
 
   /**
@@ -694,15 +978,37 @@ export class Sim {
    * bounded by data, no recursion. Frames are consumed destructively, so
    * callers pass fresh arrays (command objects themselves are never mutated).
    */
-  private execFrames(sourceId: string, frames: Command[][], events: string[]): void {
-    const source =
+  private execFrames(frames: Frame[], events: string[]): void {
+    // Expose the live frame stack so a trigger firing mid-command-list
+    // (teleport_player) can queue its commands after everything pending.
+    const prevActive = this.activeFrames;
+    this.activeFrames = frames;
+    try {
+      this.runFrames(frames, events);
+    } finally {
+      this.activeFrames = prevActive;
+    }
+  }
+
+  /** Who `say` (and further choices) attribute to. Trigger-sourced commands
+   *  speak with the narrator's (empty) name: say prints the bare text.
+   *  Resolved per command so variant-name changes show up mid-sequence. */
+  private resolveSource(sourceId: string): Entity {
+    if (sourceId.startsWith("trigger:")) {
+      return { id: sourceId, name: "", glyph: "", x: 0, y: 0, blocking: false, interactions: [] };
+    }
+    return (
       this.entityById(sourceId) ??
       // Defensive: a save from an edited game may name a removed entity.
-      ({ id: sourceId, name: "Someone", glyph: "?", x: 0, y: 0, blocking: true, interactions: [] } as Entity);
+      ({ id: sourceId, name: "Someone", glyph: "?", x: 0, y: 0, blocking: true, interactions: [] } as Entity)
+    );
+  }
+
+  private runFrames(frames: Frame[], events: string[]): void {
     while (frames.length > 0) {
-      if (this.state.won) return;
+      if (this.state.won || this.state.ending) return;
       const top = frames[frames.length - 1];
-      const cmd = top.shift();
+      const cmd = top.commands.shift();
       if (!cmd) {
         frames.pop();
         continue;
@@ -718,20 +1024,20 @@ export class Sim {
           );
           continue;
         }
+        const suspended = frames.filter((f) => f.commands.length > 0);
         this.state.pendingChoice = {
-          sourceId,
+          sourceId: top.sourceId,
           prompt: cmd.prompt,
           options: open.map((o) => ({ label: o.label, commands: [...o.commands] })),
-          continuations: frames
-            .filter((f) => f.length > 0)
-            .map((f) => [...f]),
+          continuations: suspended.map((f) => [...f.commands]),
+          continuationSources: suspended.map((f) => f.sourceId),
         };
         events.push(cmd.prompt);
         open.forEach((o, i) => events.push(`${i + 1}) ${o.label}`));
         events.push(`Choose an option: choose1..choose${open.length}.`);
         return;
       }
-      this.runCommand(source, cmd, events);
+      this.runCommand(this.resolveSource(top.sourceId), cmd, events);
     }
   }
 
@@ -746,7 +1052,8 @@ export class Sim {
     if (cmd.when && !evalWhen(this.whenCtx(), cmd.when)) return;
     switch (cmd.type) {
       case "say":
-        events.push(`${source.name}: "${cmd.text}"`);
+        // Trigger-sourced (narrator) lines print bare — there is no speaker.
+        events.push(source.name ? `${source.name}: "${cmd.text}"` : cmd.text);
         break;
       case "set_flag":
         if (!this.state.flags.includes(cmd.flag)) {
@@ -825,10 +1132,279 @@ export class Sim {
         break;
       }
       case "win":
+        // Sugar for end { id: "victory" } — events pinned for back-compat.
         this.state.won = true;
+        this.state.ending = { id: "victory", text: cmd.text };
         events.push(cmd.text);
         events.push("*** YOU WIN ***");
         break;
+      case "end":
+        this.state.ending = { id: cmd.id, text: cmd.text };
+        this.state.won = cmd.id === "victory";
+        events.push(cmd.text);
+        events.push(
+          cmd.id === "victory" ? "*** YOU WIN ***" : `*** THE END — ${cmd.id} ***`,
+        );
+        break;
+      case "teleport_player": {
+        const rows = this.grids[cmd.mapId];
+        if (!rows) {
+          events.push(`Nothing happens — there is no map "${cmd.mapId}".`);
+          break;
+        }
+        if (cmd.y < 0 || cmd.y >= rows.length || cmd.x < 0 || cmd.x >= rows[0].length) {
+          events.push(
+            `Nothing happens — (${cmd.x}, ${cmd.y}) is outside map "${cmd.mapId}".`,
+          );
+          break;
+        }
+        this.state.map = cmd.mapId;
+        this.state.playerX = cmd.x;
+        this.state.playerY = cmd.y;
+        events.push(`You find yourself in ${cmd.mapId}.`);
+        // Teleport arrival fires the target map's enter triggers; when this
+        // runs mid-command-list they queue after all pending commands.
+        this.fireTriggers("enter", cmd.mapId, events);
+        break;
+      }
+      case "show_title":
+        this.state.lastCues.push({
+          kind: "show_title",
+          text: cmd.text,
+          ...(cmd.subtitle !== undefined ? { subtitle: cmd.subtitle } : {}),
+        });
+        events.push(
+          cmd.subtitle !== undefined ? `— ${cmd.text} —\n${cmd.subtitle}` : `— ${cmd.text} —`,
+        );
+        break;
+      case "move_entity": {
+        const loc = this.locate(cmd.entityId);
+        if (!loc) {
+          events.push(`Nothing happens — no entity "${cmd.entityId}" is present.`);
+          break;
+        }
+        const name = this.appearance(loc.base).name;
+        const from = { x: loc.x, y: loc.y };
+        let { x, y } = from;
+        const steps: Direction[] = [];
+        let blocked: Direction | undefined;
+        for (const dir of cmd.path) {
+          const [dx, dy] = DELTAS[dir];
+          if (!this.entityCanStep(loc.mapId, x + dx, y + dy, cmd.entityId)) {
+            blocked = dir;
+            break;
+          }
+          x += dx;
+          y += dy;
+          steps.push(dir);
+        }
+        if (steps.length > 0) this.placeEntityAt(loc, x, y);
+        this.state.lastCues.push({
+          kind: "move_entity",
+          entityId: cmd.entityId,
+          mapId: loc.mapId,
+          from,
+          to: { x, y },
+          steps,
+          ...(blocked !== undefined ? { blocked } : {}),
+        });
+        if (steps.length > 0) events.push(`${name} moves ${steps.join(", ")}.`);
+        if (blocked !== undefined) {
+          events.push(`${name} stops — the way ${blocked} is blocked.`);
+        }
+        break;
+      }
+      case "spawn_entity": {
+        const mapId = cmd.mapId ?? this.state.map;
+        const rows = this.grids[mapId];
+        const e = cmd.entity;
+        if (!rows) {
+          events.push(`Nothing happens — there is no map "${mapId}".`);
+          break;
+        }
+        const idTaken =
+          Object.values(this.game.maps).some((d) => d.entities.some((s) => s.id === e.id)) ||
+          this.state.spawnedEntities.some((r) => r.entity.id === e.id);
+        if (idTaken) {
+          events.push(`Nothing happens — an entity with id "${e.id}" already exists.`);
+          break;
+        }
+        if (e.y < 0 || e.y >= rows.length || e.x < 0 || e.x >= rows[0].length) {
+          events.push(`Nothing happens — (${e.x}, ${e.y}) is outside map "${mapId}".`);
+          break;
+        }
+        const occupied =
+          this.entitiesOn(mapId).some((s) => s.x === e.x && s.y === e.y) ||
+          (this.state.map === mapId && this.state.playerX === e.x && this.state.playerY === e.y);
+        if (occupied) {
+          events.push(
+            `Nothing happens — (${e.x}, ${e.y}) on "${mapId}" is already occupied.`,
+          );
+          break;
+        }
+        this.state.spawnedEntities.push({ mapId, entity: structuredClone(e) });
+        this.state.lastCues.push({
+          kind: "spawn_entity",
+          entityId: e.id,
+          mapId,
+          x: e.x,
+          y: e.y,
+          glyph: e.glyph,
+        });
+        events.push(`${e.name} appears.`);
+        break;
+      }
+      case "remove_entity": {
+        const loc = this.locate(cmd.entityId);
+        if (!loc) {
+          events.push(`Nothing happens — no entity "${cmd.entityId}" is present.`);
+          break;
+        }
+        const name = this.appearance(loc.base).name;
+        if (loc.spawned) {
+          this.state.spawnedEntities.splice(
+            this.state.spawnedEntities.indexOf(loc.spawned),
+            1,
+          );
+        } else {
+          this.state.entityOverrides[cmd.entityId] = {
+            ...this.state.entityOverrides[cmd.entityId],
+            removed: true,
+          };
+        }
+        this.state.lastCues.push({
+          kind: "remove_entity",
+          entityId: cmd.entityId,
+          mapId: loc.mapId,
+          x: loc.x,
+          y: loc.y,
+        });
+        events.push(`${name} departs.`);
+        break;
+      }
+      case "set_tile": {
+        const mapId = cmd.mapId ?? this.state.map;
+        const rows = this.grids[mapId];
+        if (!rows) {
+          events.push(`Nothing happens — there is no map "${mapId}".`);
+          break;
+        }
+        if (cmd.y < 0 || cmd.y >= rows.length || cmd.x < 0 || cmd.x >= rows[0].length) {
+          events.push(`Nothing happens — (${cmd.x}, ${cmd.y}) is outside map "${mapId}".`);
+          break;
+        }
+        const next = this.game.legend[cmd.char];
+        if (!next) {
+          events.push(`Nothing happens — "${cmd.char}" is not in the legend.`);
+          break;
+        }
+        const prev = this.game.legend[this.tileCharAt(mapId, cmd.x, cmd.y)];
+        const list = (this.state.tileOverrides[mapId] ??= []);
+        const existing = list.find((t) => t.x === cmd.x && t.y === cmd.y);
+        if (existing) existing.char = cmd.char;
+        else list.push({ x: cmd.x, y: cmd.y, char: cmd.char });
+        this.state.lastCues.push({ kind: "set_tile", mapId, x: cmd.x, y: cmd.y, char: cmd.char });
+        events.push(`The ${prev.name} becomes ${next.name}.`);
+        break;
+      }
+      case "wait":
+        this.state.lastCues.push({ kind: "wait", beats: cmd.beats });
+        events.push("…");
+        break;
+      case "camera_focus": {
+        if (cmd.release) {
+          this.state.lastCues.push({ kind: "camera_focus", release: true });
+          events.push("The scene returns to you.");
+        } else if (cmd.entityId !== undefined) {
+          const loc = this.locate(cmd.entityId);
+          if (!loc) {
+            events.push(`Nothing happens — no entity "${cmd.entityId}" is present.`);
+            break;
+          }
+          this.state.lastCues.push({
+            kind: "camera_focus",
+            entityId: cmd.entityId,
+            mapId: loc.mapId,
+            x: loc.x,
+            y: loc.y,
+          });
+          events.push(`The scene turns to ${this.appearance(loc.base).name}.`);
+        } else if (cmd.x !== undefined && cmd.y !== undefined) {
+          const mapId = cmd.mapId ?? this.state.map;
+          this.state.lastCues.push({ kind: "camera_focus", mapId, x: cmd.x, y: cmd.y });
+          events.push(`The scene turns to ${mapId} (${cmd.x}, ${cmd.y}).`);
+        } else {
+          // Malformed in an unvalidated game — validateGame errors statically.
+          events.push("Nothing happens — camera_focus needs a target.");
+        }
+        break;
+      }
+      case "play_music":
+        this.state.lastCues.push({ kind: "play_music", track: cmd.track });
+        events.push(`♪ ${cmd.track}`);
+        break;
+      case "screen_effect": {
+        this.state.lastCues.push({ kind: "screen_effect", effect: cmd.effect });
+        const line = {
+          shake: "The world shakes.",
+          flash: "A blinding flash!",
+          fade: "Everything fades.",
+        }[cmd.effect];
+        events.push(line);
+        break;
+      }
+      case "set_variant": {
+        const loc = this.locate(cmd.entityId);
+        if (!loc) {
+          events.push(`Nothing happens — no entity "${cmd.entityId}" is present.`);
+          break;
+        }
+        if (cmd.clear) {
+          delete this.state.variantOverrides[cmd.entityId];
+          break;
+        }
+        if (cmd.variantId === undefined) break; // malformed; validated statically
+        if (!(loc.base.variants ?? []).some((v) => v.id === cmd.variantId)) {
+          events.push(
+            `Nothing happens — "${cmd.variantId}" is not a variant of "${cmd.entityId}".`,
+          );
+          break;
+        }
+        this.state.variantOverrides[cmd.entityId] = cmd.variantId;
+        break;
+      }
+    }
+  }
+
+  /** Whether an entity walking a cutscene path may step onto (x, y):
+   *  in bounds, walkable (tile overrides included), and not occupied by any
+   *  other entity or the player. */
+  private entityCanStep(mapId: string, x: number, y: number, selfId: string): boolean {
+    const rows = this.grids[mapId];
+    if (!rows || y < 0 || y >= rows.length || x < 0 || x >= rows[0].length) return false;
+    if (!this.game.legend[this.tileCharAt(mapId, x, y)].walkable) return false;
+    if (this.state.map === mapId && this.state.playerX === x && this.state.playerY === y) {
+      return false;
+    }
+    return !this.entitiesOn(mapId).some((e) => e.id !== selfId && e.x === x && e.y === y);
+  }
+
+  /** Record an entity's new position: spawned entities mutate their record,
+   *  placed entities get an overlay entry. */
+  private placeEntityAt(
+    loc: { base: Entity; spawned?: SpawnedEntityRecord },
+    x: number,
+    y: number,
+  ): void {
+    if (loc.spawned) {
+      loc.spawned.entity.x = x;
+      loc.spawned.entity.y = y;
+    } else {
+      this.state.entityOverrides[loc.base.id] = {
+        ...this.state.entityOverrides[loc.base.id],
+        x,
+        y,
+      };
     }
   }
 }

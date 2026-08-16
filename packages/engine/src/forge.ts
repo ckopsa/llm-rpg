@@ -543,6 +543,27 @@ export function updateEntity(doc: unknown, args: z.input<typeof UpdateEntityArgs
 
 const RemoveEntityArgs = z.object({ entityId: z.string().min(1) }).strict();
 
+/** Command sites that reference an entity by id (move_entity, remove_entity,
+ *  camera_focus, set_variant) — the entity-side reference walk. */
+function entityCommandReferences(draft: Rec, entityId: string): string[] {
+  const refs: string[] = [];
+  eachCommandList(draft, (commands, label) => {
+    commands.forEach((c, j) => {
+      if (!isRec(c)) return;
+      if (
+        (c.type === "move_entity" ||
+          c.type === "remove_entity" ||
+          c.type === "camera_focus" ||
+          c.type === "set_variant") &&
+        c.entityId === entityId
+      ) {
+        refs.push(`${label}[${j}]`);
+      }
+    });
+  });
+  return refs;
+}
+
 export function removeEntity(doc: unknown, args: z.input<typeof RemoveEntityArgs>): ForgeResult {
   const errors: string[] = [];
   const a = parseWith(RemoveEntityArgs, args, "removeEntity", errors);
@@ -554,6 +575,13 @@ export function removeEntity(doc: unknown, args: z.input<typeof RemoveEntityArgs
   if (!found) {
     errors.push(
       `removeEntity: unknown entity "${a.entityId}" — use one of: ${entityIdList(maps)}`,
+    );
+    return rejectOp(doc, errors);
+  }
+  const refs = entityCommandReferences(draft, a.entityId);
+  if (refs.length > 0) {
+    errors.push(
+      `removeEntity: entity "${a.entityId}" is still referenced by commands: ${refs.join(", ")} — update or remove those commands first`,
     );
     return rejectOp(doc, errors);
   }
@@ -734,8 +762,27 @@ function catalogIdList(entries: Rec[], key: CatalogKey): string {
   return ids.length > 0 ? ids.join(", ") : `(none yet — add ${key} to the catalog first)`;
 }
 
-/** Walk one command list AND every nested choice-option command list, so
- *  reference checks see commands inside (arbitrarily nested) choices. */
+/** Walk one entity-shaped record's command lists (interactions and trainer
+ *  rewardCommands) — shared by placed entities and spawn_entity payloads. */
+function walkEntityCommandLists(
+  e: Rec,
+  label: string,
+  fn: (commands: unknown[], label: string) => void,
+): void {
+  if (Array.isArray(e.interactions)) {
+    e.interactions.forEach((it, i) => {
+      if (isRec(it) && Array.isArray(it.commands)) {
+        walkCommandList(it.commands, `${label}.interactions[${i}].commands`, fn);
+      }
+    });
+  }
+  if (isRec(e.trainer) && Array.isArray(e.trainer.rewardCommands)) {
+    walkCommandList(e.trainer.rewardCommands, `${label}.trainer.rewardCommands`, fn);
+  }
+}
+
+/** Walk one command list AND every nested command list — choice options and
+ *  spawn_entity payload dialogue — so reference checks see everything. */
 function walkCommandList(
   commands: unknown[],
   label: string,
@@ -743,43 +790,40 @@ function walkCommandList(
 ): void {
   fn(commands, label);
   commands.forEach((c, j) => {
-    if (!isRec(c) || c.type !== "choice" || !Array.isArray(c.options)) return;
-    c.options.forEach((o, k) => {
-      if (isRec(o) && Array.isArray(o.commands)) {
-        walkCommandList(o.commands, `${label}[${j}].options[${k}].commands`, fn);
-      }
-    });
+    if (!isRec(c)) return;
+    if (c.type === "choice" && Array.isArray(c.options)) {
+      c.options.forEach((o, k) => {
+        if (isRec(o) && Array.isArray(o.commands)) {
+          walkCommandList(o.commands, `${label}[${j}].options[${k}].commands`, fn);
+        }
+      });
+    }
+    if (c.type === "spawn_entity" && isRec(c.entity)) {
+      walkEntityCommandLists(c.entity, `${label}[${j}].entity`, fn);
+    }
   });
 }
 
-/** Every labeled command list in the draft: entity interactions and trainer
- *  rewardCommands, choice options included. Defensive against half-formed
- *  drafts. */
+/** Every labeled command list in the draft: entity interactions, trainer
+ *  rewardCommands, and map triggers — choice options and spawn_entity
+ *  payloads included. Defensive against half-formed drafts. */
 function eachCommandList(draft: Rec, fn: (commands: unknown[], label: string) => void): void {
   if (!isRec(draft.maps)) return;
   for (const [mapId, defU] of Object.entries(draft.maps)) {
-    if (!isRec(defU) || !Array.isArray(defU.entities)) continue;
-    for (const e of defU.entities) {
-      if (!isRec(e)) continue;
-      const eid = typeof e.id === "string" ? e.id : "?";
-      if (Array.isArray(e.interactions)) {
-        e.interactions.forEach((it, i) => {
-          if (isRec(it) && Array.isArray(it.commands)) {
-            walkCommandList(
-              it.commands,
-              `maps.${mapId}.entities.${eid}.interactions[${i}].commands`,
-              fn,
-            );
-          }
-        });
+    if (!isRec(defU)) continue;
+    if (Array.isArray(defU.entities)) {
+      for (const e of defU.entities) {
+        if (!isRec(e)) continue;
+        const eid = typeof e.id === "string" ? e.id : "?";
+        walkEntityCommandLists(e, `maps.${mapId}.entities.${eid}`, fn);
       }
-      if (isRec(e.trainer) && Array.isArray(e.trainer.rewardCommands)) {
-        walkCommandList(
-          e.trainer.rewardCommands,
-          `maps.${mapId}.entities.${eid}.trainer.rewardCommands`,
-          fn,
-        );
-      }
+    }
+    if (Array.isArray(defU.triggers)) {
+      defU.triggers.forEach((t, i) => {
+        if (isRec(t) && Array.isArray(t.commands)) {
+          walkCommandList(t.commands, `maps.${mapId}.triggers[${i}].commands`, fn);
+        }
+      });
     }
   }
 }
@@ -818,8 +862,22 @@ function speciesReferences(draft: Rec, speciesId: string): string[] {
   }
   eachCommandList(draft, (commands, label) => {
     commands.forEach((c, j) => {
-      if (isRec(c) && c.type === "give_species" && c.speciesId === speciesId) {
+      if (!isRec(c)) return;
+      if (c.type === "give_species" && c.speciesId === speciesId) {
         refs.push(`${label}[${j}]`);
+      }
+      // spawn_entity payloads may carry a trainer party.
+      if (
+        c.type === "spawn_entity" &&
+        isRec(c.entity) &&
+        isRec(c.entity.trainer) &&
+        Array.isArray(c.entity.trainer.party)
+      ) {
+        c.entity.trainer.party.forEach((m, i) => {
+          if (isRec(m) && m.speciesId === speciesId) {
+            refs.push(`${label}[${j}].entity.trainer.party[${i}]`);
+          }
+        });
       }
     });
   });

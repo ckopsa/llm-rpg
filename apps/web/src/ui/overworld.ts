@@ -63,6 +63,38 @@ function withoutPassageEvents(sim: Sim, events: string[]): string[] {
   return events.filter((e) => !rendered.has(e));
 }
 
+/**
+ * The engine also mirrors a presented choice into the events stream — the
+ * prompt, each numbered label, and a "Choose an option: choose1..N." hint —
+ * so text observers can play. The web renders the choice as a menu instead
+ * (ui/choice.ts), so the mirrored lines are dropped from the chatter box.
+ * Exact-match against the live pendingChoice, same policy as the passage
+ * filter above: fail-open — no pending choice, or a shape this doesn't
+ * recognize, filters nothing.
+ */
+function withoutChoiceMirror(sim: Sim, events: string[]): string[] {
+  const pc = (sim.state as { pendingChoice?: unknown }).pendingChoice as
+    | { prompt?: unknown; options?: { label?: unknown }[] }
+    | null
+    | undefined;
+  if (!pc || typeof pc.prompt !== "string" || !Array.isArray(pc.options)) return events;
+  const mirror = new Set<string>([pc.prompt]);
+  pc.options.forEach((o, i) => {
+    if (typeof o?.label === "string") mirror.add(`${i + 1}) ${o.label}`);
+  });
+  mirror.add(`Choose an option: choose1..choose${pc.options.length}.`);
+  return events.filter((e) => !mirror.has(e));
+}
+
+/**
+ * Full chatter-box filter for overworld action events: canvas-visible move
+ * lines, passage-pane mirrors, and choice-menu mirrors are all dropped.
+ * Used for every overworld dispatch — move, interact, and choose (main.ts).
+ */
+export function presentableEvents(sim: Sim, events: string[]): string[] {
+  return withoutChoiceMirror(sim, withoutPassageEvents(sim, filterMoves(events)));
+}
+
 export class OverworldView {
   private renderer: Renderer;
   private world: WorldHolder;
@@ -175,7 +207,7 @@ export class OverworldView {
     if (this.suspended || this.renderer.isMoving("player")) return;
     const sim = this.world.sim;
     const events = sim.act({ type: "interact" });
-    this.msg.push(withoutPassageEvents(sim, filterMoves(events)));
+    this.msg.push(presentableEvents(sim, events));
     if (sim.state.battle && hasBattleContent(sim)) {
       // Trainers battle when spoken to.
       this.suspended = true;
@@ -195,7 +227,7 @@ export class OverworldView {
     const prevMap = sim.state.map;
     const prevX = sim.state.playerX;
     const prevY = sim.state.playerY;
-    const events = withoutPassageEvents(sim, filterMoves(sim.act({ type: "move", dir })));
+    const events = presentableEvents(sim, sim.act({ type: "move", dir }));
     this.playerFacing = dir;
 
     if (sim.state.map !== prevMap) {

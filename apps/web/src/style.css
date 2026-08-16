@@ -173,6 +173,76 @@ body {
   to { transform: translateY(3px); }
 }
 
+/* ---- choice menu -------------------------------------------------------- */
+
+#choice {
+  position: absolute;
+  right: 8px;
+  bottom: 74px; /* clears the message box below */
+  z-index: 8;
+}
+
+.choice-panel {
+  width: 320px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background: #171d2b;
+  border: 2px solid #c98a3d;
+  border-radius: 8px;
+  box-shadow: 0 0 28px rgba(201, 138, 61, 0.28);
+  padding: 10px 12px;
+  color: #e8e2d0;
+}
+.choice-panel.shake { animation: choice-shake 0.25s ease; }
+@keyframes choice-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+.choice-prompt {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #f0b35e;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2e3850;
+}
+
+.choice-list {
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+  overflow-y: auto;
+}
+.choice-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  padding: 4px 8px 4px 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+.choice-list li.sel { background: rgba(201, 138, 61, 0.18); color: #f6d8a8; }
+.choice-list li.sel::before {
+  content: "\25B8";
+  position: absolute;
+  left: 8px;
+  color: #f0b35e;
+}
+.choice-num { color: #b09570; font-size: 11px; }
+.choice-label { font-weight: 600; }
+
+.choice-hint {
+  font-size: 10px;
+  color: #8a7a60;
+  padding-top: 6px;
+  border-top: 1px solid #2e3850;
+}
+
 /* ---- battle screen ------------------------------------------------------ */
 
 #battle {

@@ -3,6 +3,7 @@ import {
   moveById,
   type Action,
   type Direction,
+  type Ending,
   type Entity,
   type Game,
   type MapDef,
@@ -43,9 +44,11 @@ export interface BattleStats {
 
 export interface ExplorerReport {
   won: boolean;
+  /** The ending reached, or null (won stays: true iff id === "victory"). */
+  ending: Ending | null;
   steps: number;
   turns: number;
-  /** "won" | "exhausted" | "max-steps" | "stalled" */
+  /** "won" | "ended" | "exhausted" | "max-steps" | "stalled" */
   stopReason: string;
   stopDetail: string;
   mapsVisited: string[];
@@ -298,7 +301,7 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
   let stalls = 0;
 
   while (steps < maxSteps) {
-    if (sim.state.won) break;
+    if (sim.state.won || sim.state.ending) break;
 
     let action: Action;
     let target: string | undefined;
@@ -399,6 +402,9 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
   if (sim.state.won) {
     stopReason = "won";
     stopDetail = "reached the win condition";
+  } else if (sim.state.ending) {
+    stopReason = "ended";
+    stopDetail = `reached ending "${sim.state.ending.id}"`;
   }
 
   const allMaps = Object.keys(game.maps);
@@ -408,6 +414,7 @@ export function runExplorer(game: Game, opts: ExplorerOptions = {}): ExplorerRes
   );
   const report: ExplorerReport = {
     won: sim.state.won,
+    ending: sim.state.ending ?? null,
     steps,
     turns: sim.state.turn,
     stopReason,

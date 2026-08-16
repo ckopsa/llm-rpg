@@ -146,7 +146,7 @@ A game is a multi-map overworld (towns, routes, interiors) connected by portals,
 }
 ```
 
-Interactions are checked in order; the first one whose `requiresFlag` is satisfied *and* whose `forbidsFlag` is not set *and* whose `when` (if any) evaluates true runs (`forbidsFlag` makes one-time gifts — e.g. three starter pedestals that all set `starter_chosen`). Commands: `say`, `set_flag`, `set_var`, `add_var`, `passage`, `choice`, `win`, `give_species`, `give_item`, `give_money`, `heal_party`, `sell`. Entities can set `"passableWithFlag": "some_flag"` to stop blocking once a flag is set. `validateGame` cross-checks everything against the catalog (encounter species, item/species refs in commands, trainer parties, party members) with errors that name the fix, and warns about flags/vars that are read but never written.
+Interactions are checked in order; the first one whose `requiresFlag` is satisfied *and* whose `forbidsFlag` is not set *and* whose `when` (if any) evaluates true runs (`forbidsFlag` makes one-time gifts — e.g. three starter pedestals that all set `starter_chosen`). Commands: `say`, `set_flag`, `set_var`, `add_var`, `passage`, `choice`, `win`, `end`, `give_species`, `give_item`, `give_money`, `heal_party`, `sell`, plus the cutscene/world set — `move_entity`, `spawn_entity`, `remove_entity`, `set_tile`, `teleport_player`, `set_variant`, `wait`, `camera_focus`, `play_music`, `screen_effect`, `show_title` (each described below). Entities can set `"passableWithFlag": "some_flag"` to stop blocking once a flag is set. `validateGame` cross-checks everything against the catalog (encounter species, item/species refs in commands, trainer parties, party members) with errors that name the fix, and warns about flags/vars that are read but never written.
 
 **Vars and `when` conditions.** Alongside boolean flags, games have named variables: `{ "type": "set_var", "var": "trust", "value": 3 }` (numbers or strings) and `{ "type": "add_var", "var": "trust", "amount": 1 }` (numeric; a missing var starts at 0; adding to a text var is a validation error where statically knowable, a runtime event otherwise). Every command and every interaction takes an optional `when` — a unified condition object, evaluated by the exported `evalWhen(ctx, when)`:
 
@@ -172,7 +172,52 @@ A command whose `when` is false is skipped silently; an interaction's `when` is 
 
 Presenting a choice **suspends** the rest of the current command list and shows the options whose `when` passes (an option with a failing gate is hidden; if none are open, an event explains it and the choice is skipped — validation warns when every option is gated). The sim then accepts only `choose1..chooseN` (alias `o1..oN`); everything else is rejected with a pointer at the options, and battles can't start. The chosen option's commands run first, then the suspended commands resume — so `say → choice → say-epilogue` reads the way you'd expect; a choice inside an option nests the same way. Choices are overworld-only (a validation error inside trainer `rewardCommands`), fully deterministic, and snapshot-safe mid-choice. The text observer lists the prompt and numbered options and swaps the actions line to `Actions: choose1..chooseN`.
 
+**Triggers** fire command lists from the world instead of from `interact`. Each map takes `"triggers": [{ "id", "on": "enter" | "step", "tiles": [{x,y}], "once": true, "when": …, "commands": […] }]`:
+
+- `enter` fires on **arriving on the map**: game start (for the start map — its events are in `lastEvents` before the first action), portal arrival, and `teleport_player` arrival. Respawn after a party wipe does not count.
+- `step` fires when the player **lands on one of `tiles`** (required for step, invalid for enter) — by walking or by portal arrival on that tile.
+- `once` (default true) fires at most once per game, tracked in `state.firedTriggers` (`"mapId:id"`, snapshot-safe). A trigger whose `when` fails is skipped *without* being marked fired, so it can fire later. Ids are unique per map; step tiles are bounds-checked; commands get the full cross-check recursion.
+
+Trigger commands run through the same pipeline as interactions, so `choice`/`passage` inside triggers just work (a trigger-sourced choice locks the sim to `choose1..N` exactly like a dialogue one). Trigger `say` lines print **bare** (narrator voice — there is no speaker). Two ordering rules: a battle engaging on the same move (wild or line-of-sight) wins — the trigger is skipped and, if `once`, stays unfired; and a trigger firing while commands are already pending (a `teleport_player` mid-list, or mid-choice) **queues its commands after all pending work**, continuations included.
+
+**Cutscenes** are just command lists — usually inside triggers. The sequence commands (all snapshot-safe, all deterministic, all taking `when`):
+
+- `move_entity { entityId, path: ["north", …] }` walks an entity tile-by-tile; a blocked step (out of bounds, unwalkable, occupied by an entity or the player) stops the remaining movement with an event.
+- `spawn_entity { mapId?, entity }` / `remove_entity { entityId }` add and remove entities at runtime (default map: the player's current one; duplicate ids are a validation error against placed entities, a runtime event otherwise).
+- `set_tile { mapId?, x, y, char }` repaints one tile to another legend char — walkability and wildness follow the new char.
+- `wait { beats }`, `camera_focus { entityId } | { mapId?, x, y } | { release: true }`, `play_music { track }`, `screen_effect { effect: "shake" | "flash" | "fade" }`, `show_title { text, subtitle? }` are renderer-directed pacing cues.
+
+These world edits live in serializable sim state — `state.entityOverrides`, `state.spawnedEntities`, `state.tileOverrides` — and **every** read (movement, `interact`, trainer line of sight, observers, the grid) consults them. Renderer-directed commands additionally append structured records to `state.lastCues` (cleared each action, like `lastEvents`) so the web renderer can pace a cutscene with real timing; the sim's own state lands directly in the final post-sequence configuration, and text observers narrate the same sequence as ordered events for free.
+
+**Endings and acts.** `end { "id", "text" }` finishes the game with a named ending: it sets `state.ending = { id, text }` and the sim refuses further actions exactly the way winning does. Only `id: "victory"` counts as *winning* (`state.won`); `win { text }` is now sugar for `end { id: "victory" }`, with its events and behavior unchanged. Multiple endings are legal — `validateGame` returns their ids as `endings`, and playtest reports carry `ending` (with `stopReason: "ended"` for non-victory finishes; `win` keeps its meaning). An ungated `end` must be the last command of its list; a `when`-gated one may sit anywhere. `teleport_player { mapId, x, y }` relocates the player (destination statically validated) and fires the target map's `enter` triggers; `show_title { text, subtitle? }` is the act/chapter card cue. Ending screens, title cards, and pacing belong to the renderer — the sim just emits the cues and events.
+
+**Observed scenes (the heavenly-court pattern).** A cutscene may play on a map the player is not on — no extra machinery, because overlays are map-scoped and `camera_focus` accepts entities and tiles anywhere. The idiom, straight from the Book of Job:
+
+```jsonc
+{ "commands": [
+  { "type": "show_title", "text": "Meanwhile", "subtitle": "In the court above" },
+  { "type": "camera_focus", "entityId": "accuser" },          // an entity on the "court" map
+  { "type": "passage", "lines": ["Whence comest thou?", "…"], "citation": "Job 1:7" },
+  { "type": "move_entity", "entityId": "accuser", "path": ["east", "east"] },
+  { "type": "set_flag", "flag": "wager_struck" },
+  { "type": "camera_focus", "release": true }                 // return to the player
+] }
+```
+
+The player never moves; the court map's overlays persist (the accuser stays where the scene left him); text observers narrate the whole scene as ordered events, and the web renderer paces it from `state.lastCues`.
+
 **Narrative games (no catalog).** `catalog` is optional: a game without one is a story-first game — no battles, party, items, or encounters. Validation then errors, naming the fix, on anything battle-bound: wild tiles, `encounters` zones, `trainer` blocks, `give_species`/`give_item`/`sell` commands, and a non-empty starting `party`/`inventory`. Money and every narrative command still work (`heal_party` becomes a gentle no-op event); observers simply omit party lines, and the playtest explorer runs the same coverage sweep without a battle policy.
+
+**Variants** give an entity conditional appearances — Job before and after the boils, the estate before and after ruin:
+
+```jsonc
+"variants": [
+  { "id": "afflicted", "when": { "flag": "boils" }, "glyph": "j", "name": "Job the Afflicted", "sprite": "job-boils" },
+  { "id": "restored",  "when": { "var": "fortune", "op": "gte", "value": 2 }, "glyph": "Ĵ", "name": "Job the Restored" }
+]
+```
+
+The **first** variant whose `when` passes wins (one with no `when` always matches); fields the variant omits fall back to the base entity. `set_variant { "entityId", "variantId" }` forces a specific variant regardless of conditions — recorded in `state.variantOverrides`, snapshot-safe — until `set_variant { "entityId", "clear": true }` returns it to when-evaluation. Observers use the effective glyph/name **everywhere**: the grid, the nearby list, and dialogue speaker names (a `set_variant` mid-dialogue changes the speaker's name for the very next `say`). `sprite` is a web-manifest sprite id passed through untouched for the browser renderer. Validation enforces unique variant ids per entity and checks every `set_variant` reference.
 
 **Shops** are spatial, not menus: a `sell` command (`{ "type": "sell", "itemId": "embersalve", "price": 10 }`) on a shopkeeper or counter-tile entity sells the player 1x that item per interact — one entity or interaction per item. Insufficient money produces an event naming the shortfall.
 

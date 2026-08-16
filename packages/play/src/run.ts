@@ -1,4 +1,11 @@
-import { Sim, observe, parseAction, speciesById, type Game } from "@llm-rpg/engine";
+import {
+  Sim,
+  observe,
+  parseAction,
+  speciesById,
+  type Ending,
+  type Game,
+} from "@llm-rpg/engine";
 import {
   runExplorer,
   type BattleStats,
@@ -34,6 +41,9 @@ export interface Rejection {
 export interface BaseReport {
   game: { id: string; title: string; version: string };
   win: boolean;
+  /** The ending reached, or null. `win` keeps its meaning: true iff
+   *  ending.id === "victory". */
+  ending: Ending | null;
   /** Actions issued. */
   steps: number;
   /** Sim turns consumed (rejected mode-mismatch actions don't advance turns). */
@@ -62,13 +72,13 @@ export interface ScriptReport extends BaseReport {
   mode: "script";
   /** How many actions the script contained (steps <= totalActions). */
   totalActions: number;
-  /** "won" | "stopped" | "script-exhausted" */
+  /** "won" | "ended" | "stopped" | "script-exhausted" */
   stopReason: string;
 }
 
 export interface ExploreReport extends BaseReport {
   mode: "explore";
-  /** "won" | "exhausted" | "max-steps" | "stalled" */
+  /** "won" | "ended" | "exhausted" | "max-steps" | "stalled" */
   stopReason: string;
   mapsUnvisited: string[];
   entitiesTotal: number;
@@ -116,6 +126,7 @@ const REJECTION_PATTERNS: RegExp[] = [
   /^You shouldn't step into the tall grass/,
   /too weary for the tall grass/,
   /No kindred fit to battle/,
+  /^The game has ended\./,
 ];
 
 export function rejectionIn(events: string[]): string | undefined {
@@ -228,21 +239,25 @@ export function runScript(
         break;
       }
     }
-    if (sim.state.won) break;
+    if (sim.state.won || sim.state.ending) break;
   }
 
   const win = sim.state.won;
+  const ending = sim.state.ending ?? null;
   return {
     mode: "script",
     game: gameMeta(game),
     win,
+    ending,
     steps: executed,
     totalActions: words.length,
     turns: sim.state.turn,
-    stopReason: win ? "won" : stopped ? "stopped" : "script-exhausted",
+    stopReason: win ? "won" : ending ? "ended" : stopped ? "stopped" : "script-exhausted",
     stopDetail: win
       ? "reached the win condition"
-      : stopped ?? "script ran out before the win condition",
+      : ending
+        ? `reached ending "${ending.id}"`
+        : stopped ?? "script ran out before the win condition",
     finalMap: sim.state.map,
     finalX: sim.state.playerX,
     finalY: sim.state.playerY,
@@ -280,6 +295,7 @@ export function runExplore(game: Game, opts: RunExploreOptions = {}): ExploreRep
     mode: "explore",
     game: gameMeta(game),
     win: report.won,
+    ending: report.ending,
     steps: report.steps,
     turns: report.turns,
     stopReason: report.stopReason,

@@ -110,6 +110,42 @@ function command<T extends string, S extends z.ZodRawShape>(type: T, shape: S) {
   });
 }
 
+/** Cardinal step direction, shared by movement commands. */
+export const DirectionSchema = z.enum(["north", "south", "east", "west"]);
+
+/** One conditional appearance of an entity. The FIRST variant whose `when`
+ *  passes wins (a variant with no `when` always matches); base entity fields
+ *  are the fallback. `set_variant` forces a specific variant until cleared.
+ *  `sprite` is a web-manifest sprite id — the engine passes it through. */
+export const EntityVariantSchema = z.object({
+  id: z.string().min(1),
+  when: WhenSchema.optional(),
+  glyph: z.string().min(1).optional(),
+  sprite: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
+});
+export type EntityVariant = z.infer<typeof EntityVariantSchema>;
+
+/**
+ * Full entity shape, declared explicitly (not z.infer) so `spawn_entity` can
+ * nest EntitySchema without a circular type (entity → interactions →
+ * commands → spawn_entity → entity). Kept in sync with EntitySchema; the
+ * inferred `Entity` type is structurally identical.
+ */
+export interface EntityDef {
+  id: string;
+  name: string;
+  glyph: string;
+  x: number;
+  y: number;
+  blocking: boolean;
+  passableWithFlag?: string;
+  interactions: Interaction[];
+  trainer?: Trainer;
+  sprite?: string;
+  variants?: EntityVariant[];
+}
+
 /** One option of a `choice` command. `when`-gated options are hidden when the
  *  gate fails; the chosen option's commands run, then any commands that were
  *  suspended after the choice resume. Recursive: options may contain further
@@ -192,6 +228,78 @@ export const CommandSchema = z.discriminatedUnion("type", [
       .array(ChoiceOptionSchema)
       .min(1, "options needs at least one option"),
   }),
+  /** Cutscene: walk an entity tile-by-tile along `path` (world overlays track
+   *  the new position). A blocked step (out of bounds, unwalkable, occupied by
+   *  an entity or the player) stops the remaining movement with an event. */
+  command("move_entity", {
+    entityId: z.string().min(1),
+    path: z.array(DirectionSchema).min(1, "path needs at least one step"),
+  }),
+  /** Cutscene: add a full entity at runtime (default: the player's current
+   *  map). A duplicate id is a validation error against placed entities and a
+   *  runtime event otherwise; an occupied or out-of-bounds tile is a runtime
+   *  event. */
+  command("spawn_entity", {
+    mapId: z.string().min(1).optional(),
+    // Explicitly annotated to break the schema type cycle (entity →
+    // interactions → commands → spawn_entity → entity); EntityDef mirrors
+    // EntitySchema's output exactly.
+    entity: z.lazy(
+      (): z.ZodType<EntityDef> => EntitySchema as unknown as z.ZodType<EntityDef>,
+    ),
+  }),
+  /** Cutscene: remove an entity from the world (placed or spawned). */
+  command("remove_entity", { entityId: z.string().min(1) }),
+  /** Cutscene: repaint one tile to another legend char (default: the current
+   *  map). Walkability/wildness follow the new char's legend entry. */
+  command("set_tile", {
+    mapId: z.string().min(1).optional(),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    char: z.string().min(1),
+  }),
+  /** Cutscene pacing marker for renderers — no sim effect beyond a cue. */
+  command("wait", {
+    beats: z.number().int().min(1, "beats must be at least 1"),
+  }),
+  /** Renderer-directed camera: exactly one of { entityId }, { mapId?, x, y },
+   *  or { release: true } (checked by validateGame). The focused entity/tile
+   *  may be on another map — that's how observed scenes work. */
+  command("camera_focus", {
+    entityId: z.string().min(1).optional(),
+    mapId: z.string().min(1).optional(),
+    x: z.number().int().nonnegative().optional(),
+    y: z.number().int().nonnegative().optional(),
+    release: z.literal(true).optional(),
+  }),
+  /** Renderer-directed music cue. `track` is a free-form track id. */
+  command("play_music", { track: z.string().min(1) }),
+  /** Renderer-directed screen effect cue. */
+  command("screen_effect", { effect: z.enum(["shake", "flash", "fade"]) }),
+  /** End the game with a named ending. `win` is sugar for
+   *  `end { id: "victory" }`; only id "victory" counts as winning. After any
+   *  ending the sim refuses further actions. An ungated `end` must be the
+   *  last command of its list. */
+  command("end", { id: z.string().min(1), text: z.string().min(1) }),
+  /** Relocate the player (destination statically validated) and fire the
+   *  target map's `enter` triggers. */
+  command("teleport_player", {
+    mapId: z.string().min(1),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+  }),
+  /** Act/chapter title card — a cue plus a formatted event. */
+  command("show_title", {
+    text: z.string().min(1),
+    subtitle: z.string().min(1).optional(),
+  }),
+  /** Force an entity's variant (`variantId`) or return it to when-evaluation
+   *  (`clear: true`) — exactly one of the two (checked by validateGame). */
+  command("set_variant", {
+    entityId: z.string().min(1),
+    variantId: z.string().min(1).optional(),
+    clear: z.literal(true).optional(),
+  }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 /** The `choice` command variant (see CommandSchema). */
@@ -261,6 +369,11 @@ export const EntitySchema = z.object({
    *  trainer's defeatFlag is unset, `interactions` are unreachable — they
    *  become the entity's post-defeat dialogue. */
   trainer: TrainerSchema.optional(),
+  /** Web-manifest sprite id for renderers; the engine passes it through. */
+  sprite: z.string().min(1).optional(),
+  /** Conditional appearances: first `when`-match wins, base fields as
+   *  fallback. `set_variant` forces one until cleared. */
+  variants: z.array(EntityVariantSchema).min(1).optional(),
 });
 export type Entity = z.infer<typeof EntitySchema>;
 
@@ -295,12 +408,46 @@ export const EncounterZoneSchema = z.object({
 });
 export type EncounterZone = z.infer<typeof EncounterZoneSchema>;
 
+/**
+ * A map trigger: a command list fired by the world, not by `interact`.
+ *  - `on: "enter"` fires on ARRIVING on the map: game start (for the start
+ *    map), portal arrival, and `teleport_player` arrival. Respawn after a
+ *    party wipe does not count.
+ *  - `on: "step"` fires when the player lands on one of `tiles` (required
+ *    for step triggers) — by walking, or by portal arrival on that tile.
+ * `once` (default true) fires at most once per game, tracked in
+ * `state.firedTriggers` as "mapId:id"; a trigger whose `when` fails is
+ * skipped WITHOUT being marked fired, so it can fire later. Trigger commands
+ * run through the same pipeline as interactions (choice/passage work); a
+ * trigger firing while commands are already pending queues after them.
+ */
+export const TriggerSchema = z.object({
+  id: z.string().min(1),
+  on: z.enum(["enter", "step"]),
+  /** Tiles that fire a "step" trigger (required for step, invalid for enter). */
+  tiles: z
+    .array(
+      z.object({
+        x: z.number().int().nonnegative(),
+        y: z.number().int().nonnegative(),
+      }),
+    )
+    .min(1, "tiles needs at least one { x, y } entry")
+    .optional(),
+  once: z.boolean().default(true),
+  when: WhenSchema.optional(),
+  commands: z.array(CommandSchema).min(1, "commands needs at least one command"),
+});
+export type Trigger = z.infer<typeof TriggerSchema>;
+
 export const MapDefSchema = z.object({
   rows: z.array(z.string().min(1)).min(1),
   entities: z.array(EntitySchema).default([]),
   portals: z.array(PortalSchema).default([]),
   /** Wild-encounter table for this map's `wild` tiles. */
   encounters: EncounterZoneSchema.optional(),
+  /** Map triggers (enter/step) — see TriggerSchema. */
+  triggers: z.array(TriggerSchema).optional(),
 });
 export type MapDef = z.infer<typeof MapDefSchema>;
 
@@ -357,6 +504,9 @@ export interface ValidationResult {
   errors: string[];
   /** Non-fatal issues worth fixing (the game still loads). */
   warnings: string[];
+  /** Every ending id the game can reach (`end` command ids; a `win` command
+   *  contributes "victory"), sorted. Present on successful validation. */
+  endings?: string[];
 }
 
 function charLength(s: string): number {
@@ -488,6 +638,15 @@ export function validateGame(data: unknown): ValidationResult {
     else if (when.var !== "money") varReads.add(when.var); // "money" is built-in
   };
 
+  // Cross-list bookkeeping for the new narrative commands: entity references
+  // (move_entity, remove_entity, camera_focus, set_variant) are resolved after
+  // every map — and every spawn_entity payload — has been seen.
+  const endingIds = new Set<string>();
+  const entityRefs: { label: string; id: string; variantId?: string }[] = [];
+  const spawnCmds: { label: string; entity: EntityDef }[] = [];
+  const spawnedDefs = new Map<string, EntityDef>(); // first spawn wins
+  const staticEntityDefs = new Map<string, Entity>();
+
   // Command lists (interactions and trainer rewardCommands) share one checker.
   // `battleSide` marks lists that run from a battle (trainer rewardCommands):
   // `choice` is overworld-only and errors there. Recurses into choice options.
@@ -495,6 +654,12 @@ export function validateGame(data: unknown): ValidationResult {
     const winIdx = commands.findIndex((c) => c.type === "win");
     if (winIdx !== -1 && winIdx !== commands.length - 1) {
       errors.push(`${label}: "win" must be the last command — commands after it never run`);
+    }
+    const endIdx = commands.findIndex((c) => c.type === "end" && !c.when);
+    if (endIdx !== -1 && endIdx !== commands.length - 1) {
+      errors.push(
+        `${label}: an ungated "end" must be the last command — commands after it never run; add a "when" to make it conditional, or move it last`,
+      );
     }
     for (const [j, cmd] of commands.entries()) {
       if (cmd.when) collectWhen(cmd.when);
@@ -553,6 +718,154 @@ export function validateGame(data: unknown): ValidationResult {
           );
         }
       }
+      if (cmd.type === "win") endingIds.add("victory");
+      if (cmd.type === "end") endingIds.add(cmd.id);
+      if (cmd.type === "teleport_player") {
+        if (!game.maps[cmd.mapId]) {
+          errors.push(
+            `${label}[${j}].mapId: "${cmd.mapId}" is not a defined map — use one of: ${mapList}`,
+          );
+        } else {
+          checkPos(`${label}[${j}]`, cmd.mapId, cmd.x, cmd.y);
+        }
+      }
+      if (cmd.type === "move_entity" || cmd.type === "remove_entity") {
+        entityRefs.push({ label: `${label}[${j}]`, id: cmd.entityId });
+      }
+      if (cmd.type === "set_variant") {
+        if ((cmd.variantId !== undefined) === (cmd.clear === true)) {
+          errors.push(
+            `${label}[${j}]: set_variant needs exactly one of "variantId" (force a variant) or "clear": true (return to when-evaluation)`,
+          );
+        }
+        entityRefs.push({
+          label: `${label}[${j}]`,
+          id: cmd.entityId,
+          ...(cmd.variantId !== undefined ? { variantId: cmd.variantId } : {}),
+        });
+      }
+      if (cmd.type === "camera_focus") {
+        const targets = [
+          cmd.entityId !== undefined,
+          cmd.x !== undefined || cmd.y !== undefined,
+          cmd.release === true,
+        ].filter(Boolean).length;
+        if (targets !== 1) {
+          errors.push(
+            `${label}[${j}]: camera_focus needs exactly one target — { entityId }, { mapId?, x, y }, or { release: true }`,
+          );
+        } else if (cmd.entityId !== undefined) {
+          if (cmd.mapId !== undefined) {
+            errors.push(
+              `${label}[${j}]: camera_focus with entityId doesn't take mapId — the camera follows the entity wherever it is`,
+            );
+          }
+          entityRefs.push({ label: `${label}[${j}]`, id: cmd.entityId });
+        } else if (cmd.release !== true) {
+          if (cmd.x === undefined || cmd.y === undefined) {
+            errors.push(`${label}[${j}]: camera_focus on a tile needs both x and y`);
+          } else if (cmd.mapId !== undefined) {
+            if (!game.maps[cmd.mapId]) {
+              errors.push(
+                `${label}[${j}].mapId: "${cmd.mapId}" is not a defined map — use one of: ${mapList}`,
+              );
+            } else if (!inBounds(cmd.mapId, cmd.x, cmd.y)) {
+              const rows = grids.get(cmd.mapId)!;
+              errors.push(
+                `${label}[${j}]: (${cmd.x}, ${cmd.y}) is outside the ${rows[0].length}x${rows.length} map "${cmd.mapId}"`,
+              );
+            }
+          }
+          // mapId omitted = current map at runtime — bounds unknowable here.
+        }
+      }
+      if (cmd.type === "set_tile") {
+        if (charLength(cmd.char) !== 1) {
+          errors.push(
+            `${label}[${j}].char: "${cmd.char}" must be exactly one character (a legend key)`,
+          );
+        } else if (!game.legend[cmd.char]) {
+          errors.push(
+            `${label}[${j}].char: "${cmd.char}" is not in the legend — add it to legend or use one of: ${Object.keys(game.legend).join(" ")}`,
+          );
+        }
+        if (cmd.mapId !== undefined) {
+          if (!game.maps[cmd.mapId]) {
+            errors.push(
+              `${label}[${j}].mapId: "${cmd.mapId}" is not a defined map — use one of: ${mapList}`,
+            );
+          } else if (!inBounds(cmd.mapId, cmd.x, cmd.y)) {
+            const rows = grids.get(cmd.mapId)!;
+            errors.push(
+              `${label}[${j}]: (${cmd.x}, ${cmd.y}) is outside the ${rows[0].length}x${rows.length} map "${cmd.mapId}"`,
+            );
+          }
+        }
+      }
+      if (cmd.type === "spawn_entity") {
+        if (cmd.mapId !== undefined) {
+          if (!game.maps[cmd.mapId]) {
+            errors.push(
+              `${label}[${j}].mapId: "${cmd.mapId}" is not a defined map — use one of: ${mapList}`,
+            );
+          } else if (!inBounds(cmd.mapId, cmd.entity.x, cmd.entity.y)) {
+            const rows = grids.get(cmd.mapId)!;
+            errors.push(
+              `${label}[${j}].entity: position (${cmd.entity.x}, ${cmd.entity.y}) is outside the ${rows[0].length}x${rows.length} map "${cmd.mapId}"`,
+            );
+          }
+        }
+        spawnCmds.push({ label: `${label}[${j}]`, entity: cmd.entity });
+        if (!spawnedDefs.has(cmd.entity.id)) spawnedDefs.set(cmd.entity.id, cmd.entity);
+        // The spawned entity's interactions run overworld-side regardless of
+        // where the spawn command itself sits.
+        checkEntityContent(`${label}[${j}].entity`, cmd.entity as Entity);
+      }
+    }
+  };
+
+  /** Shared checks for an entity's CONTENT (gates, dialogue, trainer,
+   *  variants) — used for placed entities and spawn_entity payloads alike.
+   *  Position and id-uniqueness checks stay with the placed-entity loop. */
+  const checkEntityContent = (label: string, e: Entity) => {
+    if (e.passableWithFlag) flagReads.add(e.passableWithFlag);
+    if (e.variants) {
+      const seenVariants = new Set<string>();
+      for (const [vi, v] of e.variants.entries()) {
+        if (seenVariants.has(v.id)) {
+          errors.push(
+            `${label}.variants[${vi}]: duplicate variant id "${v.id}" — variant ids must be unique per entity`,
+          );
+        }
+        seenVariants.add(v.id);
+        if (v.when) collectWhen(v.when);
+      }
+    }
+    for (const [i, interaction] of e.interactions.entries()) {
+      if (interaction.requiresFlag) flagReads.add(interaction.requiresFlag);
+      if (interaction.forbidsFlag) flagReads.add(interaction.forbidsFlag);
+      if (interaction.when) collectWhen(interaction.when);
+      checkCommands(`${label}.interactions[${i}].commands`, interaction.commands);
+    }
+    if (e.trainer) {
+      // The defeatFlag is set by the engine on victory — it counts as a write.
+      flagWrites.add(e.trainer.defeatFlag);
+      const tLabel = `${label}.trainer`;
+      if (!hasCatalog) {
+        errors.push(
+          `${tLabel}: ${noCatalogFix("a trainer (battles use catalog species)", "remove the trainer block")}`,
+        );
+      }
+      for (const [i, member] of e.trainer.party.entries()) {
+        if (hasCatalog && !speciesIds.has(member.speciesId)) {
+          errors.push(
+            `${tLabel}.party[${i}]: speciesId "${member.speciesId}" is not in the catalog — use one of: ${speciesList()}`,
+          );
+        }
+      }
+      if (e.trainer.rewardCommands) {
+        checkCommands(`${tLabel}.rewardCommands`, e.trainer.rewardCommands, true);
+      }
     }
   };
 
@@ -571,7 +884,7 @@ export function validateGame(data: unknown): ValidationResult {
         );
       }
       seenIds.set(e.id, mapId);
-      if (e.passableWithFlag) flagReads.add(e.passableWithFlag);
+      if (!staticEntityDefs.has(e.id)) staticEntityDefs.set(e.id, e);
       if (checkPos(`maps.${mapId}.entities.${e.id}`, mapId, e.x, e.y)) {
         const key = `${e.x},${e.y}`;
         const other = seenPos.get(key);
@@ -582,35 +895,48 @@ export function validateGame(data: unknown): ValidationResult {
         }
         seenPos.set(key, e.id);
       }
-      for (const [i, interaction] of e.interactions.entries()) {
-        if (interaction.requiresFlag) flagReads.add(interaction.requiresFlag);
-        if (interaction.forbidsFlag) flagReads.add(interaction.forbidsFlag);
-        if (interaction.when) collectWhen(interaction.when);
-        checkCommands(
-          `maps.${mapId}.entities.${e.id}.interactions[${i}].commands`,
-          interaction.commands,
+      checkEntityContent(`maps.${mapId}.entities.${e.id}`, e);
+    }
+  }
+
+  // Triggers: unique ids per map, step tiles present and in bounds, commands
+  // recursed through the same checker as interactions.
+  for (const [mapId, def] of Object.entries(game.maps)) {
+    const seenTriggers = new Set<string>();
+    for (const [i, t] of (def.triggers ?? []).entries()) {
+      const label = `maps.${mapId}.triggers[${i}]`;
+      if (seenTriggers.has(t.id)) {
+        errors.push(
+          `${label}: duplicate trigger id "${t.id}" — trigger ids must be unique per map`,
         );
       }
-      if (e.trainer) {
-        // The defeatFlag is set by the engine on victory — it counts as a write.
-        flagWrites.add(e.trainer.defeatFlag);
-        const tLabel = `maps.${mapId}.entities.${e.id}.trainer`;
-        if (!hasCatalog) {
+      seenTriggers.add(t.id);
+      if (t.on === "step") {
+        if (!t.tiles) {
           errors.push(
-            `${tLabel}: ${noCatalogFix("a trainer (battles use catalog species)", "remove the trainer block")}`,
+            `${label}: a "step" trigger needs "tiles" — list the { x, y } tiles that fire it`,
           );
-        }
-        for (const [i, member] of e.trainer.party.entries()) {
-          if (hasCatalog && !speciesIds.has(member.speciesId)) {
-            errors.push(
-              `${tLabel}.party[${i}]: speciesId "${member.speciesId}" is not in the catalog — use one of: ${speciesList()}`,
-            );
+        } else {
+          for (const [ti, tile] of t.tiles.entries()) {
+            if (!inBounds(mapId, tile.x, tile.y)) {
+              const rows = grids.get(mapId)!;
+              errors.push(
+                `${label}.tiles[${ti}]: (${tile.x}, ${tile.y}) is outside the ${rows[0].length}x${rows.length} map "${mapId}"`,
+              );
+            } else if (!tileAt(mapId, tile.x, tile.y).walkable) {
+              warnings.push(
+                `${label}.tiles[${ti}]: (${tile.x}, ${tile.y}) is on non-walkable tile "${tileAt(mapId, tile.x, tile.y).name}" — the player can never land there, so the trigger can't fire (unless a set_tile makes it walkable)`,
+              );
+            }
           }
         }
-        if (e.trainer.rewardCommands) {
-          checkCommands(`${tLabel}.rewardCommands`, e.trainer.rewardCommands, true);
-        }
+      } else if (t.tiles) {
+        errors.push(
+          `${label}: "tiles" only applies to "step" triggers — remove tiles or set "on": "step"`,
+        );
       }
+      if (t.when) collectWhen(t.when);
+      checkCommands(`${label}.commands`, t.commands);
     }
   }
 
@@ -739,6 +1065,44 @@ export function validateGame(data: unknown): ValidationResult {
     }
   }
 
+  // Entity references from commands, resolved once every placed entity and
+  // spawn_entity payload has been seen (a command may reference an entity it
+  // spawns later in the same list, or that another list spawns).
+  const knownEntityIdList = () => {
+    const ids = [...new Set([...staticEntityDefs.keys(), ...spawnedDefs.keys()])];
+    return ids.length > 0 ? ids.join(", ") : "(none defined)";
+  };
+  for (const ref of entityRefs) {
+    const def = staticEntityDefs.get(ref.id) ?? spawnedDefs.get(ref.id);
+    if (!def) {
+      errors.push(
+        `${ref.label}: entityId "${ref.id}" is not a defined entity (and no spawn_entity creates it) — use one of: ${knownEntityIdList()}`,
+      );
+      continue;
+    }
+    if (ref.variantId !== undefined) {
+      const variantIds = (def.variants ?? []).map((v) => v.id);
+      if (!variantIds.includes(ref.variantId)) {
+        errors.push(
+          `${ref.label}: variantId "${ref.variantId}" is not a variant of "${ref.id}" — ${
+            variantIds.length > 0
+              ? `use one of: ${variantIds.join(", ")}`
+              : `"${ref.id}" defines no variants; add a "variants" array to the entity`
+          }`,
+        );
+      }
+    }
+  }
+  // A spawned id colliding with a placed entity can never succeed at runtime.
+  for (const s of spawnCmds) {
+    const priorMap = seenIds.get(s.entity.id);
+    if (priorMap !== undefined) {
+      errors.push(
+        `${s.label}: entity id "${s.entity.id}" already exists on map "${priorMap}" — spawned ids must not collide with placed entities; pick another id`,
+      );
+    }
+  }
+
   // add_var on a var that is only ever set to text is statically wrong.
   for (const [v, sites] of addVarSites) {
     if (varSetString.has(v) && !varSetNumber.has(v)) {
@@ -769,5 +1133,5 @@ export function validateGame(data: unknown): ValidationResult {
 
   return errors.length > 0
     ? { ok: false, errors, warnings }
-    : { ok: true, game, errors: [], warnings };
+    : { ok: true, game, errors: [], warnings, endings: [...endingIds].sort() };
 }

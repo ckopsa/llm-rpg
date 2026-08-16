@@ -14,10 +14,11 @@
  *   ui/overworld.ts      overworld view: map build, movement queue, portals
  *   ui/battle.ts         battle screen: panels, battlers, menus
  *   ui/messages.ts       GBA-style sequential message box
+ *   ui/choice.ts         dialogue choice menu over sim.state.pendingChoice
  *   ui/passage.ts        long-form passage pane ("scripture mode")
  *   ui/hud.ts            map/money chips + party strip
  */
-import { Sim, validateGame } from "@llm-rpg/engine";
+import { parseAction, Sim, validateGame } from "@llm-rpg/engine";
 import { AudioEngine } from "./audio/audio";
 import tracksData from "./audio/tracks.json";
 import {
@@ -32,9 +33,10 @@ import { Renderer } from "./render/renderer";
 import { loadSpriteMap } from "./render/spriteMap";
 import { hasAnySave, newestSlot, readSlot, writeSlot, type SlotId } from "./saves";
 import { BattleView } from "./ui/battle";
+import { ChoiceMenu } from "./ui/choice";
 import { hasBattleContent, updateHud, updateParty } from "./ui/hud";
 import { MessageBox } from "./ui/messages";
-import { OverworldView, type WorldHolder } from "./ui/overworld";
+import { OverworldView, presentableEvents, type WorldHolder } from "./ui/overworld";
 import { PassagePane, type Passage } from "./ui/passage";
 import { PausePanel } from "./ui/pause";
 import { TitleScreen } from "./ui/title";
@@ -199,6 +201,21 @@ async function main(): Promise<void> {
   });
   const menuSfx = { blip: () => audio.sfx("blip"), confirm: () => audio.sfx("confirm") };
   const battle = new BattleView(battleEl, world, loaded, spriteMap, msg, menuSfx);
+
+  // Choice menu: engine dialogue choices (sim.state.pendingChoice) as a
+  // small menu above the message box. Confirming dispatches chooseN through
+  // the same act() path as every other input; the loop's tick re-opens it
+  // for nested follow-up choices once the resulting chatter drains.
+  const choiceMenu = new ChoiceMenu($("choice"), world, msg, {
+    choose: (word) => {
+      const action = parseAction(word);
+      if (!action) return;
+      const events = world.sim.act(action);
+      msg.push(presentableEvents(world.sim, events));
+      refreshHud();
+    },
+    ...menuSfx,
+  });
 
   async function portalFade(): Promise<void> {
     await fade(() => {
@@ -366,6 +383,13 @@ async function main(): Promise<void> {
       if (battle.handleKey(ev)) ev.preventDefault();
       return;
     }
+    if (choiceMenu.active) {
+      // A pending choice owns the overworld: menu keys only until it's
+      // answered — movement, interact, and pause all wait. (M was handled
+      // above; the forge's F9 listener is its own.)
+      if (choiceMenu.handleKey(ev)) ev.preventDefault();
+      return;
+    }
     if (ev.key === "p" || ev.key === "P" || ev.key === "Escape") {
       ev.preventDefault();
       overworld.releaseKeys();
@@ -401,10 +425,23 @@ async function main(): Promise<void> {
 
   const loop = () => {
     if (mode !== "title") pumpPassages();
+    // The choice menu opens only once the stage is quiet: overworld, no
+    // fade, no passage on top, no pause, chatter drained (same sequencing
+    // the battle menu uses). Any other frame state hides it.
+    choiceMenu.tick(
+      mode === "overworld" &&
+        !transitioning &&
+        !passagePane.open &&
+        !pause.visible &&
+        !world.sim.state.won &&
+        !msg.busy(),
+    );
     if (mode !== "title" && !transitioning && !passagePane.open) {
       if (mode === "overworld") {
         if (!world.sim.state.won) {
-          if (!pause.visible) overworld.tick();
+          // A pending choice blocks walking (the engine would reject each
+          // step anyway — this keeps the rejections out of the chatter).
+          if (!pause.visible && !choiceMenu.active) overworld.tick();
         } else if (!msg.busy()) {
           bannerEl.classList.remove("hidden");
           if (!wonStung) {
