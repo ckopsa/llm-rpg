@@ -138,9 +138,17 @@ function setupOverworld(loaded: LoadedManifest): { renderer: Renderer; map: MapD
 
 function setupBattlerStrip(loaded: LoadedManifest): void {
   const canvas = document.getElementById("battlers") as HTMLCanvasElement;
-  const ids = Object.keys(loaded.manifest.sprites)
-    .filter((id) => id.startsWith("battler_"))
-    .sort();
+  // Keyed off the SHEET, not the sprite id: original battlers live on their own
+  // one-cell sheets and are named for the creature, so an id-prefix filter
+  // would quietly hide exactly the art we most want to look at.
+  const ids = Object.entries(loaded.manifest.sprites)
+    .filter(([, sprite]) => sprite.sheet.startsWith("battler"))
+    .map(([id]) => id)
+    .sort()
+    // Original art first. Sorted plainly it lands after battler_34 and takes a
+    // full minute of rotation to come around -- long enough that you assume it
+    // is broken. What you just drew is what you want to look at.
+    .sort((a, b) => Number(a.startsWith("battler_")) - Number(b.startsWith("battler_")));
   const SHOWN = 8;
   const CELL_W = 104;
   const CELL_H = 84;
