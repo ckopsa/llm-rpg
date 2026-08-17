@@ -37,6 +37,7 @@ import {
 import { loadManifest } from "./render/manifest";
 import { Renderer } from "./render/renderer";
 import { loadSpriteMap, type SpriteMap } from "./render/spriteMap";
+import { applyRosterSprites, loadRosterOverlay, mergeRosterSprites } from "./roster";
 import { hasAnySave, newestSlot, readSlot, writeSlot, type SlotId } from "./saves";
 import { BattleView } from "./ui/battle";
 import { ChoiceMenu } from "./ui/choice";
@@ -141,6 +142,19 @@ async function main(): Promise<void> {
     language = null;
   }
 
+  // Roster overlay: a child's saved creatures (Creature Studio), layered on
+  // top of the shipped game. Never fatal — missing, corrupt, foreign, or
+  // rule-violating data all leave `game` exactly as loaded above, with the
+  // reason logged rather than swallowed.
+  const rosterLoad = loadRosterOverlay(game, gameId);
+  if (rosterLoad.errors.length > 0) {
+    console.warn(`roster for "${gameId}" was not applied — playing the shipped game:`, rosterLoad.errors);
+  }
+  if (rosterLoad.warnings.length > 0) {
+    console.info(`roster for "${gameId}":`, rosterLoad.warnings);
+  }
+  if (rosterLoad.applied) game = rosterLoad.game;
+
   document.title = game.meta.title;
   $("title").textContent = game.meta.title;
   $("goal").textContent = game.meta.goal;
@@ -151,14 +165,32 @@ async function main(): Promise<void> {
   } catch (err) {
     fail(String(err));
   }
+
+  // Roster art: applyRoster's `spriteDataUrl` doesn't survive the
+  // validateGame round trip above (zod strips unknown keys), so a roster
+  // creature's art travels as a sprite-map overlay instead — decoded here
+  // and merged into games/<id>/sprites.json before the one loadSpriteMap
+  // call below. A creature with no usable art just has no entry, which
+  // SpriteMap already renders as its emoji glyph.
+  let rosterSpriteSpecies: Record<string, string> = {};
+  if (rosterLoad.applied && rosterLoad.roster) {
+    try {
+      const overlay = await applyRosterSprites(loaded, gameId, rosterLoad.roster);
+      rosterSpriteSpecies = overlay.species;
+      if (overlay.warnings.length > 0) console.info(`roster sprites for "${gameId}":`, overlay.warnings);
+    } catch (err) {
+      console.warn(`roster sprites for "${gameId}" failed to load — using glyphs:`, err);
+    }
+  }
+
   // Missing/broken sprites.json degrades to all-emoji rendering.
   const spritesRaw = (await loadSpritesRaw(gameId)) ?? {};
   let spriteMap: SpriteMap;
   try {
-    spriteMap = loadSpriteMap(spritesRaw, loaded);
+    spriteMap = loadSpriteMap(mergeRosterSprites(spritesRaw, rosterSpriteSpecies), loaded);
   } catch (err) {
     console.warn(`games/${gameId}/sprites.json rejected — using emoji glyphs:`, err);
-    spriteMap = loadSpriteMap({}, loaded);
+    spriteMap = loadSpriteMap(mergeRosterSprites({}, rosterSpriteSpecies), loaded);
   }
   statusEl.remove();
 
