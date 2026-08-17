@@ -97,7 +97,7 @@ def lineart(photo: Path, crop: tuple[int, int, int, int] | None, threshold: int,
 
     A phone photo of a sketchbook page is a poor prompt image: warm paper, a
     thumb in frame, spiral binding, and whatever else shares the page. The
-    model spends attention on all of it. This keeps his linework and throws
+    model spends attention on all of it. This keeps her linework and throws
     the rest away.
 
     Deliberately NOT hard-thresholded -- ballpoint line weight varies, and
