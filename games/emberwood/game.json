@@ -1460,7 +1460,7 @@
         "#.====.,..~~...#",
         "#.=,==.,.......#",
         "#......,.......#",
-        "#......,..f....#",
+        ",......,..f....#",
         "#..f...,.......#",
         "#......,,,.....#",
         "#.f......,..f..#",
@@ -1600,6 +1600,13 @@
           "toMap": "kiln-interior",
           "toX": 4,
           "toY": 5
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "toMap": "the-paddock",
+          "toX": 9,
+          "toY": 3
         }
       ]
     },
@@ -1792,6 +1799,60 @@
           "toY": 5
         }
       ]
+    },
+    "the-paddock": {
+      "rows": [
+        "###########",
+        "#.........#",
+        "#..*...*..#",
+        "#.........,",
+        "#..*...*..#",
+        "#.........#",
+        "###########"
+      ],
+      "entities": [
+        {
+          "id": "paddock-hand-nib",
+          "name": "Nib, the paddock-hand",
+          "glyph": "🧑‍🦱",
+          "x": 5,
+          "y": 3,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "This paddock's for the odd ones — kindred that wandered in from nowhere anybody knows. Nobody here asks where from."
+                },
+                {
+                  "type": "say",
+                  "text": "Step into the grass if you like. Whatever's living in it today is still finding its feet, same as you."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 10,
+          "y": 3,
+          "toMap": "kilnhearth",
+          "toX": 1,
+          "toY": 6
+        }
+      ],
+      "encounters": {
+        "rate": 0.15,
+        "table": [
+          {
+            "speciesId": "fuzzle",
+            "minLevel": 1,
+            "maxLevel": 3,
+            "weight": 1
+          }
+        ]
+      }
     },
     "verdant-trail": {
       "rows": [

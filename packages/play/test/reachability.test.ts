@@ -18,8 +18,8 @@ describe("analyzeReachability on Emberwood", () => {
   const report = analyzeReachability(game);
   const byId = Object.fromEntries(report.maps.map((m) => [m.id, m]));
 
-  it("finds all 10 maps optimistically reachable", () => {
-    expect(report.maps).toHaveLength(10);
+  it("finds all 11 maps optimistically reachable", () => {
+    expect(report.maps).toHaveLength(11);
     expect(report.maps.every((m) => m.optimistic)).toBe(true);
     expect(report.unreachableMaps).toEqual([]);
   });
@@ -35,6 +35,9 @@ describe("analyzeReachability on Emberwood", () => {
     expect(byId["ashen-peak"].pessimistic).toBe(false);
     expect(byId["kilnhearth"].pessimistic).toBe(true);
     expect(byId["kiln-interior"].pessimistic).toBe(true);
+    // The Paddock hangs off the start town behind no gate at all — a child
+    // should reach it in seconds, before even choosing a starter.
+    expect(byId["the-paddock"].pessimistic).toBe(true);
     // The Underhearth hangs off the summit behind `hearth_relit`, so the three
     // postgame maps are flag-gated too — that is the point of them.
     expect(report.flagGatedMaps.sort()).toEqual(

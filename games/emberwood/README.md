@@ -14,7 +14,10 @@ npm run validate -- games/emberwood/game.json
 npm run play -- --game games/emberwood/game.json
 ```
 
-Ten maps. Seven above ground: Kilnhearth Village (start, heal-hearth, Biscuit), Maren's Kiln
+Eleven maps. Eight above ground: Kilnhearth Village (start, heal-hearth, Biscuit),
+the Paddock (`the-paddock`, through an unguarded gap in Kilnhearth's west
+wall — Nib the paddock-hand, and a home for studio-made kindred so they never
+dilute the tables below), Maren's Kiln
 (starter choice of Emberling / Puddlit / Sproutle), Verdant Trail (first
 brazier, three Trailhands), Mosshollow Town (market row, Keeper Fern, and
 Wick's bee pasture in the southwest corner, where Flufflehup is common, Ocks

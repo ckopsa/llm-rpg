@@ -35,7 +35,7 @@ described, never explained. Nobody says "quest". Dialogue is short — two
 sentences beats five, and flavor lives in specifics (a cold kettle, a quiet
 beehive) rather than lore dumps.
 
-## Region map (10 maps)
+## Region map (11 maps)
 
 ```
                     [Ashen Peak Summit]  ← Vespera, the Great Hearth
@@ -46,24 +46,31 @@ beehive) rather than lore dumps.
        |                  |
   (wet route,      [Verdant Trail]       ← first route, first brazier
    optional-ish)          |
-                  [Kilnhearth Village]   ← start: Maren's kiln, starter choice
+     [the Paddock] ── [Kilnhearth Village]   ← start: Maren's kiln, starter choice
 ```
 
 1. **Kilnhearth Village** — start. Maren's kiln-house (starter choice of 3),
    heal-hearth, tutorial signposts, Biscuit.
-2. **Verdant Trail** — tall grass, first wild kindred, 2 novice trainers
+2. **the Paddock** — a small pasture through an unguarded gap in Kilnhearth's
+   west wall (map id `the-paddock`), reachable in seconds and gated by
+   nothing. Home for studio-made kindred so they never dilute the curated
+   roster tables above; ships with a single Fuzzle entry (the smallest
+   schema-legal table — `EncounterZoneSchema.table` requires at least one
+   entry, so a true empty table `[]` is not legal) that a future roster
+   overlay replaces. Nib, the paddock-hand, explains the place in two lines.
+3. **Verdant Trail** — tall grass, first wild kindred, 2 novice trainers
    ("Trailhands"), the first cold brazier (relight = story flag + free heal).
-3. **Mosshollow Town** — shop (embersalve, kindling snares, keepers' charm),
+4. **Mosshollow Town** — shop (embersalve, kindling snares, keepers' charm),
    heal-hearth, **Keeper Fern** (grass specialist, brazier badge #1).
-4. **Mistmarsh** — optional-feeling wet route west of Mosshollow: water/grass
+5. **Mistmarsh** — optional-feeling wet route west of Mosshollow: water/grass
    kindred, 1 trainer, a hermit who gives a free Marshwick if your party has
    an open slot and you've relit the Trail brazier.
-5. **Cinder Ascent** — scree switchbacks, fire/rock kindred, 2 trainers,
+6. **Cinder Ascent** — scree switchbacks, fire/rock kindred, 2 trainers,
    **Keeper Bram** (rock specialist, brazier badge #2 — yes, Guard Bram from
    Ironwood, promoted; he remembers the elder's blessing bit and is embarrassed).
-6. **Ashen Peak Summit** — short cutscene walk, then Vespera (4-kindred party).
+7. **Ashen Peak Summit** — short cutscene walk, then Vespera (4-kindred party).
    Gate: requires both brazier flags.
-7. **Maren's Kiln (interior)** — tiny interior map to prove doors/interiors.
+8. **Maren's Kiln (interior)** — tiny interior map to prove doors/interiors.
 
 ### The Underhearth (act two, behind `hearth_relit`)
 
@@ -71,11 +78,11 @@ Relighting the Great Hearth wakes something below it, and a wall of cooled slag
 cracks open at the east end of the summit. Vespera — no longer an opponent —
 waits at the bottom of the stair and will not come further.
 
-8. **Hearth-Mouth** — warm entry cave. Vespera, a hearth-fire to rest at,
+9. **Hearth-Mouth** — warm entry cave. Vespera, a hearth-fire to rest at,
    Deepwarden Tace, first wild Cindercoil and Hollowpuff.
-9. **Ember Veins** — the training ground: lava tubes, Vein-tender Osk,
-   Coalwright Bel, and the region's whole wild table.
-10. **The First Hearth** — one chamber, one creature. Everember has been alone
+10. **Ember Veins** — the training ground: lava tubes, Vein-tender Osk,
+    Coalwright Bel, and the region's whole wild table.
+11. **The First Hearth** — one chamber, one creature. Everember has been alone
     under the mountain since before there were braziers to bank, keeping itself
     small so it would last — which is what Vespera was doing, and neither of
     them could say so out loud. Defeating it ends the game.
@@ -140,7 +147,9 @@ on a route table, and that placement is load-bearing: the verified winning scrip
 `packages/engine/test/emberwood.test.ts`, and adding an entry to any existing
 encounter table reweights the wild draw and desyncs the whole run. New wild
 kindred either get their own untravelled patch, or they come with a rebuilt
-route script.
+route script. The Paddock (map 2, `the-paddock`) is the same trick again: a
+patch the pinned script never sets foot in, off Kilnhearth rather than
+Mosshollow, reserved for whatever a roster overlay adds later.
 
 The patch is a difficulty ladder in one tile-set: Flufflehup ~70% at Lv5-8,
 Ocks ~24% at Lv8-11, Woxeley ~6% at Lv12-15 with a 0.04 catch rate. A player

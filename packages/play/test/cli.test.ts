@@ -69,6 +69,6 @@ describe("playtest --json", () => {
     );
     expect(code).toBe(0); // clean since vespera steps aside (see reachability.test.ts)
     expect(stdout).toContain("== PLAYTEST REPORT ==");
-    expect(stdout).toContain("Maps (optimistic 10/10 reachable, pessimistic 2/10):");
+    expect(stdout).toContain("Maps (optimistic 11/11 reachable, pessimistic 3/11):");
   }, 30_000);
 });

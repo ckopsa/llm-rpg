@@ -8,7 +8,7 @@
     "apps/*"
   ],
   "scripts": {
-    "test": "npm run test --workspace=@llm-rpg/engine && npm run test --workspace=@llm-rpg/play",
+    "test": "npm run test --workspace=@llm-rpg/engine && npm run test --workspace=@llm-rpg/play && npm run test --workspace=@llm-rpg/web",
     "validate": "npm run validate --workspace=@llm-rpg/play --",
     "play": "npm run play --workspace=@llm-rpg/play --",
     "playtest": "npm run playtest --workspace=@llm-rpg/play --",
