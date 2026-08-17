@@ -663,6 +663,52 @@
         "xpYield": 130
       },
       {
+        "id": "woxesley",
+        "name": "Woxesley",
+        "glyph": "🦊",
+        "types": [
+          "fire"
+        ],
+        "baseStats": {
+          "hp": 68,
+          "atk": 86,
+          "def": 60,
+          "spd": 90
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 5,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 9,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 13,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 17,
+            "moveId": "headlong"
+          },
+          {
+            "level": 22,
+            "moveId": "blazeburst"
+          }
+        ],
+        "catchRate": 0.04,
+        "xpYield": 210
+      },
+      {
         "id": "gustwing",
         "name": "Gustwing",
         "glyph": "🐦",
@@ -1929,6 +1975,12 @@
             "minLevel": 8,
             "maxLevel": 11,
             "weight": 1
+          },
+          {
+            "speciesId": "woxesley",
+            "minLevel": 12,
+            "maxLevel": 15,
+            "weight": 0.25
           }
         ]
       }

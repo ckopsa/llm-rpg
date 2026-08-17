@@ -52,6 +52,13 @@ No Nintendo / Pokémon assets are used anywhere in this project.
 - The source photographs live in `games/emberwood/art/sketches/`, gitignored by
   default so publishing a child's drawings stays the family's decision.
 
+## battlers/woxesley.png — original design
+
+- Same origin and standing as `ocks.png` below: designed by the project
+  author's son, supplied colored, converted by `pixelize.py --isolate`.
+- Converted with `--subject 46x70`: it is a tall biped, and the default
+  landscape subject box would have shrunk it to fit a width it never needed.
+
 ## battlers/ocks.png — original design
 
 - Author: designed by the project author's son; supplied already colored, then

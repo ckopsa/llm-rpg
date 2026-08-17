@@ -71,6 +71,17 @@ enforcing rules the art itself would fail.
 Review at **2x**. That is the integer scale the battle screen draws at, and
 things that read fine at 8x fall apart there.
 
+**Tall creatures need `--subject`.** The default subject box is landscape,
+matching the pack. A tall biped fitted into it comes out shrunken and floating;
+pass a taller box so it fills the cell height instead:
+
+```bash
+./pixelize.py source.png out.png --isolate --subject 46x70
+```
+
+`--verify` checks presence by longest side rather than width, so a narrow
+upright creature is not rejected for being narrow.
+
 ## 2. Wire the sprite up
 
 ```jsonc

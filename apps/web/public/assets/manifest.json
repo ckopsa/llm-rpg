@@ -49,6 +49,11 @@
       "src": "/assets/battlers/ocks.png",
       "tileW": 104,
       "tileH": 80
+    },
+    "battlers_woxesley": {
+      "src": "/assets/battlers/woxesley.png",
+      "tileW": 104,
+      "tileH": 80
     }
   },
   "sprites": {
@@ -1354,6 +1359,20 @@
     },
     "ocks": {
       "sheet": "battlers_ocks",
+      "anims": {
+        "idle": {
+          "frames": [
+            [
+              0,
+              0
+            ]
+          ],
+          "fps": 1
+        }
+      }
+    },
+    "woxesley": {
+      "sheet": "battlers_woxesley",
       "anims": {
         "idle": {
           "frames": [

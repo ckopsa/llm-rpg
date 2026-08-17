@@ -68,7 +68,7 @@ beehive) rather than lore dumps.
 Gating flags: `starter_chosen`, `brazier_trail`, `badge_fern`, `badge_bram`,
 `hearth_relit` (win).
 
-## Kindred roster (18 species, 6 types: fire/water/grass/electric/rock/normal)
+## Kindred roster (19 species, 6 types: fire/water/grass/electric/rock/normal)
 
 Starters (from Maren, choose 1 of 3):
 
@@ -97,20 +97,29 @@ Wild/route:
 | 16 | **Ashenmaw** | fire/rock | — | Vespera's ace only; a hearth that learned to walk and chose not to glow |
 | 17 | **Flufflehup** | normal/grass | — | Wick's pasture, the shaggy west corner of Mosshollow; ears up, enormous eyes, and a lightning bolt for a tail |
 | 18 | **Ocks** | water/electric | — | same patch, rarer and bigger; a storm that grew fur — dark face, bar-slit eyes, layered blue coat |
+| 19 | **Woxesley** | fire | — | same patch, rarest of all; a tall striped fox with a flame down its chest. The apex of the pasture and the strongest kindred you can actually catch |
 
 Stat identity: starters balanced; Fuzzle tanky-cute; Gustwing/Hushmoth fast
 and frail; Pebblor line slow walls; Cindertail bulky pivot; Flufflehup light
 and bouncy — quick, soft-hitting, the only grass-type you can catch before the
 marsh; Ocks the slow wall the electric line never had (every other electric is
-fast and frail); Ashenmaw boss-tier bulk + power.
+fast and frail); Woxesley a glass cannon with real bulk, 304 BST — second only
+to Ashenmaw and the strongest thing in any wild table; Ashenmaw boss-tier bulk
++ power.
 
-Flufflehup and Ocks live in their own patch inside town rather than on a
-route table, and that placement is load-bearing: the verified winning script in
+Flufflehup, Ocks and Woxesley live in their own patch inside town rather than
+on a route table, and that placement is load-bearing: the verified winning script in
 `games/emberwood/README.md` is pinned move-for-move by
 `packages/engine/test/emberwood.test.ts`, and adding an entry to any existing
 encounter table reweights the wild draw and desyncs the whole run. New wild
 kindred either get their own untravelled patch, or they come with a rebuilt
 route script.
+
+The patch is a difficulty ladder in one tile-set: Flufflehup ~70% at Lv5-8,
+Ocks ~24% at Lv8-11, Woxesley ~6% at Lv12-15 with a 0.04 catch rate. A player
+arriving at Mosshollow around Lv10-12 can farm the first, fight the second, and
+will lose to the third for a while — which is the point. It is optional, hidden
+and off the critical path, so it can afford to be greedy.
 
 ## Keeper battles (bosses)
 

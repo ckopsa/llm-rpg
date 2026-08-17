@@ -285,8 +285,17 @@ def verify(path: Path, *, colors: int = COLORS, cell: tuple[int, int] = CELL) ->
             f"subject floats {floor_gap}px above the cell floor; battlers stand on it (gap 1-2)"
         )
     w, h = box[2] - box[0], box[3] - box[1]
-    if not (40 <= w <= cell[0] and 30 <= h <= cell[1]):
-        problems.append(f"subject is {w}x{h}; the pack ranges 55x46 to 98x70")
+    # Presence, not width. The pack happens to be landscape, but a tall biped
+    # legitimately comes out narrow (a 0.55 aspect fitted to the cell height is
+    # under 40 wide), and a width floor would reject correct art. What actually
+    # matters is that it carries comparable visual weight and fits the cell.
+    if w > cell[0] or h > cell[1]:
+        problems.append(f"subject is {w}x{h}, larger than the {cell[0]}x{cell[1]} cell")
+    elif max(w, h) < 46:
+        problems.append(
+            f"subject is {w}x{h}; its longest side should reach ~46+ to sit alongside "
+            f"the pack (which ranges 55x46 to 98x70) instead of looking like a distant speck"
+        )
 
     center_off = abs(((box[0] + box[2]) / 2) - cell[0] / 2)
     if center_off > 6:

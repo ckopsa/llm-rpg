@@ -17,8 +17,8 @@ npm run play -- --game games/emberwood/game.json
 Seven maps: Kilnhearth Village (start, heal-hearth, Biscuit), Maren's Kiln
 (starter choice of Emberling / Puddlit / Sproutle), Verdant Trail (first
 brazier, three Trailhands), Mosshollow Town (market row, Keeper Fern, and
-Wick's bee pasture in the southwest corner — the only place Flufflehup
-lives),
+Wick's bee pasture in the southwest corner, where Flufflehup is common, Ocks
+uncommon and Woxesley very rare),
 Mistmarsh (Hermit Sedge's Marshwick, Marsh-hand Odile), Cinder Ascent
 (Vent-tender Mira, Trailhand Rooke, Keeper Bram at the high gate), and
 Ashen Peak (cold braziers, Hushmoths, Vespera).
