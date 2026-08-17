@@ -50,8 +50,8 @@
       "tileW": 104,
       "tileH": 80
     },
-    "battlers_woxesley": {
-      "src": "/assets/battlers/woxesley.png",
+    "battlers_woxeley": {
+      "src": "/assets/battlers/woxeley.png",
       "tileW": 104,
       "tileH": 80
     }
@@ -1371,8 +1371,8 @@
         }
       }
     },
-    "woxesley": {
-      "sheet": "battlers_woxesley",
+    "woxeley": {
+      "sheet": "battlers_woxeley",
       "anims": {
         "idle": {
           "frames": [

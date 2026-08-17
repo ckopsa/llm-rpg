@@ -35,36 +35,36 @@ No Nintendo / Pokémon assets are used anywhere in this project.
   and repacked onto a uniform 104x80 grid (3 columns x 9 rows). Pixel art
   itself is unmodified.
 
-## battlers/fufflehup.png — original design, AI-colored
+## battlers/fufflehup.png — original design by Clark, AI-colored
 
-- Author: designed and drawn on paper by the project author's daughter. No part
-  of it derives from the packs below — the creature and its linework are hers.
+- Author: **Clark** — designed and drawn on paper. No part of it derives from
+  the packs below; the creature and its linework are Clark's.
 - Pipeline: photo → `sketch2sprite.py --lineart` (cleaned line art) → an image
   editing model asked to color it without changing the shapes → `pixelize.py
   --isolate` (104x80, 8 colors, binary alpha).
 - So: **the design and drawing are human; the coloring is machine-assisted.**
   Worth stating precisely, because the two halves have different standing —
   purely AI-generated imagery generally isn't copyrightable, while the
-  underlying drawing is her work.
+  underlying drawing is Clark's work.
 - A fully procedural alternative exists and needs no image model:
   `sketch2sprite.py --features games/emberwood/art/fufflehup.features.json`
   paints the same silhouette from the Emberwood palette.
 - The source photographs live in `games/emberwood/art/sketches/`, gitignored by
-  default so publishing a child's drawings stays the family's decision.
+  default so publishing them stays the artist's decision.
 
-## battlers/woxesley.png — original design
+## battlers/woxeley.png — original design by the project author
 
-- Same origin and standing as `ocks.png` below: designed by the project
-  author's daughter, supplied colored, converted by `pixelize.py --isolate`.
-- Converted with `--subject 46x70`: it is a tall biped, and the default
-  landscape subject box would have shrunk it to fit a width it never needed.
+- Author: **Colton Kopsa** (this project's author). Supplied colored, converted
+  by `pixelize.py --isolate`.
+- Converted with `--subject 46x70`: Woxeley is a tall biped, and the default
+  landscape subject box would have shrunk her to fit a width she never needed.
 
-## battlers/ocks.png — original design
+## battlers/ocks.png — original design by Howie
 
-- Author: designed by the project author's daughter; supplied already colored,
-  then converted by `pixelize.py --isolate` (104x80, 8 colors, binary alpha).
-- Same standing as `fufflehup.png` above: the creature and its design are hers,
-  the rendered artwork is machine-assisted. Source in
+- Author: **Howie** — designed the creature; supplied already colored, then
+  converted by `pixelize.py --isolate` (104x80, 8 colors, binary alpha).
+- Same standing as `fufflehup.png` above: the creature and its design are
+  Howie's, the rendered artwork is machine-assisted. Source in
   `games/emberwood/art/sketches/`, gitignored.
 
 ## battlers/battlers_b.png — "10 Basic RPG enemies" (repacked)
