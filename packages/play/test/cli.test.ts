@@ -67,8 +67,8 @@ describe("playtest --json", () => {
       "--goal",
       "reach",
     );
-    expect(code).toBe(1); // emberwood: great-hearth is un-interactable
+    expect(code).toBe(0); // clean since vespera steps aside (see reachability.test.ts)
     expect(stdout).toContain("== PLAYTEST REPORT ==");
-    expect(stdout).toContain("Maps (optimistic 7/7 reachable, pessimistic 2/7):");
+    expect(stdout).toContain("Maps (optimistic 10/10 reachable, pessimistic 2/10):");
   }, 30_000);
 });

@@ -18,8 +18,8 @@ describe("analyzeReachability on Emberwood", () => {
   const report = analyzeReachability(game);
   const byId = Object.fromEntries(report.maps.map((m) => [m.id, m]));
 
-  it("finds all 7 maps optimistically reachable", () => {
-    expect(report.maps).toHaveLength(7);
+  it("finds all 10 maps optimistically reachable", () => {
+    expect(report.maps).toHaveLength(10);
     expect(report.maps.every((m) => m.optimistic)).toBe(true);
     expect(report.unreachableMaps).toEqual([]);
   });
@@ -35,8 +35,13 @@ describe("analyzeReachability on Emberwood", () => {
     expect(byId["ashen-peak"].pessimistic).toBe(false);
     expect(byId["kilnhearth"].pessimistic).toBe(true);
     expect(byId["kiln-interior"].pessimistic).toBe(true);
+    // The Underhearth hangs off the summit behind `hearth_relit`, so the three
+    // postgame maps are flag-gated too — that is the point of them.
     expect(report.flagGatedMaps.sort()).toEqual(
-      ["ashen-peak", "cinder-ascent", "mistmarsh", "mosshollow", "verdant-trail"].sort(),
+      [
+        "ashen-peak", "cinder-ascent", "mistmarsh", "mosshollow", "verdant-trail",
+        "hearth-mouth", "ember-veins", "first-hearth",
+      ].sort(),
     );
   });
 
@@ -45,14 +50,14 @@ describe("analyzeReachability on Emberwood", () => {
     expect(report.wildZoneIssues).toEqual([]);
   });
 
-  it("pins the one un-interactable entity: the Great Hearth behind Vespera", () => {
-    // Real content quirk: vespera (blocking trainer, no passableWithFlag)
-    // stands on the only walkable tile adjacent to great-hearth, so the
-    // hearth's interactions are dead content — the win fires from vespera's
-    // rewardCommands instead. If the game is fixed (e.g. vespera gets
-    // passableWithFlag), update this to expect [] and verdict "pass".
-    expect(report.unreachableEntities.map((e) => e.id)).toEqual(["great-hearth"]);
-    expect(report.verdict).toBe("fail");
+  it("has no un-interactable entities — the Great Hearth opened up", () => {
+    // This used to pin great-hearth as dead content: vespera blocked the only
+    // walkable tile beside it and never stepped aside. She now carries
+    // passableWithFlag "vespera_stilled" so the Underhearth behind her is
+    // reachable, which incidentally freed the hearth too. The previous version
+    // of this test predicted the fix and asked for exactly this update.
+    expect(report.unreachableEntities).toEqual([]);
+    expect(report.verdict).toBe("pass");
   });
 
   it("runs in milliseconds", () => {

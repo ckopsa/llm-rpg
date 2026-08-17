@@ -285,15 +285,19 @@ describe("the heavenly-court pattern (observed scenes)", () => {
 describe("back-compat pins for shipped games", () => {
   for (const rel of ["games/demo/game.json", "games/emberwood/game.json"]) {
     it(`${rel} validates identically — no new keys materialize in the parsed doc`, () => {
-      const r = validateGame(JSON.parse(readFileSync(`${ROOT}${rel}`, "utf8")));
+      const source = readFileSync(`${ROOT}${rel}`, "utf8");
+      const r = validateGame(JSON.parse(source));
       expect(r.errors).toEqual([]);
       expect(r.warnings).toEqual([]);
       expect(r.ok).toBe(true);
-      // Strictly additive schema: absent optional fields stay absent.
+      // Strictly additive schema: an optional field the SOURCE does not declare
+      // must not materialize in the parsed doc. Checked against the source
+      // rather than hard-coded, so a game legitimately adopting triggers or
+      // variants strengthens this guard instead of breaking it.
       const text = JSON.stringify(r.game);
-      expect(text).not.toContain('"triggers"');
-      expect(text).not.toContain('"variants"');
-      expect(text).not.toContain('"sprite"');
+      for (const key of ['"triggers"', '"variants"', '"sprite"']) {
+        if (!source.includes(key)) expect(text).not.toContain(key);
+      }
       // `win` is the only ending both games define.
       expect(r.endings).toEqual(["victory"]);
     });

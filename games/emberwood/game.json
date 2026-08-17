@@ -3,7 +3,7 @@
     "id": "emberwood",
     "title": "Emberwood",
     "version": "0.1.0",
-    "goal": "Relight the Keeper's road and out-argue Vespera at Ashen Peak to wake the Great Hearth."
+    "goal": "Relight the Keeper's road and out-argue Vespera at Ashen Peak to wake the Great Hearth — then answer whatever wakes up with it."
   },
   "catalog": {
     "typeChart": {
@@ -348,7 +348,7 @@
       {
         "id": "emberling",
         "name": "Emberling",
-        "glyph": "\ud83d\udd25",
+        "glyph": "🔥",
         "types": [
           "fire"
         ],
@@ -394,7 +394,7 @@
       {
         "id": "pyrewyrm",
         "name": "Pyrewyrm",
-        "glyph": "\ud83d\udc09",
+        "glyph": "🐉",
         "types": [
           "fire"
         ],
@@ -432,7 +432,7 @@
       {
         "id": "puddlit",
         "name": "Puddlit",
-        "glyph": "\ud83d\udca7",
+        "glyph": "💧",
         "types": [
           "water"
         ],
@@ -478,7 +478,7 @@
       {
         "id": "torrentide",
         "name": "Torrentide",
-        "glyph": "\ud83c\udf0a",
+        "glyph": "🌊",
         "types": [
           "water"
         ],
@@ -516,7 +516,7 @@
       {
         "id": "sproutle",
         "name": "Sproutle",
-        "glyph": "\ud83c\udf31",
+        "glyph": "🌱",
         "types": [
           "grass"
         ],
@@ -562,7 +562,7 @@
       {
         "id": "bramblore",
         "name": "Bramblore",
-        "glyph": "\ud83c\udf3f",
+        "glyph": "🌿",
         "types": [
           "grass"
         ],
@@ -600,7 +600,7 @@
       {
         "id": "fuzzle",
         "name": "Fuzzle",
-        "glyph": "\ud83d\udc39",
+        "glyph": "🐹",
         "types": [
           "normal"
         ],
@@ -638,7 +638,7 @@
       {
         "id": "flufflehup",
         "name": "Flufflehup",
-        "glyph": "\ud83d\udc30",
+        "glyph": "🐰",
         "types": [
           "psychic"
         ],
@@ -684,7 +684,7 @@
       {
         "id": "ocks",
         "name": "Ocks",
-        "glyph": "\ud83c\udf29",
+        "glyph": "🌩",
         "types": [
           "dark",
           "water"
@@ -731,7 +731,7 @@
       {
         "id": "woxeley",
         "name": "Woxeley",
-        "glyph": "\ud83e\udd8a",
+        "glyph": "🦊",
         "types": [
           "fire"
         ],
@@ -777,7 +777,7 @@
       {
         "id": "gustwing",
         "name": "Gustwing",
-        "glyph": "\ud83d\udc26",
+        "glyph": "🐦",
         "types": [
           "normal",
           "electric"
@@ -820,7 +820,7 @@
       {
         "id": "voltpup",
         "name": "Voltpup",
-        "glyph": "\u26a1",
+        "glyph": "⚡",
         "types": [
           "electric"
         ],
@@ -866,7 +866,7 @@
       {
         "id": "stormhound",
         "name": "Stormhound",
-        "glyph": "\ud83d\udc3a",
+        "glyph": "🐺",
         "types": [
           "electric"
         ],
@@ -908,7 +908,7 @@
       {
         "id": "marshwick",
         "name": "Marshwick",
-        "glyph": "\ud83d\udd6f",
+        "glyph": "🕯",
         "types": [
           "water",
           "grass"
@@ -951,7 +951,7 @@
       {
         "id": "pebblor",
         "name": "Pebblor",
-        "glyph": "\ud83e\udea8",
+        "glyph": "🪨",
         "types": [
           "rock"
         ],
@@ -993,7 +993,7 @@
       {
         "id": "boulderon",
         "name": "Boulderon",
-        "glyph": "\ud83d\uddff",
+        "glyph": "🗿",
         "types": [
           "rock"
         ],
@@ -1031,7 +1031,7 @@
       {
         "id": "cindertail",
         "name": "Cindertail",
-        "glyph": "\ud83e\udd8e",
+        "glyph": "🦎",
         "types": [
           "fire",
           "rock"
@@ -1078,7 +1078,7 @@
       {
         "id": "hushmoth",
         "name": "Hushmoth",
-        "glyph": "\ud83e\udd8b",
+        "glyph": "🦋",
         "types": [
           "normal"
         ],
@@ -1120,7 +1120,7 @@
       {
         "id": "ashenmaw",
         "name": "Ashenmaw",
-        "glyph": "\ud83d\udc32",
+        "glyph": "🐲",
         "types": [
           "fire",
           "rock"
@@ -1159,6 +1159,192 @@
         ],
         "catchRate": 0.05,
         "xpYield": 240
+      },
+      {
+        "id": "cindercoil",
+        "name": "Cindercoil",
+        "glyph": "🪵",
+        "types": [
+          "fire"
+        ],
+        "baseStats": {
+          "hp": 54,
+          "atk": 62,
+          "def": 50,
+          "spd": 66
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 5,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 9,
+            "moveId": "pebbletoss"
+          },
+          {
+            "level": 13,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 17,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 22,
+            "moveId": "blazeburst"
+          }
+        ],
+        "catchRate": 0.3,
+        "xpYield": 120
+      },
+      {
+        "id": "emberclaw",
+        "name": "Emberclaw",
+        "glyph": "🦂",
+        "types": [
+          "fire",
+          "rock"
+        ],
+        "baseStats": {
+          "hp": 62,
+          "atk": 74,
+          "def": 78,
+          "spd": 38
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "pebbletoss"
+          },
+          {
+            "level": 5,
+            "moveId": "brace"
+          },
+          {
+            "level": 9,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 13,
+            "moveId": "screeslide"
+          },
+          {
+            "level": 17,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 22,
+            "moveId": "boulderbash"
+          }
+        ],
+        "catchRate": 0.22,
+        "xpYield": 140
+      },
+      {
+        "id": "hollowpuff",
+        "name": "Hollowpuff",
+        "glyph": "🫧",
+        "types": [
+          "dark"
+        ],
+        "baseStats": {
+          "hp": 48,
+          "atk": 58,
+          "def": 46,
+          "spd": 88
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "shadowlap"
+          },
+          {
+            "level": 5,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 9,
+            "moveId": "softmurmur"
+          },
+          {
+            "level": 13,
+            "moveId": "gloomtide"
+          },
+          {
+            "level": 17,
+            "moveId": "dustkick"
+          },
+          {
+            "level": 22,
+            "moveId": "nightfall"
+          }
+        ],
+        "catchRate": 0.18,
+        "xpYield": 135
+      },
+      {
+        "id": "everember",
+        "name": "Everember",
+        "glyph": "🜂",
+        "types": [
+          "fire",
+          "dark"
+        ],
+        "baseStats": {
+          "hp": 92,
+          "atk": 92,
+          "def": 84,
+          "spd": 70
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "emberflick"
+          },
+          {
+            "level": 1,
+            "moveId": "shadowlap"
+          },
+          {
+            "level": 6,
+            "moveId": "flamejet"
+          },
+          {
+            "level": 11,
+            "moveId": "gloomtide"
+          },
+          {
+            "level": 16,
+            "moveId": "honefangs"
+          },
+          {
+            "level": 20,
+            "moveId": "blazeburst"
+          },
+          {
+            "level": 24,
+            "moveId": "nightfall"
+          }
+        ],
+        "catchRate": 0.03,
+        "xpYield": 300
       }
     ],
     "items": [
@@ -1189,65 +1375,79 @@
         "kind": "capture",
         "ballMod": 1.5,
         "price": 45
+      },
+      {
+        "id": "deepsalve",
+        "name": "Deepsalve",
+        "kind": "heal",
+        "amount": 100,
+        "price": 120
+      },
+      {
+        "id": "hollow-snare",
+        "name": "Hollow Snare",
+        "kind": "capture",
+        "ballMod": 2.2,
+        "price": 200
       }
     ]
   },
   "legend": {
     "#": {
       "name": "tree",
-      "glyph": "\ud83c\udf32",
+      "glyph": "🌲",
       "walkable": false
     },
     ".": {
       "name": "grass",
-      "glyph": "\ud83d\udfe9",
+      "glyph": "🟩",
       "walkable": true
     },
     ",": {
       "name": "path",
-      "glyph": "\ud83d\udfe8",
+      "glyph": "🟨",
       "walkable": true
     },
     "*": {
       "name": "tall grass",
-      "glyph": "\ud83c\udf3f",
+      "glyph": "🌿",
       "walkable": true,
       "wild": true
     },
     "~": {
       "name": "water",
-      "glyph": "\ud83d\udfe6",
+      "glyph": "🟦",
       "walkable": false
     },
     "f": {
       "name": "flowers",
-      "glyph": "\ud83c\udf3c",
+      "glyph": "🌼",
       "walkable": true
     },
     "^": {
       "name": "rock",
-      "glyph": "\u26f0",
+      "glyph": "⛰",
       "walkable": false
     },
     ":": {
       "name": "scree",
-      "glyph": "\ud83d\udfeb",
+      "glyph": "🟫",
       "walkable": true
     },
     "%": {
       "name": "cinder gravel",
-      "glyph": "\ud83c\udf42",
+      "glyph": "🍂",
       "walkable": true,
       "wild": true
     },
     "=": {
       "name": "wall",
-      "glyph": "\ud83e\uddf1",
+      "glyph": "🧱",
       "walkable": false
     },
     "_": {
       "name": "floor",
-      "glyph": "\u2b1c",
+      "glyph": "⬜",
       "walkable": true
     }
   },
@@ -1271,7 +1471,7 @@
         {
           "id": "warden-hollis",
           "name": "Warden Hollis",
-          "glyph": "\ud83d\udc82",
+          "glyph": "💂",
           "x": 7,
           "y": 1,
           "passableWithFlag": "starter_chosen",
@@ -1281,7 +1481,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "That's a good little flame you've got there. North for the Trail \u2014 brazier first, then Mosshollow."
+                  "text": "That's a good little flame you've got there. North for the Trail — brazier first, then Mosshollow."
                 }
               ]
             },
@@ -1289,7 +1489,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "No one walks the Trail without a kindred, love. Maren's kiln is the stone house west \u2014 go choose yours."
+                  "text": "No one walks the Trail without a kindred, love. Maren's kiln is the stone house west — go choose yours."
                 }
               ]
             }
@@ -1298,7 +1498,7 @@
         {
           "id": "hearth-kilnhearth",
           "name": "Kiln-hearth",
-          "glyph": "\ud83d\udd25",
+          "glyph": "🔥",
           "x": 12,
           "y": 5,
           "interactions": [
@@ -1318,7 +1518,7 @@
         {
           "id": "biscuit",
           "name": "Biscuit the dog",
-          "glyph": "\ud83d\udc15",
+          "glyph": "🐕",
           "x": 3,
           "y": 6,
           "blocking": false,
@@ -1336,7 +1536,7 @@
         {
           "id": "villager-petra",
           "name": "Old Petra",
-          "glyph": "\ud83d\udc75",
+          "glyph": "👵",
           "x": 13,
           "y": 3,
           "interactions": [
@@ -1371,7 +1571,7 @@
         {
           "id": "sign-kilnhearth",
           "name": "Village sign",
-          "glyph": "\ud83e\udea7",
+          "glyph": "🪧",
           "x": 5,
           "y": 8,
           "interactions": [
@@ -1379,7 +1579,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "KILNHEARTH \u2014 feed the dog, mind the kettle, keep the fire."
+                  "text": "KILNHEARTH — feed the dog, mind the kettle, keep the fire."
                 }
               ]
             }
@@ -1417,10 +1617,47 @@
         {
           "id": "maren",
           "name": "Elder Maren",
-          "glyph": "\ud83e\uddd9",
+          "glyph": "🧙",
           "x": 4,
           "y": 4,
           "interactions": [
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "party",
+                    "op": "gte",
+                    "value": 6
+                  },
+                  {
+                    "notFlag": "maren_full_party"
+                  }
+                ]
+              },
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Six! I taught forty years and never once filled the whole hearth-side."
+                },
+                {
+                  "type": "set_flag",
+                  "flag": "maren_full_party"
+                },
+                {
+                  "type": "give_item",
+                  "itemId": "deepsalve",
+                  "qty": 3
+                },
+                {
+                  "type": "give_money",
+                  "amount": 1000
+                },
+                {
+                  "type": "say",
+                  "text": "Take these. A full party eats a great deal of salve."
+                }
+              ]
+            },
             {
               "requiresFlag": "starter_chosen",
               "commands": [
@@ -1434,7 +1671,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "The Trail brazier guttered out this morning, and my knees won't make the climb. Three young kindred wait by the north wall \u2014 warm your hands and choose one."
+                  "text": "The Trail brazier guttered out this morning, and my knees won't make the climb. Three young kindred wait by the north wall — warm your hands and choose one."
                 }
               ]
             }
@@ -1443,7 +1680,7 @@
         {
           "id": "pedestal-emberling",
           "name": "Emberling's pedestal",
-          "glyph": "\ud83d\udd6f",
+          "glyph": "🕯",
           "x": 1,
           "y": 2,
           "interactions": [
@@ -1478,7 +1715,7 @@
         {
           "id": "pedestal-puddlit",
           "name": "Puddlit's pedestal",
-          "glyph": "\ud83d\udd6f",
+          "glyph": "🕯",
           "x": 4,
           "y": 2,
           "interactions": [
@@ -1513,7 +1750,7 @@
         {
           "id": "pedestal-sproutle",
           "name": "Sproutle's pedestal",
-          "glyph": "\ud83d\udd6f",
+          "glyph": "🕯",
           "x": 7,
           "y": 2,
           "interactions": [
@@ -1577,7 +1814,7 @@
         {
           "id": "brazier-verdant",
           "name": "Waystone brazier",
-          "glyph": "\ud83c\udfee",
+          "glyph": "🏮",
           "x": 8,
           "y": 7,
           "interactions": [
@@ -1617,7 +1854,7 @@
         {
           "id": "trailhand-petto",
           "name": "Trailhand Petto",
-          "glyph": "\ud83e\udd20",
+          "glyph": "🤠",
           "x": 8,
           "y": 12,
           "trainer": {
@@ -1635,14 +1872,14 @@
             "rewardMoney": 30,
             "intro": "You walk like you've somewhere to be. Nobody's got somewhere to be anymore.",
             "defeatText": "Huh. Maybe somewhere's worth walking to after all.",
-            "outro": "Mind the grass past the bend \u2014 it rustles even when the wind doesn't."
+            "outro": "Mind the grass past the bend — it rustles even when the wind doesn't."
           },
           "interactions": []
         },
         {
           "id": "trailhand-wren",
           "name": "Trailhand Wren",
-          "glyph": "\ud83d\udc52",
+          "glyph": "👒",
           "x": 13,
           "y": 3,
           "trainer": {
@@ -1669,7 +1906,7 @@
                 "qty": 1
               }
             ],
-            "intro": "Hold up \u2014 my two haven't stretched their legs since the frost came.",
+            "intro": "Hold up — my two haven't stretched their legs since the frost came.",
             "defeatText": "Well scrapped. Warm work is good work.",
             "outro": "The brazier went dark on my watch, and I hate that. Glad someone's climbing."
           },
@@ -1678,7 +1915,7 @@
         {
           "id": "trailhand-juna",
           "name": "Trailhand Juna",
-          "glyph": "\ud83e\udde2",
+          "glyph": "🧢",
           "x": 13,
           "y": 5,
           "trainer": {
@@ -1694,7 +1931,7 @@
               "range": 3
             },
             "rewardMoney": 40,
-            "intro": "Shh, you'll scare the voltpup. Ah \u2014 too late, fight me.",
+            "intro": "Shh, you'll scare the voltpup. Ah — too late, fight me.",
             "defeatText": "Fair's fair. The pup likes you, which is annoying.",
             "outro": "Voltpups nest in the east grass. Bring a snare and patience."
           },
@@ -1703,7 +1940,7 @@
         {
           "id": "sign-trail",
           "name": "Trail sign",
-          "glyph": "\ud83e\udea7",
+          "glyph": "🪧",
           "x": 4,
           "y": 12,
           "interactions": [
@@ -1711,7 +1948,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "VERDANT TRAIL \u2014 the grass is lively; travelers keep a snare handy."
+                  "text": "VERDANT TRAIL — the grass is lively; travelers keep a snare handy."
                 }
               ]
             }
@@ -1783,7 +2020,7 @@
         {
           "id": "gatewarden-lise",
           "name": "Gatewarden Lise",
-          "glyph": "\ud83d\udc82",
+          "glyph": "💂",
           "x": 8,
           "y": 1,
           "passableWithFlag": "badge_fern",
@@ -1793,7 +2030,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Fern's mark, plain as morning. The Ascent is open to you \u2014 mind the vents."
+                  "text": "Fern's mark, plain as morning. The Ascent is open to you — mind the vents."
                 }
               ]
             },
@@ -1810,7 +2047,7 @@
         {
           "id": "counter-salve",
           "name": "Salve counter",
-          "glyph": "\ud83e\uddf4",
+          "glyph": "🧴",
           "x": 3,
           "y": 3,
           "interactions": [
@@ -1818,7 +2055,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Embersalve, ten coins the jar \u2014 kiln-warm, mind your fingers."
+                  "text": "Embersalve, ten coins the jar — kiln-warm, mind your fingers."
                 },
                 {
                   "type": "sell",
@@ -1832,7 +2069,7 @@
         {
           "id": "counter-great-salve",
           "name": "Great salve counter",
-          "glyph": "\ud83e\uded9",
+          "glyph": "🫙",
           "x": 6,
           "y": 3,
           "interactions": [
@@ -1840,7 +2077,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Great embersalve, thirty coins \u2014 for the hurt you can't walk off."
+                  "text": "Great embersalve, thirty coins — for the hurt you can't walk off."
                 },
                 {
                   "type": "sell",
@@ -1854,7 +2091,7 @@
         {
           "id": "counter-snare",
           "name": "Snare counter",
-          "glyph": "\ud83e\udea4",
+          "glyph": "🪤",
           "x": 9,
           "y": 3,
           "interactions": [
@@ -1862,7 +2099,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Kindling snares, twenty \u2014 the weave takes best on a tired kindred."
+                  "text": "Kindling snares, twenty — the weave takes best on a tired kindred."
                 },
                 {
                   "type": "sell",
@@ -1876,7 +2113,7 @@
         {
           "id": "counter-warm-snare",
           "name": "Warm snare counter",
-          "glyph": "\ud83e\uddf6",
+          "glyph": "🧶",
           "x": 12,
           "y": 3,
           "interactions": [
@@ -1884,7 +2121,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Warm snares, forty-five \u2014 the good weave, holds heat and patience."
+                  "text": "Warm snares, forty-five — the good weave, holds heat and patience."
                 },
                 {
                   "type": "sell",
@@ -1898,7 +2135,7 @@
         {
           "id": "hearth-mosshollow",
           "name": "Moss-hearth",
-          "glyph": "\ud83d\udd25",
+          "glyph": "🔥",
           "x": 14,
           "y": 7,
           "interactions": [
@@ -1918,7 +2155,7 @@
         {
           "id": "keeper-fern",
           "name": "Keeper Fern",
-          "glyph": "\ud83c\udf3e",
+          "glyph": "🌾",
           "x": 13,
           "y": 9,
           "trainer": {
@@ -1942,7 +2179,7 @@
               }
             ],
             "intro": "Maren sent you? Then show me she taught you more than kindling.",
-            "defeatText": "There it is \u2014 the stubbornness the road needs. Take my mark, and warm snares in place of the charm; the charms won't hold their heat anymore.",
+            "defeatText": "There it is — the stubbornness the road needs. Take my mark, and warm snares in place of the charm; the charms won't hold their heat anymore.",
             "outro": "The marsh folk say the west reeds are lonely. Kindred hate lonely."
           },
           "interactions": []
@@ -1950,7 +2187,7 @@
         {
           "id": "villager-wick",
           "name": "Wick the beekeeper",
-          "glyph": "\ud83e\uddd1\u200d\ud83c\udf3e",
+          "glyph": "🧑‍🌾",
           "x": 3,
           "y": 8,
           "interactions": [
@@ -1959,7 +2196,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "The hives hummed today \u2014 first time since autumn. Whatever you're doing up there, don't stop."
+                  "text": "The hives hummed today — first time since autumn. Whatever you're doing up there, don't stop."
                 }
               ]
             },
@@ -1980,7 +2217,7 @@
                 },
                 {
                   "type": "say",
-                  "text": "My bee pasture west of here is full of Flufflehups \u2014 all ears and eyes and burr-tails. Wade in, they don't bite."
+                  "text": "My bee pasture west of here is full of Flufflehups — all ears and eyes and burr-tails. Wade in, they don't bite."
                 }
               ]
             }
@@ -1989,7 +2226,7 @@
         {
           "id": "sign-mosshollow",
           "name": "Town sign",
-          "glyph": "\ud83e\udea7",
+          "glyph": "🪧",
           "x": 5,
           "y": 6,
           "interactions": [
@@ -1997,7 +2234,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "MOSSHOLLOW \u2014 market row north, Keeper Fern's grove southeast. The hearth is free, always."
+                  "text": "MOSSHOLLOW — market row north, Keeper Fern's grove southeast. The hearth is free, always."
                 }
               ]
             }
@@ -2069,7 +2306,7 @@
         {
           "id": "hermit-sedge",
           "name": "Hermit Sedge",
-          "glyph": "\ud83e\uddd3",
+          "glyph": "🧓",
           "x": 2,
           "y": 4,
           "interactions": [
@@ -2088,7 +2325,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "You smell of woodsmoke \u2014 proper smoke, Trail smoke. Then you'll do."
+                  "text": "You smell of woodsmoke — proper smoke, Trail smoke. Then you'll do."
                 },
                 {
                   "type": "give_species",
@@ -2118,7 +2355,7 @@
         {
           "id": "marshhand-odile",
           "name": "Marsh-hand Odile",
-          "glyph": "\ud83c\udfa3",
+          "glyph": "🎣",
           "x": 5,
           "y": 7,
           "trainer": {
@@ -2154,7 +2391,7 @@
         {
           "id": "quiet-heron",
           "name": "Grey heron",
-          "glyph": "\ud83e\udebf",
+          "glyph": "🪿",
           "x": 11,
           "y": 2,
           "interactions": [
@@ -2217,7 +2454,7 @@
         {
           "id": "keeper-bram",
           "name": "Keeper Bram",
-          "glyph": "\ud83e\uddd4",
+          "glyph": "🧔",
           "x": 8,
           "y": 2,
           "passableWithFlag": "badge_bram",
@@ -2250,7 +2487,7 @@
               }
             ],
             "intro": "Ironwood's gate taught me to stand still; this mountain taught me why. Show me your flame, traveler.",
-            "defeatText": "Ha \u2014 you'd have talked your way past my old gate too. Go up, and don't let the quiet fool you.",
+            "defeatText": "Ha — you'd have talked your way past my old gate too. Go up, and don't let the quiet fool you.",
             "outro": "I still say 'the elder sends her blessing' in my sleep. Don't tell Fern."
           },
           "interactions": []
@@ -2258,7 +2495,7 @@
         {
           "id": "vent-tender-mira",
           "name": "Vent-tender Mira",
-          "glyph": "\ud83e\udde4",
+          "glyph": "🧤",
           "x": 8,
           "y": 4,
           "passableWithFlag": "mira_defeated",
@@ -2284,7 +2521,7 @@
         {
           "id": "trailhand-rooke",
           "name": "Trailhand Rooke",
-          "glyph": "\u26cf",
+          "glyph": "⛏",
           "x": 11,
           "y": 8,
           "trainer": {
@@ -2304,7 +2541,7 @@
               "range": 3
             },
             "rewardMoney": 90,
-            "intro": "Rockfall took the path twice this month. My pebblor and I put it back \u2014 twice.",
+            "intro": "Rockfall took the path twice this month. My pebblor and I put it back — twice.",
             "defeatText": "Solid work. Bram will want a look at you.",
             "outro": "Keeper Bram holds the high gate. Softer than the mountain, but not by much."
           },
@@ -2313,7 +2550,7 @@
         {
           "id": "sign-cinder",
           "name": "Scorched sign",
-          "glyph": "\ud83e\udea7",
+          "glyph": "🪧",
           "x": 4,
           "y": 12,
           "interactions": [
@@ -2321,7 +2558,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "CINDER ASCENT \u2014 the vents run warm underfoot, or used to. Keeper Bram holds the high gate."
+                  "text": "CINDER ASCENT — the vents run warm underfoot, or used to. Keeper Bram holds the high gate."
                 }
               ]
             }
@@ -2387,7 +2624,7 @@
         {
           "id": "vespera",
           "name": "Vespera",
-          "glyph": "\ud83d\udd70",
+          "glyph": "🕰",
           "x": 7,
           "y": 2,
           "trainer": {
@@ -2428,18 +2665,71 @@
                 "flag": "hearth_relit"
               },
               {
-                "type": "win",
-                "text": "You touch the iron to the banked coals and the Great Hearth catches with a sound like the valley exhaling. Morning comes up loud \u2014 birdsong, geyser-hiss, kettles knocking, and far below, Biscuit barking at all of it."
+                "type": "screen_effect",
+                "effect": "flash"
+              },
+              {
+                "type": "play_music",
+                "track": "hearth"
+              },
+              {
+                "type": "show_title",
+                "text": "The Great Hearth",
+                "subtitle": "relit"
+              },
+              {
+                "type": "passage",
+                "lines": [
+                  "You touch the iron to the banked coals and the Great Hearth catches with a sound",
+                  "like the valley exhaling. Morning comes up loud — birdsong, geyser-hiss, kettles",
+                  "knocking, and far below, Biscuit barking at all of it."
+                ]
+              },
+              {
+                "type": "say",
+                "text": "Vespera: \"...that shouldn't be possible. Something down there is answering it.\""
+              },
+              {
+                "type": "screen_effect",
+                "effect": "shake"
+              },
+              {
+                "type": "say",
+                "text": "At the east end of the summit, a wall of cooled slag cracks from the inside."
+              },
+              {
+                "type": "set_objective",
+                "text": "The slag at the east end of the summit has opened. Go down."
               }
             ],
             "intro": "You relit them. Even knowing everything goes out, you relit them."
           },
-          "interactions": []
+          "interactions": [
+            {
+              "requiresFlag": "everember_stilled",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Go home and be loud about it. I will keep the fire honest up here."
+                }
+              ]
+            },
+            {
+              "requiresFlag": "hearth_relit",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "East end. Whatever is down there has been waiting longer than I was."
+                }
+              ]
+            }
+          ],
+          "passableWithFlag": "vespera_stilled"
         },
         {
           "id": "great-hearth",
           "name": "The Great Hearth",
-          "glyph": "\ud83c\udf0b",
+          "glyph": "🌋",
           "x": 7,
           "y": 1,
           "interactions": [
@@ -2456,7 +2746,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "The Great Hearth, banked coal by coal to a whisper. It is not out \u2014 it is waiting."
+                  "text": "The Great Hearth, banked coal by coal to a whisper. It is not out — it is waiting."
                 }
               ]
             }
@@ -2465,7 +2755,7 @@
         {
           "id": "hearth-summit",
           "name": "Keeper's hearth",
-          "glyph": "\ud83d\udd25",
+          "glyph": "🔥",
           "x": 10,
           "y": 4,
           "interactions": [
@@ -2485,7 +2775,7 @@
         {
           "id": "brazier-peak-south",
           "name": "Cold brazier",
-          "glyph": "\ud83c\udfee",
+          "glyph": "🏮",
           "x": 4,
           "y": 8,
           "interactions": [
@@ -2502,7 +2792,7 @@
         {
           "id": "brazier-peak-north",
           "name": "Cold brazier",
-          "glyph": "\ud83c\udfee",
+          "glyph": "🏮",
           "x": 10,
           "y": 6,
           "interactions": [
@@ -2511,6 +2801,33 @@
                 {
                   "type": "say",
                   "text": "Scratched into the rim, old and shallow: 'V & T'. You leave it be."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "slagfall",
+          "name": "Cooled slag",
+          "glyph": "🪨",
+          "x": 11,
+          "y": 2,
+          "passableWithFlag": "hearth_relit",
+          "interactions": [
+            {
+              "requiresFlag": "hearth_relit",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The slag has cracked open. Warm air comes up from somewhere far below."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "A wall of cooled slag, cold as everything else up here."
                 }
               ]
             }
@@ -2524,6 +2841,13 @@
           "toMap": "cinder-ascent",
           "toX": 7,
           "toY": 1
+        },
+        {
+          "x": 12,
+          "y": 2,
+          "toMap": "hearth-mouth",
+          "toX": 7,
+          "toY": 7
         }
       ],
       "encounters": {
@@ -2537,10 +2861,519 @@
           }
         ]
       }
+    },
+    "hearth-mouth": {
+      "rows": [
+        "==============",
+        "=_____,______=",
+        "=_==_====_==_=",
+        "=_=__%%%%__=_=",
+        "=____%%%%____=",
+        "=_=__%%%%__=_=",
+        "=_==_====_==_=",
+        "=____________=",
+        "======_,_=====",
+        "=============="
+      ],
+      "entities": [
+        {
+          "id": "vespera-below",
+          "name": "Vespera",
+          "glyph": "🕰",
+          "x": 4,
+          "y": 7,
+          "interactions": [
+            {
+              "requiresFlag": "everember_stilled",
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "It sleeps warm instead of cold. That is all any of us wanted."
+                }
+              ]
+            },
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "I banked the Hearth for years and never once came down here. I was afraid of what I'd find still burning."
+                },
+                {
+                  "type": "choice",
+                  "prompt": "Ask Vespera:",
+                  "options": [
+                    {
+                      "label": "What is down there?",
+                      "commands": [
+                        {
+                          "type": "say",
+                          "text": "The first fire. Older than the braziers, older than Keepers. It has been alone a long time."
+                        },
+                        {
+                          "type": "set_objective",
+                          "text": "Go down through the ember veins and find the first fire."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Come with me.",
+                      "commands": [
+                        {
+                          "type": "say",
+                          "text": "No. You relit them; you should be the one it meets."
+                        },
+                        {
+                          "type": "say",
+                          "text": "But take this. It was my snare, once, and I was better at catching than at keeping."
+                        },
+                        {
+                          "type": "give_item",
+                          "itemId": "hollow-snare",
+                          "qty": 3
+                        },
+                        {
+                          "type": "set_objective",
+                          "text": "Go down through the ember veins and find the first fire."
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Are you all right?",
+                      "commands": [
+                        {
+                          "type": "say",
+                          "text": "No. But I am warm, and the difference turns out to matter."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mouth-hearth",
+          "name": "Hearth-fire",
+          "glyph": "🔥",
+          "x": 10,
+          "y": 7,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "The fire here has never once gone out."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "deepwarden-tace",
+          "name": "Deepwarden Tace",
+          "glyph": "💂",
+          "x": 3,
+          "y": 4,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "cindercoil",
+                "level": 24
+              },
+              {
+                "speciesId": "emberclaw",
+                "level": 25
+              }
+            ],
+            "defeatFlag": "tace_defeated",
+            "lineOfSight": {
+              "dir": "east",
+              "range": 3
+            },
+            "rewardMoney": 400,
+            "intro": "Nobody comes down here. You're either lost or you're the one who relit it.",
+            "defeatText": "The one who relit it, then.",
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "deepsalve",
+                "qty": 2
+              }
+            ]
+          },
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Keep to the veins. The heat reads your intentions."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 7,
+          "y": 8,
+          "toMap": "ashen-peak",
+          "toX": 10,
+          "toY": 2
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "toMap": "ember-veins",
+          "toX": 8,
+          "toY": 11
+        }
+      ],
+      "encounters": {
+        "rate": 0.16,
+        "table": [
+          {
+            "speciesId": "cindercoil",
+            "minLevel": 20,
+            "maxLevel": 23,
+            "weight": 3
+          },
+          {
+            "speciesId": "hollowpuff",
+            "minLevel": 20,
+            "maxLevel": 23,
+            "weight": 2
+          }
+        ]
+      },
+      "triggers": [
+        {
+          "id": "arrive",
+          "on": "enter",
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The Hearth-Mouth",
+              "subtitle": "under the Great Hearth"
+            },
+            {
+              "type": "play_music",
+              "track": "underhearth"
+            },
+            {
+              "type": "say",
+              "text": "Warm air moves up past you, going the wrong way for a cave."
+            },
+            {
+              "type": "set_objective",
+              "text": "Explore the Underhearth. Talk to Vespera."
+            }
+          ]
+        }
+      ]
+    },
+    "ember-veins": {
+      "rows": [
+        "==================",
+        "=________,_______=",
+        "=_%%%%__==__%%%%_=",
+        "=_%%%%__==__%%%%_=",
+        "=________________=",
+        "=__==__%%%%__==__=",
+        "=__==__%%%%__==__=",
+        "=________________=",
+        "=_%%%%__==__%%%%_=",
+        "=_%%%%__==__%%%%_=",
+        "=________________=",
+        "========_,_======="
+      ],
+      "entities": [
+        {
+          "id": "vein-tender-osk",
+          "name": "Vein-tender Osk",
+          "glyph": "🧑‍🌾",
+          "x": 2,
+          "y": 4,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "hollowpuff",
+                "level": 26
+              },
+              {
+                "speciesId": "cindercoil",
+                "level": 26
+              }
+            ],
+            "defeatFlag": "osk_defeated",
+            "lineOfSight": {
+              "dir": "east",
+              "range": 2
+            },
+            "rewardMoney": 500,
+            "intro": "Mind the dark ones. They don't bite. They just make you forget why you came.",
+            "defeatText": "Ha! You remembered."
+          },
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Straight up the middle and you'll reach the old chamber."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "coalwright-bel",
+          "name": "Coalwright Bel",
+          "glyph": "💂",
+          "x": 14,
+          "y": 7,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "emberclaw",
+                "level": 27
+              },
+              {
+                "speciesId": "hollowpuff",
+                "level": 27
+              },
+              {
+                "speciesId": "cindercoil",
+                "level": 28
+              }
+            ],
+            "defeatFlag": "bel_defeated",
+            "lineOfSight": {
+              "dir": "west",
+              "range": 3
+            },
+            "rewardMoney": 700,
+            "intro": "Everyone stops here. Nobody's gone past me yet.",
+            "defeatText": "Somebody has now.",
+            "rewardCommands": [
+              {
+                "type": "give_item",
+                "itemId": "hollow-snare",
+                "qty": 2
+              }
+            ]
+          },
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Go on up. It's been waiting longer than any of us."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "veins-hearth",
+          "name": "Bank of coals",
+          "glyph": "🔥",
+          "x": 16,
+          "y": 1,
+          "interactions": [
+            {
+              "commands": [
+                {
+                  "type": "say",
+                  "text": "Someone banked these coals neatly, a long time ago."
+                },
+                {
+                  "type": "heal_party"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "portals": [
+        {
+          "x": 9,
+          "y": 11,
+          "toMap": "hearth-mouth",
+          "toX": 7,
+          "toY": 1
+        },
+        {
+          "x": 9,
+          "y": 1,
+          "toMap": "first-hearth",
+          "toX": 6,
+          "toY": 6
+        }
+      ],
+      "encounters": {
+        "rate": 0.2,
+        "table": [
+          {
+            "speciesId": "cindercoil",
+            "minLevel": 22,
+            "maxLevel": 25,
+            "weight": 3
+          },
+          {
+            "speciesId": "hollowpuff",
+            "minLevel": 22,
+            "maxLevel": 25,
+            "weight": 2
+          },
+          {
+            "speciesId": "emberclaw",
+            "minLevel": 23,
+            "maxLevel": 26,
+            "weight": 2
+          }
+        ]
+      },
+      "triggers": [
+        {
+          "id": "arrive",
+          "on": "enter",
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The Ember Veins"
+            },
+            {
+              "type": "say",
+              "text": "The tubes glow faintly from within, like something breathing slowly."
+            },
+            {
+              "type": "set_objective",
+              "text": "Climb the ember veins to the old chamber at the top."
+            }
+          ]
+        }
+      ]
+    },
+    "first-hearth": {
+      "rows": [
+        "============",
+        "=__________=",
+        "=__________=",
+        "=_========_=",
+        "=__________=",
+        "=_========_=",
+        "=____,_____=",
+        "============"
+      ],
+      "entities": [
+        {
+          "id": "everember",
+          "name": "Everember",
+          "glyph": "🜂",
+          "x": 5,
+          "y": 1,
+          "trainer": {
+            "party": [
+              {
+                "speciesId": "cindercoil",
+                "level": 26
+              },
+              {
+                "speciesId": "hollowpuff",
+                "level": 26
+              },
+              {
+                "speciesId": "emberclaw",
+                "level": 27
+              },
+              {
+                "speciesId": "everember",
+                "level": 28
+              }
+            ],
+            "defeatFlag": "everember_stilled",
+            "rewardMoney": 2000,
+            "intro": "...",
+            "defeatText": "......",
+            "rewardCommands": [
+              {
+                "type": "screen_effect",
+                "effect": "flash"
+              },
+              {
+                "type": "passage",
+                "title": "The First Hearth",
+                "lines": [
+                  "It had been alone under the mountain since before there were braziers to bank,",
+                  "keeping itself small so that it would last.",
+                  "That is what Vespera had been doing too, in her way, and neither of them",
+                  "had been able to say so out loud.",
+                  "You bank your own fire beside it, the way you were taught on the first morning,",
+                  "and leave it burning at a size it does not have to be careful about."
+                ]
+              },
+              {
+                "type": "set_objective",
+                "text": ""
+              },
+              {
+                "type": "win",
+                "text": "The Underhearth comes up bright behind you all the way to the surface, and the valley — already awake — gets warmer without anyone being able to say why."
+              }
+            ]
+          }
+        }
+      ],
+      "portals": [
+        {
+          "x": 5,
+          "y": 6,
+          "toMap": "ember-veins",
+          "toX": 10,
+          "toY": 1
+        }
+      ],
+      "triggers": [
+        {
+          "id": "arrive",
+          "on": "enter",
+          "commands": [
+            {
+              "type": "show_title",
+              "text": "The First Hearth"
+            },
+            {
+              "type": "camera_focus",
+              "x": 5,
+              "y": 1
+            },
+            {
+              "type": "say",
+              "text": "Something enormous is banked at the far end of the chamber, glowing low."
+            },
+            {
+              "type": "say",
+              "text": "It does not speak. It banks itself lower, the way a dog lowers its head, and the whole chamber dims."
+            },
+            {
+              "type": "set_objective",
+              "text": "Meet the first fire."
+            },
+            {
+              "type": "camera_focus",
+              "release": true
+            }
+          ]
+        }
+      ]
     }
   },
   "player": {
-    "glyph": "\ud83d\ude42",
+    "glyph": "🙂",
     "map": "kilnhearth",
     "x": 9,
     "y": 10,

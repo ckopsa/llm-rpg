@@ -27,7 +27,8 @@ export type Tile = z.infer<typeof TileSchema>;
  *  - { flag } / { notFlag }        — boolean flag tests
  *  - { var, op, value }            — compare a variable against a number or
  *    string. A missing var reads as 0 for number comparisons and "" for
- *    string comparisons. "money" is a built-in readable var (player money).
+ *    string comparisons. "money" and "party" are built-in readable vars
+ *    (player money; number of kindred in the party).
  *  - { all } / { any } / { not }   — composition (arbitrarily nested)
  * `requiresFlag`/`forbidsFlag` on interactions remain as sugar and are ANDed
  * with `when`.
@@ -65,6 +66,11 @@ export interface WhenContext {
   flags: readonly string[];
   vars: Readonly<Record<string, number | string>>;
   money: number;
+  /** Party size. Built-in and read-only, like `money` — the sim owns it, so a
+   *  game can gate on "how many kindred are you carrying?" without having to
+   *  mirror every catch, gift and release into a var by hand. Absent in older
+   *  callers; treated as 0. */
+  party?: number;
 }
 
 function compareSame(op: WhenOp, a: number | string, b: number | string): boolean {
@@ -94,7 +100,10 @@ export function evalWhen(ctx: WhenContext, when: When): boolean {
   if ("all" in when) return when.all.every((w) => evalWhen(ctx, w));
   if ("any" in when) return when.any.some((w) => evalWhen(ctx, w));
   if ("not" in when) return !evalWhen(ctx, when.not);
-  const raw = when.var === "money" ? ctx.money : ctx.vars[when.var];
+  const raw =
+    when.var === "money" ? ctx.money
+    : when.var === "party" ? (ctx.party ?? 0)
+    : ctx.vars[when.var];
   const actual = raw ?? (typeof when.value === "number" ? 0 : "");
   if (typeof actual !== typeof when.value) return when.op === "ne";
   return compareSame(when.op, actual, when.value);
@@ -655,7 +664,8 @@ export function validateGame(data: unknown): ValidationResult {
     else if ("all" in when) when.all.forEach(collectWhen);
     else if ("any" in when) when.any.forEach(collectWhen);
     else if ("not" in when) collectWhen(when.not);
-    else if (when.var !== "money") varReads.add(when.var); // "money" is built-in
+    // "money" and "party" are built-in reads, never authored as vars.
+    else if (when.var !== "money" && when.var !== "party") varReads.add(when.var);
   };
 
   // Cross-list bookkeeping for the new narrative commands: entity references
@@ -704,6 +714,11 @@ export function validateGame(data: unknown): ValidationResult {
         if (cmd.var === "money") {
           errors.push(
             `${label}[${j}]: "money" is the built-in money counter and can't be written as a var — use give_money (or sell) to change money, or pick another var name`,
+          );
+        }
+        if (cmd.var === "party") {
+          errors.push(
+            `${label}[${j}]: "party" is the built-in party-size counter and can't be written as a var — it follows the party itself (give_species, catching, releasing), or pick another var name`,
           );
         }
         varWrites.add(cmd.var);

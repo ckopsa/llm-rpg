@@ -35,7 +35,7 @@ described, never explained. Nobody says "quest". Dialogue is short — two
 sentences beats five, and flavor lives in specifics (a cold kettle, a quiet
 beehive) rather than lore dumps.
 
-## Region map (7 maps)
+## Region map (10 maps)
 
 ```
                     [Ashen Peak Summit]  ← Vespera, the Great Hearth
@@ -65,10 +65,31 @@ beehive) rather than lore dumps.
    Gate: requires both brazier flags.
 7. **Maren's Kiln (interior)** — tiny interior map to prove doors/interiors.
 
-Gating flags: `starter_chosen`, `brazier_trail`, `badge_fern`, `badge_bram`,
-`hearth_relit` (win).
+### The Underhearth (act two, behind `hearth_relit`)
 
-## Kindred roster (19 species, 8 types: fire/water/grass/electric/rock/normal/psychic/dark)
+Relighting the Great Hearth wakes something below it, and a wall of cooled slag
+cracks open at the east end of the summit. Vespera — no longer an opponent —
+waits at the bottom of the stair and will not come further.
+
+8. **Hearth-Mouth** — warm entry cave. Vespera, a hearth-fire to rest at,
+   Deepwarden Tace, first wild Cindercoil and Hollowpuff.
+9. **Ember Veins** — the training ground: lava tubes, Vein-tender Osk,
+   Coalwright Bel, and the region's whole wild table.
+10. **The First Hearth** — one chamber, one creature. Everember has been alone
+    under the mountain since before there were braziers to bank, keeping itself
+    small so it would last — which is what Vespera was doing, and neither of
+    them could say so out loud. Defeating it ends the game.
+
+Difficulty is deliberate and measured: a party arriving straight from Vespera
+(~Lv 20) beats Everember **0%** of the time, ~15% at Lv 24, ~80% at Lv 28. The
+veins exist to close that gap.
+
+Gating flags: `starter_chosen`, `brazier_trail`, `badge_fern`, `badge_bram`,
+`hearth_relit` (opens the descent), `everember_stilled` (win). Vespera carries
+`passableWithFlag: vespera_stilled` — she stands in the summit's only corridor,
+and her defeat text always said she steps aside.
+
+## Kindred roster (23 species, 8 types: fire/water/grass/electric/rock/normal/psychic/dark)
 
 Kindred 17-19 were designed by Clark, Howie and Colton respectively; credit
 per-creature is recorded in `apps/web/public/assets/LICENSES.md`.
@@ -101,6 +122,10 @@ Wild/route:
 | 17 | **Flufflehup** | psychic | — | *designed by Clark.* Wick's pasture, the shaggy west corner of Mosshollow; ears up, enormous eyes, and a lightning bolt for a tail |
 | 18 | **Ocks** | dark/water | — | *designed by Howie.* Same patch, rarer and bigger; a storm that grew fur — dark face, bar-slit eyes, layered blue coat |
 | 19 | **Woxeley** | fire | — | *designed by Colton.* Same patch, rarest of all; a tall striped vixen with a flame down her chest. The apex of the pasture and the strongest kindred you can actually catch — she/her |
+| 20 | **Cindercoil** | fire | — | Underhearth; a coil of living ember, common in the tubes |
+| 21 | **Emberclaw** | fire/rock | — | Underhearth; a scorpion of hot stone, slow and armoured |
+| 22 | **Hollowpuff** | dark | — | Underhearth; the Hush that got underground. Fast, frail, gives `dark` a second inhabitant |
+| 23 | **Everember** | fire/dark | — | the First Hearth's own fire, and the end of the story. 338 BST, boss only |
 
 Stat identity: starters balanced; Fuzzle tanky-cute; Gustwing/Hushmoth fast
 and frail; Pebblor line slow walls; Cindertail bulky pivot; Flufflehup light

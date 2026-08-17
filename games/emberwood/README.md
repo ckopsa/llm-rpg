@@ -14,7 +14,7 @@ npm run validate -- games/emberwood/game.json
 npm run play -- --game games/emberwood/game.json
 ```
 
-Seven maps: Kilnhearth Village (start, heal-hearth, Biscuit), Maren's Kiln
+Ten maps. Seven above ground: Kilnhearth Village (start, heal-hearth, Biscuit), Maren's Kiln
 (starter choice of Emberling / Puddlit / Sproutle), Verdant Trail (first
 brazier, three Trailhands), Mosshollow Town (market row, Keeper Fern, and
 Wick's bee pasture in the southwest corner, where Flufflehup is common, Ocks
@@ -23,21 +23,40 @@ Mistmarsh (Hermit Sedge's Marshwick, Marsh-hand Odile), Cinder Ascent
 (Vent-tender Mira, Trailhand Rooke, Keeper Bram at the high gate), and
 Ashen Peak (cold braziers, Hushmoths, Vespera).
 
+...and three below it. Out-arguing Vespera relights the Great Hearth, and
+something under the mountain answers: a wall of cooled slag cracks open at the
+east end of the summit onto **the Underhearth** — the Hearth-Mouth, the Ember
+Veins, and the chamber of the First Hearth. That is where the game now ends.
+
 Gating: `starter_chosen` opens the village gate, the relit Trail brazier
 (`brazier_trail`) earns Sedge's trust, `badge_fern` opens the Ascent,
-`badge_bram` opens the summit, and Vespera's defeat relights the Hearth.
+`badge_bram` opens the summit, `hearth_relit` opens the descent, and
+`everember_stilled` ends the story.
 
-## Verified winning action script
+## The Underhearth (post-Vespera)
+
+You arrive around Lv 20 against Lv 24-28 content, with a hearth-fire at the
+entrance and wild kindred in the veins to train on — Cindercoil, Emberclaw and
+Hollowpuff, none of which live above ground. Measured win rates against
+Everember, the fire at the bottom: **0% at Lv 20, ~15% at Lv 24, ~80% at Lv 28.**
+It is meant to be trained for.
+
+## Verified action script — the surface story
 
 The engine is deterministic: the CLI always seeds its RNG with **seed 1**, so
-the script below replays move-for-move from a fresh start to `*** YOU WIN ***`.
-It is **1251 actions** (well under the 2000-step budget). Verified with:
+the script below replays move-for-move from a fresh start to the relighting of
+the Great Hearth at turn 1242. It is **1251 actions**.
+
+It no longer ends the game — it ends the first act. The Underhearth below is
+pinned separately by `packages/engine/test/underhearth.test.ts`, because
+scripting the grind it needs would add several thousand actions to a file
+nobody would read. Verified with:
 
 ```bash
 npm run play -- --game games/emberwood/game.json --actions "<script below>"
 ```
 
-Route summary: pick Emberling → beat Petto → relight the Trail brazier → catch
+Route summary (ends with the Hearth relit and the descent open): pick Emberling → beat Petto → relight the Trail brazier → catch
 a Fuzzle → grind to Lv 10 → beat Wren and Juna → shop in Mosshollow → take
 Sedge's Marshwick and beat Odile → beat Keeper Fern (Lv 12 Emberling +
 salves) → grind Marshwick to 14 in the marsh → beat Rooke and Mira → catch a
@@ -45,7 +64,8 @@ wild Cindertail with warm snares → Marshwick 16 → beat Keeper Bram (Riptide
 sweeps his rock line) → grind Cindertail 17 / Marshwick 20 on Hushmoths at the
 summit hearth → Vespera: Cindertail walls Stormhound (electric immune),
 Dust Kick shreds Boulderon and Ashenmaw for Marshwick's Tidal Crush, and
-Cindertail lands the last Scree Slide at 10 HP.
+Cindertail lands the last Scree Slide at 10 HP, the Hearth catches, and the
+slag cracks open behind her.
 
 ```
 n n w w n n n w w w w n i w w n n n i s s s e e s e e e e n n n n n n n e e 

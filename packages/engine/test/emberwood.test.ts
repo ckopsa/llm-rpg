@@ -22,27 +22,47 @@ function loadGame(rel: string): Game {
   return result.game!;
 }
 
-describe("emberwood beatability", () => {
-  it("the README's verified script wins at turn 1242", () => {
-    // The script lives in the README's third code fence so that content edits
-    // which invalidate the documented run fail this test rather than silently
-    // shipping a README that lies.
-    const readme = readFileSync(join(ROOT, "games/emberwood/README.md"), "utf8");
-    const fences = [...readme.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1]);
-    expect(fences.length).toBeGreaterThanOrEqual(3);
-    const words = fences[2].split(/[\s,]+/).filter(Boolean);
-    expect(words.length).toBe(1251);
+/** Replay the README's verified script and hand back the sim it produced. */
+function runVerifiedScript(): Sim {
+  // The script lives in the README's third code fence so that content edits
+  // which invalidate the documented run fail this test rather than silently
+  // shipping a README that lies.
+  const readme = readFileSync(join(ROOT, "games/emberwood/README.md"), "utf8");
+  const fences = [...readme.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1]);
+  expect(fences.length).toBeGreaterThanOrEqual(3);
+  const words = fences[2].split(/[\s,]+/).filter(Boolean);
+  expect(words.length).toBe(1251);
 
-    const game = loadGame("games/emberwood/game.json");
-    const sim = new Sim(game, 1); // the CLI's default seed
-    for (const [i, word] of words.entries()) {
-      const action = parseAction(word);
-      expect(action, `script word ${i + 1} ("${word}") is not a valid action`).toBeDefined();
-      sim.act(action!);
-      if (sim.state.won) break;
-    }
-    expect(sim.state.won).toBe(true);
+  const game = loadGame("games/emberwood/game.json");
+  const sim = new Sim(game, 1); // the CLI's default seed
+  for (const [i, word] of words.entries()) {
+    const action = parseAction(word);
+    expect(action, `script word ${i + 1} ("${word}") is not a valid action`).toBeDefined();
+    sim.act(action!);
+    if (sim.state.won) break;
+  }
+  return sim;
+}
+
+describe("emberwood beatability", () => {
+  it("the README's verified script relights the Great Hearth at turn 1242", () => {
+    const sim = runVerifiedScript();
+    expect(sim.state.flags).toContain("vespera_stilled");
+    expect(sim.state.flags).toContain("hearth_relit");
     expect(sim.state.turn).toBe(1242);
+    // Vespera is no longer the end of the game — she is the door to the
+    // Underhearth, so the same 1242 turns now finish an act, not the story.
+    expect(sim.state.won).toBe(false);
+    expect(sim.state.objective).toContain("slag");
+  });
+
+  it("relighting opens the descent, which Vespera was standing in front of", () => {
+    const sim = runVerifiedScript();
+    // Row 2 is the summit's only east-west corridor and she stands in it; her
+    // defeat text says she steps aside, so she had better actually do it.
+    for (let i = 0; i < 7; i++) sim.act(parseAction("east")!);
+    expect(sim.state.map).toBe("hearth-mouth");
+    expect(sim.state.objective).toContain("Underhearth");
   });
 });
 

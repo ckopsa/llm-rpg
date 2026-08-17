@@ -485,7 +485,12 @@ export class Sim {
 
   /** The context `when` conditions evaluate against. */
   private whenCtx(): WhenContext {
-    return { flags: this.state.flags, vars: this.state.vars, money: this.state.money };
+    return {
+      flags: this.state.flags,
+      vars: this.state.vars,
+      money: this.state.money,
+      party: this.state.party.length,
+    };
   }
 
   /** Whether an interaction's gates (requiresFlag/forbidsFlag sugar ANDed

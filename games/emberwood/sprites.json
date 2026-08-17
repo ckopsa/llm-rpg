@@ -31,7 +31,11 @@
     "hushmoth": "battler_23",
     "ashenmaw": "battler_27",
     "ocks": "ocks",
-    "woxeley": "woxeley"
+    "woxeley": "woxeley",
+    "cindercoil": "battler_05",
+    "emberclaw": "battler_16",
+    "hollowpuff": "battler_24",
+    "everember": "battler_06"
   },
   "entities": {
     "maren": "elder",
