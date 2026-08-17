@@ -187,6 +187,21 @@ const STAT_LABEL: Record<keyof StatStages, string> = {
   spd: "Spd",
 };
 
+/**
+ * Index of the first combatant that can actually fight.
+ *
+ * A battle used to open on slot 0 unconditionally, so a fainted lead with a
+ * healthy creature behind it started the fight already down: `needsSwitch` is
+ * only set when someone faints DURING a battle, so nothing forced the switch
+ * and nothing explained it — your attack silently did nothing while the enemy
+ * hit a corpse. Falls back to 0 for an all-fainted party, which callers reject
+ * before it gets here.
+ */
+function firstAble(party: readonly Combatant[]): number {
+  const i = party.findIndex((c) => c.hp > 0);
+  return i < 0 ? 0 : i;
+}
+
 export class Battle {
   readonly catalog: Catalog;
   readonly state: BattleState;
@@ -205,8 +220,8 @@ export class Battle {
     this.enemyAi = opts.enemyAi ?? randomEnemyAi;
     this.state = opts.state ?? {
       mode: opts.mode,
-      player: { party: opts.playerParty, active: 0, stages: freshStages() },
-      enemy: { party: opts.enemyParty, active: 0, stages: freshStages() },
+      player: { party: opts.playerParty, active: firstAble(opts.playerParty), stages: freshStages() },
+      enemy: { party: opts.enemyParty, active: firstAble(opts.enemyParty), stages: freshStages() },
       outcome: "ongoing",
       round: 0,
       needsSwitch: false,

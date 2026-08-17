@@ -31,7 +31,7 @@ server.tool(
 
 server.tool(
   "act",
-  "Take one action in the game. Overworld: north/south/east/west/interact. Pending dialogue choice: choose1..choose9. Battle: move1..move4, switch1..switch6, item1..item9, catch, run.",
+  "Take one action in the game. Overworld: north/south/east/west/interact, plus lead1..lead6 to promote a party slot to the front (battles always open with slot 1; an in-battle switch does not reorder). Pending dialogue choice: choose1..choose9. Battle: move1..move4, switch1..switch6, item1..item9, catch, run.",
   {
     action: z.enum([
       "north", "south", "east", "west", "interact",

@@ -15,8 +15,21 @@ interface PauseItem {
   action: () => void;
 }
 
+/** One party member as the pause panel needs to show it. */
+export interface PausePartyMember {
+  name: string;
+  level: number;
+  hp: number;
+  maxHp: number;
+}
+
 export interface PauseHooks {
   gameId(): string;
+  /** The player's kindred, lead first. Empty (or absent) hides the section —
+   *  a catalog-free narrative game has no party to arrange. */
+  party?(): PausePartyMember[];
+  /** Promote party slot `index` to the lead; returns a short human message. */
+  onLead?(index: number): string;
   /** Read-aloud settings, when the browser can speak. Absent = no rows. */
   narration?: {
     enabled(): boolean;
@@ -133,6 +146,24 @@ export class PausePanel {
         action: () => this.hide(),
       },
     ];
+    // Party first: this is the only place the lineup can be changed, and the
+    // lead is the creature every battle opens with.
+    const party = this.hooks.party?.() ?? [];
+    party.forEach((member, i) => {
+      const fainted = member.hp <= 0;
+      const detail = `Lv ${member.level} · ${fainted ? "fainted" : `${member.hp}/${member.maxHp} HP`}`;
+      items.push({
+        label: i === 0 ? `★ ${member.name} — leading` : `　 ${member.name}`,
+        detail,
+        enabled: i !== 0 && !!this.hooks.onLead,
+        reason: i === 0 ? `${member.name} already leads every battle.` : "",
+        action: () => {
+          this.note = this.hooks.onLead?.(i) ?? "";
+          this.render();
+        },
+      });
+    });
+
     for (const slot of MANUAL_SLOTS) {
       const peek = peekSlot(gameId, slot);
       items.push({

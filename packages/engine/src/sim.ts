@@ -28,6 +28,9 @@ export type Action =
   | { type: "move"; dir: Direction }
   | { type: "interact" }
   | { type: "choose"; index: number }
+  /** Make party slot `index` the lead, swapping it with slot 0. Bookkeeping,
+   *  not a world beat: it costs an action but ticks no `turn` triggers. */
+  | { type: "party_lead"; index: number }
   | { type: "battle_move"; index: number }
   | { type: "battle_switch"; index: number }
   | { type: "battle_item"; index: number }
@@ -551,6 +554,9 @@ export class Sim {
       case "choose":
         advanced = this.doChoose(action.index, events);
         break;
+      case "party_lead":
+        this.doPartyLead(action.index, events);
+        break;
       default:
         this.doBattleAction(action, events);
         break;
@@ -563,6 +569,46 @@ export class Sim {
     }
     this.state.lastEvents = events;
     return events;
+  }
+
+  /**
+   * Reorder the party by promoting slot `index` to the lead.
+   *
+   * Battles always open with slot 1, and an in-battle `switch` only moves an
+   * index inside that battle — the party order itself never changed, so before
+   * this action the lineup was whatever order you happened to catch things in,
+   * permanently. Swapping with the lead is enough to reach any arrangement.
+   *
+   * Deliberately NOT a world beat: no `turn` triggers fire, because sorting
+   * your own pockets is not something the world should get to react to.
+   */
+  private doPartyLead(index: number, events: string[]): void {
+    const party = this.state.party;
+    if (party.length === 0) {
+      events.push("You have no kindred to arrange.");
+      return;
+    }
+    if (index < 0 || index >= party.length) {
+      events.push(
+        party.length === 1
+          ? "You only have one kindred — it already leads."
+          : `There is no party member in slot ${index + 1} — valid: lead1..lead${party.length}.`,
+      );
+      return;
+    }
+    if (index === 0) {
+      events.push(`${this.speciesName(party[0])} is already leading.`);
+      return;
+    }
+    const promoted = party[index];
+    [party[0], party[index]] = [party[index], party[0]];
+    events.push(`${this.speciesName(promoted)} moves to the front of your party.`);
+  }
+
+  private speciesName(c: { speciesId: string }): string {
+    return this.game.catalog
+      ? speciesById(this.game.catalog, c.speciesId).name
+      : c.speciesId;
   }
 
   /** Returns whether the player actually moved (a blocked move does not tick). */
@@ -772,7 +818,10 @@ export class Sim {
   }
 
   private doBattleAction(
-    action: Exclude<Action, { type: "move" } | { type: "interact" } | { type: "choose" }>,
+    action: Exclude<
+      Action,
+      { type: "move" } | { type: "interact" } | { type: "choose" } | { type: "party_lead" }
+    >,
     events: string[],
   ): void {
     const battle = this.battleObj!;
@@ -788,7 +837,10 @@ export class Sim {
    */
   private toBattleAction(
     battle: Battle,
-    action: Exclude<Action, { type: "move" } | { type: "interact" } | { type: "choose" }>,
+    action: Exclude<
+      Action,
+      { type: "move" } | { type: "interact" } | { type: "choose" } | { type: "party_lead" }
+    >,
     events: string[],
   ): PlayerAction | null {
     switch (action.type) {
@@ -1470,5 +1522,7 @@ export function parseAction(input: string): Action | undefined {
   if (m) return { type: "battle_item", index: Number(m[1]) - 1 };
   m = /^(?:choose|o)([1-9])$/.exec(word);
   if (m) return { type: "choose", index: Number(m[1]) - 1 };
+  m = /^lead([1-6])$/.exec(word);
+  if (m) return { type: "party_lead", index: Number(m[1]) - 1 };
   return undefined;
 }

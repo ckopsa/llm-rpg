@@ -197,6 +197,8 @@ export function actionWord(a: Action): string {
       return "interact";
     case "choose":
       return `choose${a.index + 1}`;
+    case "party_lead":
+      return `lead${a.index + 1}`;
     case "battle_move":
       return `move${a.index + 1}`;
     case "battle_switch":

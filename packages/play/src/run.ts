@@ -217,7 +217,7 @@ export function runScript(
   for (const word of words) {
     const action = parseAction(word);
     if (!action) {
-      stopped = `unknown action "${word}" at step ${executed + 1} — valid: north south east west interact choose1..9 | move1..4 switch1..6 item1..9 catch run`;
+      stopped = `unknown action "${word}" at step ${executed + 1} — valid: north south east west interact choose1..9 lead1..6 | move1..4 switch1..6 item1..9 catch run`;
       break;
     }
     executed += 1;

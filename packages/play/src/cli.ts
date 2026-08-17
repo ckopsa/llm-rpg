@@ -50,7 +50,7 @@ if (actions !== undefined) {
     const action = parseAction(word);
     if (!action) {
       console.error(
-        `Unknown action "${word}". Valid: north south east west interact choose1..9 | move1..4 switch1..6 item1..9 catch run`,
+        `Unknown action "${word}". Valid: north south east west interact choose1..9 lead1..6 | move1..4 switch1..6 item1..9 catch run`,
       );
       process.exit(1);
     }
@@ -90,7 +90,7 @@ if (actions !== undefined) {
     const action = parseAction(cmd);
     if (!action) {
       console.log(
-        "Valid actions: north south east west interact (n/s/e/w/i) | choice: choose1..9 (o1..o9) | battle: move1..4 switch1..6 item1..9 catch run | save [slot] load [slot] quit",
+        "Valid actions: north south east west interact (n/s/e/w/i) | party: lead1..6 (promote a slot to the front) | choice: choose1..9 (o1..o9) | battle: move1..4 switch1..6 item1..9 catch run | save [slot] load [slot] quit",
       );
       continue;
     }

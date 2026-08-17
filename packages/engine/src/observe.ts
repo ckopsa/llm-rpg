@@ -110,7 +110,10 @@ export function describe(sim: Sim): string {
     pc.options.forEach((o, i) => lines.push(`  ${i + 1}) ${o.label}`));
     lines.push(`Actions: choose1..choose${pc.options.length}`);
   } else {
-    lines.push("Actions: north | south | east | west | interact");
+    // Reordering is only worth mentioning when there is something to reorder;
+    // it is the only way to change who leads a battle.
+    const lead = state.party.length > 1 ? ` | lead2..lead${state.party.length}` : "";
+    lines.push(`Actions: north | south | east | west | interact${lead}`);
   }
   return lines.join("\n");
 }

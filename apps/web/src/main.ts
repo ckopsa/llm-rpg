@@ -490,6 +490,24 @@ async function main(): Promise<void> {
 
   const pause = new PausePanel(pauseEl, {
     gameId: () => game.meta.id,
+    party: () =>
+      world.sim.state.party.map((c) => ({
+        // Off the live sim, not the module-scope game: a language overlay
+        // swaps the game object, and the panel must show the overlaid names.
+        name:
+          world.sim.game.catalog?.species.find((s) => s.id === c.speciesId)?.name ??
+          c.speciesId,
+        level: c.level,
+        hp: c.hp,
+        maxHp: c.maxHp,
+      })),
+    onLead: (index: number) => {
+      // Through act() like every other input, so the engine owns the rules
+      // (rejected in battle, no `turn` triggers, one canonical event string).
+      const events = world.sim.act({ type: "party_lead", index });
+      refreshHud();
+      return events[events.length - 1] ?? "";
+    },
     onSave: (slot: SlotId) => {
       const res = writeSlot(game.meta.id, slot, world.sim);
       return res.ok ? `Saved to slot ${slot}. The fire will keep.` : res.error;
