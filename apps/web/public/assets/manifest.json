@@ -39,6 +39,16 @@
       "src": "/assets/zelda-like/tallgrass.png",
       "tileW": 16,
       "tileH": 16
+    },
+    "battlers_fufflehup": {
+      "src": "/assets/battlers/fufflehup.png",
+      "tileW": 104,
+      "tileH": 80
+    },
+    "battlers_ocks": {
+      "src": "/assets/battlers/ocks.png",
+      "tileW": 104,
+      "tileH": 80
     }
   },
   "sprites": {
@@ -1321,6 +1331,34 @@
           "frames": [
             [
               6,
+              0
+            ]
+          ],
+          "fps": 1
+        }
+      }
+    },
+    "fufflehup": {
+      "sheet": "battlers_fufflehup",
+      "anims": {
+        "idle": {
+          "frames": [
+            [
+              0,
+              0
+            ]
+          ],
+          "fps": 1
+        }
+      }
+    },
+    "ocks": {
+      "sheet": "battlers_ocks",
+      "anims": {
+        "idle": {
+          "frames": [
+            [
+              0,
               0
             ]
           ],

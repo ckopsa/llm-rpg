@@ -35,6 +35,31 @@ No Nintendo / Pokémon assets are used anywhere in this project.
   and repacked onto a uniform 104x80 grid (3 columns x 9 rows). Pixel art
   itself is unmodified.
 
+## battlers/fufflehup.png — original design, AI-colored
+
+- Author: designed and drawn on paper by the project author's son. No part of
+  it derives from the packs below — the creature and its linework are his.
+- Pipeline: photo → `sketch2sprite.py --lineart` (cleaned line art) → an image
+  editing model asked to color it without changing the shapes → `pixelize.py
+  --isolate` (104x80, 8 colors, binary alpha).
+- So: **the design and drawing are human; the coloring is machine-assisted.**
+  Worth stating precisely, because the two halves have different standing —
+  purely AI-generated imagery generally isn't copyrightable, while the
+  underlying drawing is his work.
+- A fully procedural alternative exists and needs no image model:
+  `sketch2sprite.py --features games/emberwood/art/fufflehup.features.json`
+  paints the same silhouette from the Emberwood palette.
+- The source photographs live in `games/emberwood/art/sketches/`, gitignored by
+  default so publishing a child's drawings stays the family's decision.
+
+## battlers/ocks.png — original design
+
+- Author: designed by the project author's son; supplied already colored, then
+  converted by `pixelize.py --isolate` (104x80, 8 colors, binary alpha).
+- Same standing as `fufflehup.png` above: the creature and its design are his,
+  the rendered artwork is machine-assisted. Source in
+  `games/emberwood/art/sketches/`, gitignored.
+
 ## battlers/battlers_b.png — "10 Basic RPG enemies" (repacked)
 
 - Author: Stephen Challener (Redshrike)

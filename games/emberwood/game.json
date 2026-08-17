@@ -569,6 +569,100 @@
         "xpYield": 70
       },
       {
+        "id": "flufflehup",
+        "name": "Flufflehup",
+        "glyph": "🐰",
+        "types": [
+          "normal",
+          "grass"
+        ],
+        "baseStats": {
+          "hp": 52,
+          "atk": 44,
+          "def": 46,
+          "spd": 74
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "leaflash"
+          },
+          {
+            "level": 5,
+            "moveId": "quickstep"
+          },
+          {
+            "level": 9,
+            "moveId": "dustkick"
+          },
+          {
+            "level": 13,
+            "moveId": "thornwhip"
+          },
+          {
+            "level": 17,
+            "moveId": "softmurmur"
+          },
+          {
+            "level": 22,
+            "moveId": "bramblecrash"
+          }
+        ],
+        "catchRate": 0.5,
+        "xpYield": 90
+      },
+      {
+        "id": "ocks",
+        "name": "Ocks",
+        "glyph": "🌩",
+        "types": [
+          "water",
+          "electric"
+        ],
+        "baseStats": {
+          "hp": 66,
+          "atk": 60,
+          "def": 68,
+          "spd": 42
+        },
+        "learnset": [
+          {
+            "level": 1,
+            "moveId": "bonk"
+          },
+          {
+            "level": 1,
+            "moveId": "puddlepop"
+          },
+          {
+            "level": 5,
+            "moveId": "brace"
+          },
+          {
+            "level": 9,
+            "moveId": "sparklesnap"
+          },
+          {
+            "level": 13,
+            "moveId": "riptide"
+          },
+          {
+            "level": 17,
+            "moveId": "staticjolt"
+          },
+          {
+            "level": 22,
+            "moveId": "stormcoil"
+          }
+        ],
+        "catchRate": 0.28,
+        "xpYield": 130
+      },
+      {
         "id": "gustwing",
         "name": "Gustwing",
         "glyph": "🐦",
@@ -1569,8 +1663,8 @@
         "#................#",
         "#................#",
         "#..........##,##.#",
-        "#..........#...#.#",
-        "#..........#####.#",
+        "#***.......#...#.#",
+        "#***.......#####.#",
         "########,#########"
       ],
       "entities": [
@@ -1771,6 +1865,10 @@
                 {
                   "type": "say",
                   "text": "Quiet hives. Bees don't hum when they're cold, and nothing's colder than this spring."
+                },
+                {
+                  "type": "say",
+                  "text": "My bee pasture west of here is full of Flufflehups — all ears and eyes and burr-tails. Wade in, they don't bite."
                 }
               ]
             }
@@ -1816,7 +1914,24 @@
           "toX": 7,
           "toY": 12
         }
-      ]
+      ],
+      "encounters": {
+        "rate": 0.2,
+        "table": [
+          {
+            "speciesId": "flufflehup",
+            "minLevel": 5,
+            "maxLevel": 8,
+            "weight": 3
+          },
+          {
+            "speciesId": "ocks",
+            "minLevel": 8,
+            "maxLevel": 11,
+            "weight": 1
+          }
+        ]
+      }
     },
     "mistmarsh": {
       "rows": [

@@ -68,7 +68,7 @@ beehive) rather than lore dumps.
 Gating flags: `starter_chosen`, `brazier_trail`, `badge_fern`, `badge_bram`,
 `hearth_relit` (win).
 
-## Kindred roster (16 species, 6 types: fire/water/grass/electric/rock/normal)
+## Kindred roster (18 species, 6 types: fire/water/grass/electric/rock/normal)
 
 Starters (from Maren, choose 1 of 3):
 
@@ -95,10 +95,22 @@ Wild/route:
 | 14 | **Cindertail** | fire/rock | — | Cinder Ascent; salamander of warm gravel |
 | 15 | **Hushmoth** | normal | — | appears only near cold braziers; fast, eerie, hard to catch — the Hush made visible |
 | 16 | **Ashenmaw** | fire/rock | — | Vespera's ace only; a hearth that learned to walk and chose not to glow |
+| 17 | **Flufflehup** | normal/grass | — | Wick's pasture, the shaggy west corner of Mosshollow; ears up, enormous eyes, and a lightning bolt for a tail |
+| 18 | **Ocks** | water/electric | — | same patch, rarer and bigger; a storm that grew fur — dark face, bar-slit eyes, layered blue coat |
 
 Stat identity: starters balanced; Fuzzle tanky-cute; Gustwing/Hushmoth fast
-and frail; Pebblor line slow walls; Cindertail bulky pivot; Ashenmaw boss-tier
-bulk + power.
+and frail; Pebblor line slow walls; Cindertail bulky pivot; Flufflehup light
+and bouncy — quick, soft-hitting, the only grass-type you can catch before the
+marsh; Ocks the slow wall the electric line never had (every other electric is
+fast and frail); Ashenmaw boss-tier bulk + power.
+
+Flufflehup and Ocks live in their own patch inside town rather than on a
+route table, and that placement is load-bearing: the verified winning script in
+`games/emberwood/README.md` is pinned move-for-move by
+`packages/engine/test/emberwood.test.ts`, and adding an entry to any existing
+encounter table reweights the wild draw and desyncs the whole run. New wild
+kindred either get their own untravelled patch, or they come with a rebuilt
+route script.
 
 ## Keeper battles (bosses)
 

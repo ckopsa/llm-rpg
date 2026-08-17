@@ -1,0 +1,328 @@
+{
+  "_": "Fufflehup, designed and drawn by hand; silhouette taken from the sketch, features read off the silhouette grid (sketch2sprite.py --grid) and drawn at 44x56.",
+  "photo": "sketches/fufflehup.jpg",
+  "crop": [
+    300,
+    1100,
+    1900,
+    2800
+  ],
+  "bridge": 14,
+  "threshold": 210,
+  "subject": [
+    62,
+    56
+  ],
+  "light": [
+    0.28,
+    0.2
+  ],
+  "bands": [
+    0.1,
+    0.45,
+    0.3
+  ],
+  "colors": 8,
+  "draw": [
+    {
+      "_": "tail: the darkest mass on the page, so it gets its own tone",
+      "op": "rect",
+      "box": [
+        0,
+        41,
+        9,
+        50
+      ],
+      "fill": "deep"
+    },
+    {
+      "op": "point",
+      "points": [
+        [
+          1,
+          43
+        ],
+        [
+          4,
+          42
+        ],
+        [
+          7,
+          45
+        ],
+        [
+          3,
+          47
+        ],
+        [
+          6,
+          48
+        ]
+      ],
+      "fill": "ink"
+    },
+    {
+      "_": "arms: a 1px seam is all there is room for, but it separates limb from ball",
+      "op": "arc",
+      "box": [
+        5,
+        22,
+        17,
+        42
+      ],
+      "start": 100,
+      "end": 260,
+      "fill": "shade"
+    },
+    {
+      "op": "arc",
+      "box": [
+        32,
+        24,
+        43,
+        44
+      ],
+      "start": 280,
+      "end": 80,
+      "fill": "shade"
+    },
+    {
+      "_": "belly patch",
+      "op": "rounded_rect",
+      "box": [
+        12,
+        36,
+        30,
+        46
+      ],
+      "radius": 4,
+      "fill": "light",
+      "outline": "shade"
+    },
+    {
+      "_": "belly underside",
+      "op": "line",
+      "points": [
+        [
+          15,
+          45
+        ],
+        [
+          27,
+          45
+        ]
+      ],
+      "fill": "shade"
+    },
+    {
+      "_": "ear insides",
+      "op": "ellipse",
+      "box": [
+        13,
+        6,
+        16,
+        11
+      ],
+      "fill": "ink"
+    },
+    {
+      "op": "ellipse",
+      "box": [
+        39,
+        7,
+        41,
+        11
+      ],
+      "fill": "ink"
+    },
+    {
+      "_": "mouth: wide and low, the boldest mark in the drawing",
+      "op": "rounded_rect",
+      "box": [
+        18,
+        31,
+        31,
+        33
+      ],
+      "radius": 1,
+      "fill": "ink"
+    },
+    {
+      "op": "point",
+      "points": [
+        [
+          22,
+          34
+        ],
+        [
+          27,
+          34
+        ]
+      ],
+      "fill": "ink"
+    },
+    {
+      "_": "eyes: oversized, which is the whole character of the design",
+      "op": "ellipse",
+      "box": [
+        17,
+        19,
+        23,
+        26
+      ],
+      "fill": "ink"
+    },
+    {
+      "_": "lids",
+      "op": "line",
+      "points": [
+        [
+          18,
+          18
+        ],
+        [
+          22,
+          18
+        ]
+      ],
+      "fill": "shade"
+    },
+    {
+      "op": "point",
+      "points": [
+        [
+          18,
+          20
+        ],
+        [
+          19,
+          20
+        ]
+      ],
+      "fill": "glint"
+    },
+    {
+      "op": "ellipse",
+      "box": [
+        31,
+        21,
+        38,
+        29
+      ],
+      "fill": "ink"
+    },
+    {
+      "op": "point",
+      "points": [
+        [
+          32,
+          22
+        ],
+        [
+          33,
+          22
+        ]
+      ],
+      "fill": "glint"
+    },
+    {
+      "_": "toes",
+      "op": "line",
+      "points": [
+        [
+          13,
+          50
+        ],
+        [
+          13,
+          51
+        ]
+      ],
+      "fill": "ink"
+    },
+    {
+      "op": "line",
+      "points": [
+        [
+          15,
+          50
+        ],
+        [
+          15,
+          51
+        ]
+      ],
+      "fill": "ink"
+    },
+    {
+      "op": "line",
+      "points": [
+        [
+          35,
+          49
+        ],
+        [
+          35,
+          50
+        ]
+      ],
+      "fill": "ink"
+    },
+    {
+      "op": "line",
+      "points": [
+        [
+          37,
+          49
+        ],
+        [
+          37,
+          50
+        ]
+      ],
+      "fill": "ink"
+    },
+    {
+      "_": "lid, right eye",
+      "op": "line",
+      "points": [
+        [
+          32,
+          20
+        ],
+        [
+          37,
+          20
+        ]
+      ],
+      "fill": "shade"
+    },
+    {
+      "_": "mouth corners",
+      "op": "point",
+      "points": [
+        [
+          18,
+          34
+        ],
+        [
+          19,
+          34
+        ],
+        [
+          30,
+          34
+        ],
+        [
+          31,
+          34
+        ]
+      ],
+      "fill": "ink"
+    }
+  ],
+  "shading": "form",
+  "palette": {
+    "burr": "#8C7A4F"
+  }
+}

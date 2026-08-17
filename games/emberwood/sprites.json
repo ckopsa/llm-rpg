@@ -20,6 +20,7 @@
     "sproutle": "battler_01",
     "bramblore": "battler_25",
     "fuzzle": "battler_14",
+    "flufflehup": "fufflehup",
     "gustwing": "battler_09",
     "voltpup": "battler_20",
     "stormhound": "battler_19",
@@ -28,7 +29,8 @@
     "boulderon": "battler_28",
     "cindertail": "battler_12",
     "hushmoth": "battler_23",
-    "ashenmaw": "battler_27"
+    "ashenmaw": "battler_27",
+    "ocks": "ocks"
   },
   "entities": {
     "maren": "elder",
