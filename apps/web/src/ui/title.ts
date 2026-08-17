@@ -19,6 +19,9 @@ export interface TitleHooks {
   onContinue(): void;
   /** Navigate to another game (usually a page reload with ?game=id). */
   onChooseGame(id: string): void;
+  /** Open the Creature Studio. Omitted for games with no catalog —
+   *  a narrative game has no creatures to make. */
+  onStudio?(): void;
   /** Lazy game listing for the chooser view. */
   listGames(): Promise<GameListing[]>;
   /** Any interaction sound. */
@@ -157,6 +160,16 @@ export class TitleScreen {
         action: () => this.hooks.onContinue(),
       },
       ...this.languageItems(),
+      ...(this.hooks.onStudio
+        ? [
+            {
+              label: "Creature Studio",
+              detail: "make one of your own",
+              enabled: true,
+              action: () => this.hooks.onStudio!(),
+            },
+          ]
+        : []),
       {
         label: "Choose Game",
         enabled: true,

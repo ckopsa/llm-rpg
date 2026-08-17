@@ -37,7 +37,7 @@ import {
 import { loadManifest } from "./render/manifest";
 import { Renderer } from "./render/renderer";
 import { loadSpriteMap, type SpriteMap } from "./render/spriteMap";
-import { applyRosterSprites, loadRosterOverlay, mergeRosterSprites } from "./roster";
+import { applyRosterSprites, loadRosterOverlay, mergeRosterSprites, readRoster, writeRoster } from "./roster";
 import { hasAnySave, newestSlot, readSlot, writeSlot, type SlotId } from "./saves";
 import { BattleView } from "./ui/battle";
 import { ChoiceMenu } from "./ui/choice";
@@ -49,6 +49,7 @@ import { OverworldView, presentableEvents, type WorldHolder } from "./ui/overwor
 import { PassagePane, type Passage } from "./ui/passage";
 import { PausePanel } from "./ui/pause";
 import { Controls } from "./ui/controls";
+import { StudioScreen } from "./ui/studio";
 import { TitleScreen } from "./ui/title";
 
 const OVERWORLD_HELP =
@@ -480,6 +481,33 @@ async function main(): Promise<void> {
   const titleEl = $("title-screen");
   const pauseEl = $("pause");
 
+  // Creature Studio: a child builds a kindred, it is written to the roster
+  // overlay, and a reload picks it up through the same path a language overlay
+  // takes. Reloading is honest here — the studio is only reachable from the
+  // title screen, so there is no play session to lose.
+  const studio = new StudioScreen($("studio"), {
+    game: () => game,
+    gameId: () => gameId,
+    loaded: () => loaded,
+    spritesDoc: () => spritesRaw,
+    existingRoster: () => {
+      const read = readRoster(gameId);
+      return read.ok ? read.roster : null;
+    },
+    save: (roster) => {
+      const res = writeRoster(gameId, roster);
+      if (!res.ok) return res.error;
+      window.location.reload();
+      return null;
+    },
+    onClose: () => {
+      studio.hide();
+      titleScreen.show(game.meta.title, game.meta.goal, gameId, hasAnySave(game.meta.id));
+    },
+    ...menuSfx,
+    speak: (text) => narrator.say(text),
+  });
+
   const titleScreen = new TitleScreen(titleEl, {
     onNewGame: () => {
       world.sim = new Sim(game);
@@ -498,6 +526,16 @@ async function main(): Promise<void> {
     onChooseGame: (id) => {
       window.location.search = `?game=${encodeURIComponent(id)}`;
     },
+    // Offered only when the game has creatures at all — a catalog-free
+    // narrative game has nothing for a studio to make.
+    ...(game.catalog
+      ? {
+          onStudio: () => {
+            titleScreen.hide();
+            studio.show();
+          },
+        }
+      : {}),
     listGames: () => gamesLister(),
     ...menuSfx,
       speak: (text: string) => narrator.say(text),
@@ -682,6 +720,12 @@ async function main(): Promise<void> {
     if (passagePane.open) {
       // A passage owns the stage: everything but mute waits until it closes.
       if (passagePane.handleKey(ev)) ev.preventDefault();
+      return;
+    }
+    if (studio.visible) {
+      // The studio owns the screen. It returns false while its name field has
+      // focus, so typed characters reach the input instead of being swallowed.
+      if (studio.handleKey(ev)) ev.preventDefault();
       return;
     }
     if (mode === "title") {

@@ -932,3 +932,105 @@ body {
 
 /* A battle owns the whole stage — the overworld objective would only clutter it. */
 .battle-mode #objective { display: none; }
+
+/* ---- Creature Studio ---------------------------------------------------- */
+/* Sits over the title screen inside the stage, so it scales with everything
+   else (the stage is a fixed 768x576 design surface; see main.ts). */
+#studio {
+  position: absolute;
+  inset: 0;
+  background: #2b2118;
+  color: #f3e6c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+}
+#studio.hidden { display: none; }
+
+.studio-inner {
+  width: 100%;
+  height: 100%;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.studio-head {
+  margin: 0;
+  font-size: 18px;
+  color: #ffcf7a;
+  text-align: center;
+}
+
+.studio-body {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  min-height: 0;
+}
+
+.studio-preview {
+  width: 230px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+/* The preview box is a fixed size so the row list never reflows as bodies of
+   different heights cycle past. */
+.studio-canvas {
+  width: 208px;
+  height: 160px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: #1c2331;
+  border: 2px solid #6b5636;
+  font-size: 64px;
+  line-height: 1;
+}
+.studio-canvas canvas { image-rendering: pixelated; }
+
+.studio-points { margin: 0; font-size: 12px; color: #b09570; }
+
+/* Scrolls, because the move list grows with the chosen type. */
+.studio-rows {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  min-width: 0;
+}
+
+.studio-rows li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.studio-label { flex: 1; }
+.studio-val { color: #ffcf7a; }
+.studio-arrows { color: #b09570; font-size: 11px; }
+
+.studio-name-input {
+  width: 130px;
+  font: inherit;
+  font-size: 13px;
+  padding: 1px 4px;
+  background: #f3e6c8;
+  color: #2b2118;
+  border: 2px solid #6b5636;
+}
+
+.studio-note {
+  margin: 0;
+  min-height: 16px;
+  font-size: 12px;
+  color: #ffb4a2;
+}
