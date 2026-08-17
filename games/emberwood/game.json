@@ -13,14 +13,17 @@
         "grass",
         "electric",
         "rock",
-        "normal"
+        "normal",
+        "psychic",
+        "dark"
       ],
       "effectiveness": {
         "fire": {
           "fire": 0.5,
           "water": 0.5,
           "grass": 2,
-          "rock": 0.5
+          "rock": 0.5,
+          "dark": 2
         },
         "water": {
           "fire": 2,
@@ -47,6 +50,16 @@
         },
         "normal": {
           "rock": 0.5
+        },
+        "psychic": {
+          "normal": 2,
+          "psychic": 0.5,
+          "dark": 0
+        },
+        "dark": {
+          "psychic": 2,
+          "dark": 0.5,
+          "fire": 0.5
         }
       }
     },
@@ -275,13 +288,67 @@
         "power": 85,
         "accuracy": 0.8,
         "pp": 8
+      },
+      {
+        "id": "inkling",
+        "name": "Inkling",
+        "type": "psychic",
+        "category": "special",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "mindseye",
+        "name": "Mind's Eye",
+        "type": "psychic",
+        "category": "special",
+        "power": 60,
+        "accuracy": 1,
+        "pp": 15
+      },
+      {
+        "id": "reverie",
+        "name": "Reverie",
+        "type": "psychic",
+        "category": "special",
+        "power": 85,
+        "accuracy": 0.9,
+        "pp": 8
+      },
+      {
+        "id": "shadowlap",
+        "name": "Shadow Lap",
+        "type": "dark",
+        "category": "physical",
+        "power": 40,
+        "accuracy": 1,
+        "pp": 25
+      },
+      {
+        "id": "gloomtide",
+        "name": "Gloomtide",
+        "type": "dark",
+        "category": "special",
+        "power": 60,
+        "accuracy": 1,
+        "pp": 15
+      },
+      {
+        "id": "nightfall",
+        "name": "Nightfall",
+        "type": "dark",
+        "category": "special",
+        "power": 85,
+        "accuracy": 0.9,
+        "pp": 8
       }
     ],
     "species": [
       {
         "id": "emberling",
         "name": "Emberling",
-        "glyph": "🔥",
+        "glyph": "\ud83d\udd25",
         "types": [
           "fire"
         ],
@@ -327,7 +394,7 @@
       {
         "id": "pyrewyrm",
         "name": "Pyrewyrm",
-        "glyph": "🐉",
+        "glyph": "\ud83d\udc09",
         "types": [
           "fire"
         ],
@@ -365,7 +432,7 @@
       {
         "id": "puddlit",
         "name": "Puddlit",
-        "glyph": "💧",
+        "glyph": "\ud83d\udca7",
         "types": [
           "water"
         ],
@@ -411,7 +478,7 @@
       {
         "id": "torrentide",
         "name": "Torrentide",
-        "glyph": "🌊",
+        "glyph": "\ud83c\udf0a",
         "types": [
           "water"
         ],
@@ -449,7 +516,7 @@
       {
         "id": "sproutle",
         "name": "Sproutle",
-        "glyph": "🌱",
+        "glyph": "\ud83c\udf31",
         "types": [
           "grass"
         ],
@@ -495,7 +562,7 @@
       {
         "id": "bramblore",
         "name": "Bramblore",
-        "glyph": "🌿",
+        "glyph": "\ud83c\udf3f",
         "types": [
           "grass"
         ],
@@ -533,7 +600,7 @@
       {
         "id": "fuzzle",
         "name": "Fuzzle",
-        "glyph": "🐹",
+        "glyph": "\ud83d\udc39",
         "types": [
           "normal"
         ],
@@ -571,10 +638,9 @@
       {
         "id": "flufflehup",
         "name": "Flufflehup",
-        "glyph": "🐰",
+        "glyph": "\ud83d\udc30",
         "types": [
-          "normal",
-          "grass"
+          "psychic"
         ],
         "baseStats": {
           "hp": 52,
@@ -589,7 +655,7 @@
           },
           {
             "level": 1,
-            "moveId": "leaflash"
+            "moveId": "inkling"
           },
           {
             "level": 5,
@@ -597,19 +663,19 @@
           },
           {
             "level": 9,
-            "moveId": "dustkick"
-          },
-          {
-            "level": 13,
-            "moveId": "thornwhip"
-          },
-          {
-            "level": 17,
             "moveId": "softmurmur"
           },
           {
+            "level": 13,
+            "moveId": "mindseye"
+          },
+          {
+            "level": 17,
+            "moveId": "dustkick"
+          },
+          {
             "level": 22,
-            "moveId": "bramblecrash"
+            "moveId": "reverie"
           }
         ],
         "catchRate": 0.5,
@@ -618,10 +684,10 @@
       {
         "id": "ocks",
         "name": "Ocks",
-        "glyph": "🌩",
+        "glyph": "\ud83c\udf29",
         "types": [
-          "water",
-          "electric"
+          "dark",
+          "water"
         ],
         "baseStats": {
           "hp": 66,
@@ -644,7 +710,7 @@
           },
           {
             "level": 9,
-            "moveId": "sparklesnap"
+            "moveId": "shadowlap"
           },
           {
             "level": 13,
@@ -652,11 +718,11 @@
           },
           {
             "level": 17,
-            "moveId": "staticjolt"
+            "moveId": "gloomtide"
           },
           {
             "level": 22,
-            "moveId": "stormcoil"
+            "moveId": "nightfall"
           }
         ],
         "catchRate": 0.28,
@@ -665,7 +731,7 @@
       {
         "id": "woxeley",
         "name": "Woxeley",
-        "glyph": "🦊",
+        "glyph": "\ud83e\udd8a",
         "types": [
           "fire"
         ],
@@ -711,7 +777,7 @@
       {
         "id": "gustwing",
         "name": "Gustwing",
-        "glyph": "🐦",
+        "glyph": "\ud83d\udc26",
         "types": [
           "normal",
           "electric"
@@ -754,7 +820,7 @@
       {
         "id": "voltpup",
         "name": "Voltpup",
-        "glyph": "⚡",
+        "glyph": "\u26a1",
         "types": [
           "electric"
         ],
@@ -800,7 +866,7 @@
       {
         "id": "stormhound",
         "name": "Stormhound",
-        "glyph": "🐺",
+        "glyph": "\ud83d\udc3a",
         "types": [
           "electric"
         ],
@@ -842,7 +908,7 @@
       {
         "id": "marshwick",
         "name": "Marshwick",
-        "glyph": "🕯",
+        "glyph": "\ud83d\udd6f",
         "types": [
           "water",
           "grass"
@@ -885,7 +951,7 @@
       {
         "id": "pebblor",
         "name": "Pebblor",
-        "glyph": "🪨",
+        "glyph": "\ud83e\udea8",
         "types": [
           "rock"
         ],
@@ -927,7 +993,7 @@
       {
         "id": "boulderon",
         "name": "Boulderon",
-        "glyph": "🗿",
+        "glyph": "\ud83d\uddff",
         "types": [
           "rock"
         ],
@@ -965,7 +1031,7 @@
       {
         "id": "cindertail",
         "name": "Cindertail",
-        "glyph": "🦎",
+        "glyph": "\ud83e\udd8e",
         "types": [
           "fire",
           "rock"
@@ -1012,7 +1078,7 @@
       {
         "id": "hushmoth",
         "name": "Hushmoth",
-        "glyph": "🦋",
+        "glyph": "\ud83e\udd8b",
         "types": [
           "normal"
         ],
@@ -1054,7 +1120,7 @@
       {
         "id": "ashenmaw",
         "name": "Ashenmaw",
-        "glyph": "🐲",
+        "glyph": "\ud83d\udc32",
         "types": [
           "fire",
           "rock"
@@ -1129,59 +1195,59 @@
   "legend": {
     "#": {
       "name": "tree",
-      "glyph": "🌲",
+      "glyph": "\ud83c\udf32",
       "walkable": false
     },
     ".": {
       "name": "grass",
-      "glyph": "🟩",
+      "glyph": "\ud83d\udfe9",
       "walkable": true
     },
     ",": {
       "name": "path",
-      "glyph": "🟨",
+      "glyph": "\ud83d\udfe8",
       "walkable": true
     },
     "*": {
       "name": "tall grass",
-      "glyph": "🌿",
+      "glyph": "\ud83c\udf3f",
       "walkable": true,
       "wild": true
     },
     "~": {
       "name": "water",
-      "glyph": "🟦",
+      "glyph": "\ud83d\udfe6",
       "walkable": false
     },
     "f": {
       "name": "flowers",
-      "glyph": "🌼",
+      "glyph": "\ud83c\udf3c",
       "walkable": true
     },
     "^": {
       "name": "rock",
-      "glyph": "⛰",
+      "glyph": "\u26f0",
       "walkable": false
     },
     ":": {
       "name": "scree",
-      "glyph": "🟫",
+      "glyph": "\ud83d\udfeb",
       "walkable": true
     },
     "%": {
       "name": "cinder gravel",
-      "glyph": "🍂",
+      "glyph": "\ud83c\udf42",
       "walkable": true,
       "wild": true
     },
     "=": {
       "name": "wall",
-      "glyph": "🧱",
+      "glyph": "\ud83e\uddf1",
       "walkable": false
     },
     "_": {
       "name": "floor",
-      "glyph": "⬜",
+      "glyph": "\u2b1c",
       "walkable": true
     }
   },
@@ -1205,7 +1271,7 @@
         {
           "id": "warden-hollis",
           "name": "Warden Hollis",
-          "glyph": "💂",
+          "glyph": "\ud83d\udc82",
           "x": 7,
           "y": 1,
           "passableWithFlag": "starter_chosen",
@@ -1215,7 +1281,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "That's a good little flame you've got there. North for the Trail — brazier first, then Mosshollow."
+                  "text": "That's a good little flame you've got there. North for the Trail \u2014 brazier first, then Mosshollow."
                 }
               ]
             },
@@ -1223,7 +1289,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "No one walks the Trail without a kindred, love. Maren's kiln is the stone house west — go choose yours."
+                  "text": "No one walks the Trail without a kindred, love. Maren's kiln is the stone house west \u2014 go choose yours."
                 }
               ]
             }
@@ -1232,7 +1298,7 @@
         {
           "id": "hearth-kilnhearth",
           "name": "Kiln-hearth",
-          "glyph": "🔥",
+          "glyph": "\ud83d\udd25",
           "x": 12,
           "y": 5,
           "interactions": [
@@ -1252,7 +1318,7 @@
         {
           "id": "biscuit",
           "name": "Biscuit the dog",
-          "glyph": "🐕",
+          "glyph": "\ud83d\udc15",
           "x": 3,
           "y": 6,
           "blocking": false,
@@ -1270,7 +1336,7 @@
         {
           "id": "villager-petra",
           "name": "Old Petra",
-          "glyph": "👵",
+          "glyph": "\ud83d\udc75",
           "x": 13,
           "y": 3,
           "interactions": [
@@ -1305,7 +1371,7 @@
         {
           "id": "sign-kilnhearth",
           "name": "Village sign",
-          "glyph": "🪧",
+          "glyph": "\ud83e\udea7",
           "x": 5,
           "y": 8,
           "interactions": [
@@ -1313,7 +1379,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "KILNHEARTH — feed the dog, mind the kettle, keep the fire."
+                  "text": "KILNHEARTH \u2014 feed the dog, mind the kettle, keep the fire."
                 }
               ]
             }
@@ -1351,7 +1417,7 @@
         {
           "id": "maren",
           "name": "Elder Maren",
-          "glyph": "🧙",
+          "glyph": "\ud83e\uddd9",
           "x": 4,
           "y": 4,
           "interactions": [
@@ -1368,7 +1434,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "The Trail brazier guttered out this morning, and my knees won't make the climb. Three young kindred wait by the north wall — warm your hands and choose one."
+                  "text": "The Trail brazier guttered out this morning, and my knees won't make the climb. Three young kindred wait by the north wall \u2014 warm your hands and choose one."
                 }
               ]
             }
@@ -1377,7 +1443,7 @@
         {
           "id": "pedestal-emberling",
           "name": "Emberling's pedestal",
-          "glyph": "🕯",
+          "glyph": "\ud83d\udd6f",
           "x": 1,
           "y": 2,
           "interactions": [
@@ -1412,7 +1478,7 @@
         {
           "id": "pedestal-puddlit",
           "name": "Puddlit's pedestal",
-          "glyph": "🕯",
+          "glyph": "\ud83d\udd6f",
           "x": 4,
           "y": 2,
           "interactions": [
@@ -1447,7 +1513,7 @@
         {
           "id": "pedestal-sproutle",
           "name": "Sproutle's pedestal",
-          "glyph": "🕯",
+          "glyph": "\ud83d\udd6f",
           "x": 7,
           "y": 2,
           "interactions": [
@@ -1511,7 +1577,7 @@
         {
           "id": "brazier-verdant",
           "name": "Waystone brazier",
-          "glyph": "🏮",
+          "glyph": "\ud83c\udfee",
           "x": 8,
           "y": 7,
           "interactions": [
@@ -1551,7 +1617,7 @@
         {
           "id": "trailhand-petto",
           "name": "Trailhand Petto",
-          "glyph": "🤠",
+          "glyph": "\ud83e\udd20",
           "x": 8,
           "y": 12,
           "trainer": {
@@ -1569,14 +1635,14 @@
             "rewardMoney": 30,
             "intro": "You walk like you've somewhere to be. Nobody's got somewhere to be anymore.",
             "defeatText": "Huh. Maybe somewhere's worth walking to after all.",
-            "outro": "Mind the grass past the bend — it rustles even when the wind doesn't."
+            "outro": "Mind the grass past the bend \u2014 it rustles even when the wind doesn't."
           },
           "interactions": []
         },
         {
           "id": "trailhand-wren",
           "name": "Trailhand Wren",
-          "glyph": "👒",
+          "glyph": "\ud83d\udc52",
           "x": 13,
           "y": 3,
           "trainer": {
@@ -1603,7 +1669,7 @@
                 "qty": 1
               }
             ],
-            "intro": "Hold up — my two haven't stretched their legs since the frost came.",
+            "intro": "Hold up \u2014 my two haven't stretched their legs since the frost came.",
             "defeatText": "Well scrapped. Warm work is good work.",
             "outro": "The brazier went dark on my watch, and I hate that. Glad someone's climbing."
           },
@@ -1612,7 +1678,7 @@
         {
           "id": "trailhand-juna",
           "name": "Trailhand Juna",
-          "glyph": "🧢",
+          "glyph": "\ud83e\udde2",
           "x": 13,
           "y": 5,
           "trainer": {
@@ -1628,7 +1694,7 @@
               "range": 3
             },
             "rewardMoney": 40,
-            "intro": "Shh, you'll scare the voltpup. Ah — too late, fight me.",
+            "intro": "Shh, you'll scare the voltpup. Ah \u2014 too late, fight me.",
             "defeatText": "Fair's fair. The pup likes you, which is annoying.",
             "outro": "Voltpups nest in the east grass. Bring a snare and patience."
           },
@@ -1637,7 +1703,7 @@
         {
           "id": "sign-trail",
           "name": "Trail sign",
-          "glyph": "🪧",
+          "glyph": "\ud83e\udea7",
           "x": 4,
           "y": 12,
           "interactions": [
@@ -1645,7 +1711,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "VERDANT TRAIL — the grass is lively; travelers keep a snare handy."
+                  "text": "VERDANT TRAIL \u2014 the grass is lively; travelers keep a snare handy."
                 }
               ]
             }
@@ -1717,7 +1783,7 @@
         {
           "id": "gatewarden-lise",
           "name": "Gatewarden Lise",
-          "glyph": "💂",
+          "glyph": "\ud83d\udc82",
           "x": 8,
           "y": 1,
           "passableWithFlag": "badge_fern",
@@ -1727,7 +1793,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Fern's mark, plain as morning. The Ascent is open to you — mind the vents."
+                  "text": "Fern's mark, plain as morning. The Ascent is open to you \u2014 mind the vents."
                 }
               ]
             },
@@ -1744,7 +1810,7 @@
         {
           "id": "counter-salve",
           "name": "Salve counter",
-          "glyph": "🧴",
+          "glyph": "\ud83e\uddf4",
           "x": 3,
           "y": 3,
           "interactions": [
@@ -1752,7 +1818,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Embersalve, ten coins the jar — kiln-warm, mind your fingers."
+                  "text": "Embersalve, ten coins the jar \u2014 kiln-warm, mind your fingers."
                 },
                 {
                   "type": "sell",
@@ -1766,7 +1832,7 @@
         {
           "id": "counter-great-salve",
           "name": "Great salve counter",
-          "glyph": "🫙",
+          "glyph": "\ud83e\uded9",
           "x": 6,
           "y": 3,
           "interactions": [
@@ -1774,7 +1840,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Great embersalve, thirty coins — for the hurt you can't walk off."
+                  "text": "Great embersalve, thirty coins \u2014 for the hurt you can't walk off."
                 },
                 {
                   "type": "sell",
@@ -1788,7 +1854,7 @@
         {
           "id": "counter-snare",
           "name": "Snare counter",
-          "glyph": "🪤",
+          "glyph": "\ud83e\udea4",
           "x": 9,
           "y": 3,
           "interactions": [
@@ -1796,7 +1862,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Kindling snares, twenty — the weave takes best on a tired kindred."
+                  "text": "Kindling snares, twenty \u2014 the weave takes best on a tired kindred."
                 },
                 {
                   "type": "sell",
@@ -1810,7 +1876,7 @@
         {
           "id": "counter-warm-snare",
           "name": "Warm snare counter",
-          "glyph": "🧶",
+          "glyph": "\ud83e\uddf6",
           "x": 12,
           "y": 3,
           "interactions": [
@@ -1818,7 +1884,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "Warm snares, forty-five — the good weave, holds heat and patience."
+                  "text": "Warm snares, forty-five \u2014 the good weave, holds heat and patience."
                 },
                 {
                   "type": "sell",
@@ -1832,7 +1898,7 @@
         {
           "id": "hearth-mosshollow",
           "name": "Moss-hearth",
-          "glyph": "🔥",
+          "glyph": "\ud83d\udd25",
           "x": 14,
           "y": 7,
           "interactions": [
@@ -1852,7 +1918,7 @@
         {
           "id": "keeper-fern",
           "name": "Keeper Fern",
-          "glyph": "🌾",
+          "glyph": "\ud83c\udf3e",
           "x": 13,
           "y": 9,
           "trainer": {
@@ -1876,7 +1942,7 @@
               }
             ],
             "intro": "Maren sent you? Then show me she taught you more than kindling.",
-            "defeatText": "There it is — the stubbornness the road needs. Take my mark, and warm snares in place of the charm; the charms won't hold their heat anymore.",
+            "defeatText": "There it is \u2014 the stubbornness the road needs. Take my mark, and warm snares in place of the charm; the charms won't hold their heat anymore.",
             "outro": "The marsh folk say the west reeds are lonely. Kindred hate lonely."
           },
           "interactions": []
@@ -1884,7 +1950,7 @@
         {
           "id": "villager-wick",
           "name": "Wick the beekeeper",
-          "glyph": "🧑‍🌾",
+          "glyph": "\ud83e\uddd1\u200d\ud83c\udf3e",
           "x": 3,
           "y": 8,
           "interactions": [
@@ -1893,7 +1959,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "The hives hummed today — first time since autumn. Whatever you're doing up there, don't stop."
+                  "text": "The hives hummed today \u2014 first time since autumn. Whatever you're doing up there, don't stop."
                 }
               ]
             },
@@ -1914,7 +1980,7 @@
                 },
                 {
                   "type": "say",
-                  "text": "My bee pasture west of here is full of Flufflehups — all ears and eyes and burr-tails. Wade in, they don't bite."
+                  "text": "My bee pasture west of here is full of Flufflehups \u2014 all ears and eyes and burr-tails. Wade in, they don't bite."
                 }
               ]
             }
@@ -1923,7 +1989,7 @@
         {
           "id": "sign-mosshollow",
           "name": "Town sign",
-          "glyph": "🪧",
+          "glyph": "\ud83e\udea7",
           "x": 5,
           "y": 6,
           "interactions": [
@@ -1931,7 +1997,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "MOSSHOLLOW — market row north, Keeper Fern's grove southeast. The hearth is free, always."
+                  "text": "MOSSHOLLOW \u2014 market row north, Keeper Fern's grove southeast. The hearth is free, always."
                 }
               ]
             }
@@ -2003,7 +2069,7 @@
         {
           "id": "hermit-sedge",
           "name": "Hermit Sedge",
-          "glyph": "🧓",
+          "glyph": "\ud83e\uddd3",
           "x": 2,
           "y": 4,
           "interactions": [
@@ -2022,7 +2088,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "You smell of woodsmoke — proper smoke, Trail smoke. Then you'll do."
+                  "text": "You smell of woodsmoke \u2014 proper smoke, Trail smoke. Then you'll do."
                 },
                 {
                   "type": "give_species",
@@ -2052,7 +2118,7 @@
         {
           "id": "marshhand-odile",
           "name": "Marsh-hand Odile",
-          "glyph": "🎣",
+          "glyph": "\ud83c\udfa3",
           "x": 5,
           "y": 7,
           "trainer": {
@@ -2088,7 +2154,7 @@
         {
           "id": "quiet-heron",
           "name": "Grey heron",
-          "glyph": "🪿",
+          "glyph": "\ud83e\udebf",
           "x": 11,
           "y": 2,
           "interactions": [
@@ -2151,7 +2217,7 @@
         {
           "id": "keeper-bram",
           "name": "Keeper Bram",
-          "glyph": "🧔",
+          "glyph": "\ud83e\uddd4",
           "x": 8,
           "y": 2,
           "passableWithFlag": "badge_bram",
@@ -2184,7 +2250,7 @@
               }
             ],
             "intro": "Ironwood's gate taught me to stand still; this mountain taught me why. Show me your flame, traveler.",
-            "defeatText": "Ha — you'd have talked your way past my old gate too. Go up, and don't let the quiet fool you.",
+            "defeatText": "Ha \u2014 you'd have talked your way past my old gate too. Go up, and don't let the quiet fool you.",
             "outro": "I still say 'the elder sends her blessing' in my sleep. Don't tell Fern."
           },
           "interactions": []
@@ -2192,7 +2258,7 @@
         {
           "id": "vent-tender-mira",
           "name": "Vent-tender Mira",
-          "glyph": "🧤",
+          "glyph": "\ud83e\udde4",
           "x": 8,
           "y": 4,
           "passableWithFlag": "mira_defeated",
@@ -2218,7 +2284,7 @@
         {
           "id": "trailhand-rooke",
           "name": "Trailhand Rooke",
-          "glyph": "⛏",
+          "glyph": "\u26cf",
           "x": 11,
           "y": 8,
           "trainer": {
@@ -2238,7 +2304,7 @@
               "range": 3
             },
             "rewardMoney": 90,
-            "intro": "Rockfall took the path twice this month. My pebblor and I put it back — twice.",
+            "intro": "Rockfall took the path twice this month. My pebblor and I put it back \u2014 twice.",
             "defeatText": "Solid work. Bram will want a look at you.",
             "outro": "Keeper Bram holds the high gate. Softer than the mountain, but not by much."
           },
@@ -2247,7 +2313,7 @@
         {
           "id": "sign-cinder",
           "name": "Scorched sign",
-          "glyph": "🪧",
+          "glyph": "\ud83e\udea7",
           "x": 4,
           "y": 12,
           "interactions": [
@@ -2255,7 +2321,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "CINDER ASCENT — the vents run warm underfoot, or used to. Keeper Bram holds the high gate."
+                  "text": "CINDER ASCENT \u2014 the vents run warm underfoot, or used to. Keeper Bram holds the high gate."
                 }
               ]
             }
@@ -2321,7 +2387,7 @@
         {
           "id": "vespera",
           "name": "Vespera",
-          "glyph": "🕰",
+          "glyph": "\ud83d\udd70",
           "x": 7,
           "y": 2,
           "trainer": {
@@ -2363,7 +2429,7 @@
               },
               {
                 "type": "win",
-                "text": "You touch the iron to the banked coals and the Great Hearth catches with a sound like the valley exhaling. Morning comes up loud — birdsong, geyser-hiss, kettles knocking, and far below, Biscuit barking at all of it."
+                "text": "You touch the iron to the banked coals and the Great Hearth catches with a sound like the valley exhaling. Morning comes up loud \u2014 birdsong, geyser-hiss, kettles knocking, and far below, Biscuit barking at all of it."
               }
             ],
             "intro": "You relit them. Even knowing everything goes out, you relit them."
@@ -2373,7 +2439,7 @@
         {
           "id": "great-hearth",
           "name": "The Great Hearth",
-          "glyph": "🌋",
+          "glyph": "\ud83c\udf0b",
           "x": 7,
           "y": 1,
           "interactions": [
@@ -2390,7 +2456,7 @@
               "commands": [
                 {
                   "type": "say",
-                  "text": "The Great Hearth, banked coal by coal to a whisper. It is not out — it is waiting."
+                  "text": "The Great Hearth, banked coal by coal to a whisper. It is not out \u2014 it is waiting."
                 }
               ]
             }
@@ -2399,7 +2465,7 @@
         {
           "id": "hearth-summit",
           "name": "Keeper's hearth",
-          "glyph": "🔥",
+          "glyph": "\ud83d\udd25",
           "x": 10,
           "y": 4,
           "interactions": [
@@ -2419,7 +2485,7 @@
         {
           "id": "brazier-peak-south",
           "name": "Cold brazier",
-          "glyph": "🏮",
+          "glyph": "\ud83c\udfee",
           "x": 4,
           "y": 8,
           "interactions": [
@@ -2436,7 +2502,7 @@
         {
           "id": "brazier-peak-north",
           "name": "Cold brazier",
-          "glyph": "🏮",
+          "glyph": "\ud83c\udfee",
           "x": 10,
           "y": 6,
           "interactions": [
@@ -2474,7 +2540,7 @@
     }
   },
   "player": {
-    "glyph": "🙂",
+    "glyph": "\ud83d\ude42",
     "map": "kilnhearth",
     "x": 9,
     "y": 10,

@@ -68,7 +68,7 @@ beehive) rather than lore dumps.
 Gating flags: `starter_chosen`, `brazier_trail`, `badge_fern`, `badge_bram`,
 `hearth_relit` (win).
 
-## Kindred roster (19 species, 6 types: fire/water/grass/electric/rock/normal)
+## Kindred roster (19 species, 8 types: fire/water/grass/electric/rock/normal/psychic/dark)
 
 Kindred 17-19 were designed by Clark, Howie and Colton respectively; credit
 per-creature is recorded in `apps/web/public/assets/LICENSES.md`.
@@ -98,15 +98,14 @@ Wild/route:
 | 14 | **Cindertail** | fire/rock | — | Cinder Ascent; salamander of warm gravel |
 | 15 | **Hushmoth** | normal | — | appears only near cold braziers; fast, eerie, hard to catch — the Hush made visible |
 | 16 | **Ashenmaw** | fire/rock | — | Vespera's ace only; a hearth that learned to walk and chose not to glow |
-| 17 | **Flufflehup** | normal/grass | — | *designed by Clark.* Wick's pasture, the shaggy west corner of Mosshollow; ears up, enormous eyes, and a lightning bolt for a tail |
-| 18 | **Ocks** | water/electric | — | *designed by Howie.* Same patch, rarer and bigger; a storm that grew fur — dark face, bar-slit eyes, layered blue coat |
+| 17 | **Flufflehup** | psychic | — | *designed by Clark.* Wick's pasture, the shaggy west corner of Mosshollow; ears up, enormous eyes, and a lightning bolt for a tail |
+| 18 | **Ocks** | dark/water | — | *designed by Howie.* Same patch, rarer and bigger; a storm that grew fur — dark face, bar-slit eyes, layered blue coat |
 | 19 | **Woxeley** | fire | — | *designed by Colton.* Same patch, rarest of all; a tall striped vixen with a flame down her chest. The apex of the pasture and the strongest kindred you can actually catch — she/her |
 
 Stat identity: starters balanced; Fuzzle tanky-cute; Gustwing/Hushmoth fast
 and frail; Pebblor line slow walls; Cindertail bulky pivot; Flufflehup light
-and bouncy — quick, soft-hitting, the only grass-type you can catch before the
-marsh; Ocks the slow wall the electric line never had (every other electric is
-fast and frail); Woxeley a glass cannon with real bulk, 304 BST — second only
+and bouncy — quick and soft-hitting, the valley's only psychic; Ocks a slow
+dark/water wall; Woxeley a glass cannon with real bulk, 304 BST — second only
 to Ashenmaw and the strongest thing in any wild table; Ashenmaw boss-tier bulk
 + power.
 
@@ -123,6 +122,36 @@ Ocks ~24% at Lv8-11, Woxeley ~6% at Lv12-15 with a 0.04 catch rate. A player
 arriving at Mosshollow around Lv10-12 can farm the first, fight the second, and
 will lose to the third for a while — which is the point. It is optional, hidden
 and off the critical path, so it can afford to be greedy.
+
+## Psychic and dark (types 7 and 8)
+
+Added when Flufflehup's and Ocks's designers named their types. Both slot into
+the existing six without touching a single established matchup, so the pinned
+playthrough is unaffected:
+
+| | |
+|---|---|
+| `psychic -> normal` | x2 — mind over ordinary |
+| `psychic -> psychic` | x0.5 |
+| `psychic -> dark` | **x0** — a dark mind cannot be read |
+| `dark -> psychic` | x2 |
+| `dark -> dark` | x0.5 |
+| `dark -> fire` | x0.5 |
+| `fire -> dark` | x2 — warmth against the dark, which is this game's whole premise |
+
+Six new moves carry them, following the established 40/60/85 shape: Inkling,
+Mind's Eye, Reverie (psychic); Shadow Lap, Gloomtide, Nightfall (dark).
+
+The interesting part is what fell out of it in the Mosshollow patch, unplanned:
+
+- **Flufflehup literally cannot touch Ocks.** Psychic x0 into dark. Two
+  creatures in the same square of grass, and one of them is a hard wall to the
+  other.
+- **Ocks's water half shields it from Woxeley.** Fire is x2 into dark but x0.5
+  into water, so it lands neutral — the patch's apex predator has no type
+  advantage over the middle creature.
+- Ocks stays honest because its water half is still x2 weak to grass and
+  electric, both of which the player has by then.
 
 ## Keeper battles (bosses)
 
