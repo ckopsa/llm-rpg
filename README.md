@@ -119,6 +119,8 @@ Tools: `forge_list_games`, `forge_new_game` (from `games/_templates/starter` —
 
 **[docs/forge.md](docs/forge.md)** is the authoring guide: the recommended workflow (edit → `forge_check` → explore playtest → fix), an op reference, schema conventions (flag gating, spatial shops), and pacing/tone heuristics.
 
+**[docs/adding-a-kindling.md](docs/adding-a-kindling.md)** covers adding one creature end to end — turning a drawing into a spec-legal battler sprite (`tools/sprite-gen`), the catalog entry, making it obtainable without desyncing a pinned playthrough, and the checks that prove it landed.
+
 ## Game format in 30 seconds
 
 A game is a multi-map overworld (towns, routes, interiors) connected by portals, with a shared tile legend and an embedded creature catalog:

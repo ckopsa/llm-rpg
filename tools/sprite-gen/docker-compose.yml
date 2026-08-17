@@ -1,0 +1,22 @@
+# Local run on the 3070 box. The Nomad jobspec later describes the same
+# container: one GPU, models volume, output volume, port 8188.
+services:
+  comfyui:
+    build:
+      context: .
+      args:
+        COMFY_REF: ${COMFY_REF:-master}
+    image: llm-rpg/sprite-gen:local
+    ports:
+      - "${COMFY_PORT:-8188}:8188"
+    volumes:
+      # Weights survive image rebuilds; that is the whole point of the split.
+      - ./models:/opt/comfyui/models
+      - ./output:/opt/comfyui/output
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
